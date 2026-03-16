@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Plus, FileText } from "lucide-react";
-import { useListAnimals } from "@workspace/api-client-react";
+import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { differenceInYears, differenceInMonths } from "date-fns";
 
 export function formatAge(dob: string | null | undefined): string {
@@ -42,19 +42,19 @@ export default function AnimalList() {
     // Client-side fallback for fast search if API search is missing
     if (search.length > 0 && search.length <= 2) {
       const lower = search.toLowerCase();
-      result = result.filter(a => 
+      result = result.filter((a: Animal) => 
         a.name.toLowerCase().includes(lower) || 
         (a.tagNumber && a.tagNumber.toLowerCase().includes(lower))
       );
     }
 
     if (speciesFilter !== "All") {
-      result = result.filter(a => a.species === speciesFilter);
+      result = result.filter((a: Animal) => a.species === speciesFilter);
     }
     return result;
   }, [animals, search, speciesFilter]);
 
-  const uniqueSpecies = ["All", ...Array.from(new Set((animals || []).map(a => a.species)))];
+  const uniqueSpecies: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.species)))];
 
   return (
     <div className="space-y-6">
@@ -119,7 +119,7 @@ export default function AnimalList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAnimals.map((animal) => (
+          {filteredAnimals.map((animal: Animal) => (
             <Link key={animal.id} href={`/animals/${animal.id}`}>
               <Card className="hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer group h-full">
                 <CardContent className="p-5 flex flex-col h-full">

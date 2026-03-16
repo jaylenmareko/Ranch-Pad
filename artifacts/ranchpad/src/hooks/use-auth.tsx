@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useGetRanch } from "@workspace/api-client-react";
+import { useGetRanch, getGetRanchQueryKey } from "@workspace/api-client-react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -26,10 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("auth-expired", handleAuthExpired);
   }, [setLocation]);
 
-  // We use the presence of a ranch profile as a proxy for valid authentication 
-  // since the token alone might be expired.
   const { isPending, isError } = useGetRanch({
     query: {
+      queryKey: getGetRanchQueryKey(),
       enabled: !!token,
       retry: false,
     }
@@ -54,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLocation("/login");
   };
 
-  const value = {
+  const value: AuthContextType = {
     isAuthenticated: !!token && !isError,
     isLoading: !!token && isPending,
     token,

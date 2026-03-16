@@ -3,8 +3,8 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CloudLightning, Info, CheckCircle2, RefreshCw } from "lucide-react";
-import { useListAlerts, useDismissAlert, useGenerateAlerts } from "@workspace/api-client-react";
+import { AlertTriangle, CloudLightning, Info, CheckCircle2, RefreshCw, PawPrint } from "lucide-react";
+import { useListAlerts, useDismissAlert, useGenerateAlerts, type Alert } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/utils";
 
@@ -41,7 +41,7 @@ export default function AlertsList() {
     return "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400";
   };
 
-  const AlertRow = ({ alert }: { alert: any }) => (
+  const AlertRow = ({ alert }: { alert: Alert }) => (
     <div className={`p-4 md:p-5 flex flex-col md:flex-row gap-4 md:items-center rounded-2xl border transition-all ${getSeverityColor(alert.severity)}`}>
       <div className="flex-1 flex gap-4">
         <div className="shrink-0 mt-1 md:mt-0 bg-background rounded-full p-2 h-max shadow-sm border border-border/50">
