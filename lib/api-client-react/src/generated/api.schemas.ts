@@ -216,6 +216,15 @@ export interface CreateFamachaBody {
   recordedDate: string;
 }
 
+export interface UpdateFamachaBody {
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  score?: number;
+  recordedDate?: string;
+}
+
 export interface FieldNote {
   id: number;
   animalId: number;
@@ -226,6 +235,10 @@ export interface FieldNote {
 
 export interface CreateFieldNoteBody {
   noteText: string;
+}
+
+export interface UpdateFieldNoteBody {
+  noteText?: string;
 }
 
 export type AlertSeverity = (typeof AlertSeverity)[keyof typeof AlertSeverity];

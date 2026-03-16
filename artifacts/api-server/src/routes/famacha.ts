@@ -67,6 +67,42 @@ router.post("/animals/:animalId/famacha", requireAuth, async (req, res): Promise
   res.status(201).json(score);
 });
 
+const updateFamachaSchema = z.object({
+  score: z.number().int().min(1).max(5).optional(),
+  recordedDate: z.string().min(1).optional(),
+});
+
+router.patch("/animals/:animalId/famacha/:famachaId", requireAuth, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+  const famachaId = parseId(req.params.famachaId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const parsed = updateFamachaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const [updated] = await db
+    .update(famachaScoresTable)
+    .set(parsed.data)
+    .where(and(eq(famachaScoresTable.id, famachaId), eq(famachaScoresTable.animalId, animalId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "FAMACHA score not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
 router.delete("/animals/:animalId/famacha/:famachaId", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);

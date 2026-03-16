@@ -10,8 +10,8 @@ import {
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication,
   useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent,
-  useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore,
-  useListFieldNotes, useCreateFieldNote, useDeleteFieldNote,
+  useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore, useUpdateFamachaScore,
+  useListFieldNotes, useCreateFieldNote, useDeleteFieldNote, useUpdateFieldNote,
   type AnimalDetail, type AnimalRef, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
 } from "@workspace/api-client-react";
 import { formatAge } from "./List";
@@ -299,6 +299,9 @@ function FamachaTab({ animalId }: { animalId: number }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [score, setScore] = useState(3);
   const [date, setDate] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editScore, setEditScore] = useState(3);
+  const [editDate, setEditDate] = useState("");
 
   const createMutation = useCreateFamachaScore({
     mutation: {
@@ -306,6 +309,16 @@ function FamachaTab({ animalId }: { animalId: number }) {
         queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/famacha`] });
         setIsAddOpen(false); setDate("");
         toast({ title: "Score saved" });
+      }
+    }
+  });
+
+  const updateMutation = useUpdateFamachaScore({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/famacha`] });
+        setEditingId(null);
+        toast({ title: "Score updated" });
       }
     }
   });
@@ -369,14 +382,42 @@ function FamachaTab({ animalId }: { animalId: number }) {
         </Card>
       )}
 
+      <Dialog open={editingId !== null} onOpenChange={(open) => { if (!open) setEditingId(null); }} title="Edit FAMACHA Score">
+        <form onSubmit={e => { e.preventDefault(); if (editingId) updateMutation.mutate({ animalId, famachaId: editingId, data: { score: editScore, recordedDate: editDate } }); }} className="space-y-6">
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Input type="date" required value={editDate} onChange={e => setEditDate(e.target.value)} />
+          </div>
+          <div className="space-y-4">
+            <Label>Score (1-5)</Label>
+            <div className="flex justify-between gap-2">
+              {[1,2,3,4,5].map(num => (
+                <button key={num} type="button" onClick={() => setEditScore(num)}
+                  className={`flex-1 h-14 rounded-xl font-black text-xl transition-all ${editScore === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'}`}
+                  style={{ backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f87171' : num === 3 ? '#fca5a5' : num === 4 ? '#fecaca' : '#fee2e2', color: num <= 2 ? 'white' : '#7f1d1d' }}
+                >{num}</button>
+              ))}
+            </div>
+          </div>
+          <Button type="submit" className="w-full" isLoading={updateMutation.isPending}>Update Score</Button>
+        </form>
+      </Dialog>
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {scores?.sort((a: FamachaScore, b: FamachaScore) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map((s: FamachaScore) => (
-          <Card key={s.id} className="text-center shadow-sm">
+          <Card key={s.id} className="text-center shadow-sm group relative">
             <CardContent className="p-4">
               <div className="text-3xl font-black mb-1" style={{ color: s.score >= 4 ? 'var(--color-destructive)' : s.score === 3 ? '#eab308' : 'var(--color-primary)' }}>
                 {s.score}
               </div>
               <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
+              <button
+                onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-muted transition-all"
+                title="Edit score"
+              >
+                <Edit2 className="w-3 h-3 text-muted-foreground" />
+              </button>
             </CardContent>
           </Card>
         ))}
@@ -388,13 +429,26 @@ function FamachaTab({ animalId }: { animalId: number }) {
 function NotesTab({ animalId }: { animalId: number }) {
   const { data: notes, isLoading } = useListFieldNotes(animalId);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [note, setNote] = useState("");
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [editNoteText, setEditNoteText] = useState("");
   
   const createMutation = useCreateFieldNote({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/notes`] });
         setNote("");
+      }
+    }
+  });
+
+  const updateNoteMutation = useUpdateFieldNote({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/notes`] });
+        setEditingNoteId(null);
+        toast({ title: "Note updated" });
       }
     }
   });
@@ -412,9 +466,30 @@ function NotesTab({ animalId }: { animalId: number }) {
 
       <div className="space-y-3">
         {notes?.sort((a: FieldNote, b: FieldNote) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((n: FieldNote) => (
-          <div key={n.id} className="bg-card border border-border p-4 rounded-xl shadow-sm">
-            <p className="text-foreground whitespace-pre-wrap leading-relaxed">{n.noteText}</p>
-            <p className="text-xs font-bold text-muted-foreground mt-3 uppercase tracking-wide">{formatDate(n.createdAt)}</p>
+          <div key={n.id} className="bg-card border border-border p-4 rounded-xl shadow-sm group">
+            {editingNoteId === n.id ? (
+              <form onSubmit={e => { e.preventDefault(); updateNoteMutation.mutate({ animalId, noteId: n.id, data: { noteText: editNoteText } }); }} className="space-y-2">
+                <Textarea value={editNoteText} onChange={e => setEditNoteText(e.target.value)} className="min-h-[80px]" required />
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm" isLoading={updateNoteMutation.isPending}>Save</Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setEditingNoteId(null)}>Cancel</Button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <p className="text-foreground whitespace-pre-wrap leading-relaxed">{n.noteText}</p>
+                <div className="flex items-center justify-between mt-3">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{formatDate(n.createdAt)}</p>
+                  <button
+                    onClick={() => { setEditingNoteId(n.id); setEditNoteText(n.noteText); }}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-muted transition-all"
+                    title="Edit note"
+                  >
+                    <Edit2 className="w-3 h-3 text-muted-foreground" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

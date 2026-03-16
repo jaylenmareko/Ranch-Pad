@@ -383,6 +383,30 @@ export const CreateFamachaScoreBody = zod.object({
 });
 
 /**
+ * @summary Update a FAMACHA score
+ */
+export const UpdateFamachaScoreParams = zod.object({
+  animalId: zod.coerce.number(),
+  famachaId: zod.coerce.number(),
+});
+
+export const updateFamachaScoreBodyScoreMax = 5;
+
+export const UpdateFamachaScoreBody = zod.object({
+  score: zod.number().min(1).max(updateFamachaScoreBodyScoreMax).optional(),
+  recordedDate: zod.string().optional(),
+});
+
+export const UpdateFamachaScoreResponse = zod.object({
+  id: zod.number(),
+  animalId: zod.number(),
+  ranchId: zod.number(),
+  score: zod.number(),
+  recordedDate: zod.string(),
+  createdAt: zod.date(),
+});
+
+/**
  * @summary Delete a FAMACHA score
  */
 export const DeleteFamachaScoreParams = zod.object({
@@ -415,6 +439,26 @@ export const CreateFieldNoteParams = zod.object({
 
 export const CreateFieldNoteBody = zod.object({
   noteText: zod.string(),
+});
+
+/**
+ * @summary Update a field note
+ */
+export const UpdateFieldNoteParams = zod.object({
+  animalId: zod.coerce.number(),
+  noteId: zod.coerce.number(),
+});
+
+export const UpdateFieldNoteBody = zod.object({
+  noteText: zod.string().optional(),
+});
+
+export const UpdateFieldNoteResponse = zod.object({
+  id: zod.number(),
+  animalId: zod.number(),
+  ranchId: zod.number(),
+  noteText: zod.string(),
+  createdAt: zod.date(),
 });
 
 /**

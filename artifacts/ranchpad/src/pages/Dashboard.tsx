@@ -109,33 +109,62 @@ export default function Dashboard() {
                   <p className="text-sm mt-1">Check your ranch profile location settings.</p>
                 </div>
               ) : (
-                <div className="flex flex-col md:flex-row gap-8 items-center">
-                  <div className="flex items-center gap-6">
-                    <img 
-                      src={`https://openweathermap.org/img/wn/${weather.current.icon}@4x.png`} 
-                      alt="Weather icon"
-                      className="w-24 h-24 drop-shadow-md"
-                    />
-                    <div>
-                      <div className="text-5xl font-black font-display text-foreground">{Math.round(weather.current.temp)}°</div>
-                      <p className="text-lg font-medium text-muted-foreground capitalize">{weather.current.description}</p>
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="flex items-center gap-6">
+                      <img 
+                        src={`https://openweathermap.org/img/wn/${weather.current.icon}@4x.png`} 
+                        alt="Weather icon"
+                        className="w-24 h-24 drop-shadow-md"
+                      />
+                      <div>
+                        <div className="text-5xl font-black font-display text-foreground">{Math.round(weather.current.temp)}°</div>
+                        <p className="text-lg font-medium text-muted-foreground capitalize">{weather.current.description}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="h-px w-full md:w-px md:h-16 bg-border/50" />
+                    
+                    <div className="flex gap-6 w-full justify-around md:justify-start">
+                      <div className="text-center">
+                        <Droplets className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                        <p className="text-sm font-bold text-foreground">{weather.current.humidity}%</p>
+                        <p className="text-xs text-muted-foreground">Humidity</p>
+                      </div>
+                      <div className="text-center">
+                        <Wind className="w-5 h-5 text-gray-400 mx-auto mb-1" />
+                        <p className="text-sm font-bold text-foreground">{Math.round(weather.current.windSpeed)} mph</p>
+                        <p className="text-xs text-muted-foreground">Wind</p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="h-px w-full md:w-px md:h-16 bg-border/50" />
-                  
-                  <div className="flex gap-6 w-full justify-around md:justify-start">
-                    <div className="text-center">
-                      <Droplets className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-                      <p className="text-sm font-bold text-foreground">{weather.current.humidity}%</p>
-                      <p className="text-xs text-muted-foreground">Humidity</p>
-                    </div>
-                    <div className="text-center">
-                      <Wind className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                      <p className="text-sm font-bold text-foreground">{Math.round(weather.current.windSpeed)} mph</p>
-                      <p className="text-xs text-muted-foreground">Wind</p>
-                    </div>
-                  </div>
+
+                  {weather.forecast && weather.forecast.length > 0 && (
+                    <>
+                      <div className="h-px bg-border/40" />
+                      <div className="grid grid-cols-3 gap-3">
+                        {weather.forecast.slice(0, 3).map((day) => (
+                          <div key={day.date} className="text-center bg-muted/30 rounded-xl p-3">
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">
+                              {new Date(day.date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                            </p>
+                            <img 
+                              src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`}
+                              alt={day.description}
+                              className="w-10 h-10 mx-auto"
+                            />
+                            <p className="text-xs font-medium capitalize text-muted-foreground mb-1">{day.description}</p>
+                            <p className="text-sm font-black text-foreground">
+                              {Math.round(day.tempHigh)}° / {Math.round(day.tempLow)}°
+                            </p>
+                            <div className="flex justify-center gap-2 mt-1">
+                              <span className="text-xs text-blue-400">{day.humidity}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </CardContent>
