@@ -31,51 +31,57 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
 
   const { email, password, name, ranchName, ranchCity, ranchState, joinRanchName } = parsed.data;
 
-  // Check duplicate email
+  // Check duplicate email before any writes
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
   if (existing.length > 0) {
     res.status(409).json({ error: true, message: "Email already in use" });
     return;
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  // Create user
-  const [user] = await db.insert(usersTable).values({ email, passwordHash, name }).returning();
-
-  let ranch;
-
+  // Validate join-ranch target before any writes — prevents orphaned user rows
+  let joinTarget: typeof ranchesTable.$inferSelect | null = null;
   if (joinRanchName) {
-    // Join existing ranch by name
-    const [existingRanch] = await db
+    const [found] = await db
       .select()
       .from(ranchesTable)
       .where(eq(ranchesTable.name, joinRanchName))
       .limit(1);
-
-    if (!existingRanch) {
+    if (!found) {
       res.status(400).json({ error: true, message: `Ranch "${joinRanchName}" not found` });
       return;
     }
-    ranch = existingRanch;
-  } else {
-    // Create new ranch
-    const newRanchName = ranchName || `${name}'s Ranch`;
-    const [newRanch] = await db
-      .insert(ranchesTable)
-      .values({
-        name: newRanchName,
-        locationCity: ranchCity || null,
-        locationState: ranchState || null,
-      })
-      .returning();
-    ranch = newRanch;
+    joinTarget = found;
   }
 
-  await db.insert(ranchUsersTable).values({
-    ranchId: ranch.id,
-    userId: user.id,
-    role: joinRanchName ? "member" : "owner",
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  // All validation passed — perform writes atomically in a transaction
+  const { user, ranch } = await db.transaction(async (tx) => {
+    const [newUser] = await tx.insert(usersTable).values({ email, passwordHash, name }).returning();
+
+    let txRanch: typeof ranchesTable.$inferSelect;
+    if (joinTarget) {
+      txRanch = joinTarget;
+    } else {
+      const newRanchName = ranchName || `${name}'s Ranch`;
+      const [createdRanch] = await tx
+        .insert(ranchesTable)
+        .values({
+          name: newRanchName,
+          locationCity: ranchCity || null,
+          locationState: ranchState || null,
+        })
+        .returning();
+      txRanch = createdRanch;
+    }
+
+    await tx.insert(ranchUsersTable).values({
+      ranchId: txRanch.id,
+      userId: newUser.id,
+      role: joinTarget ? "member" : "owner",
+    });
+
+    return { user: newUser, ranch: txRanch };
   });
 
   const token = signToken({ userId: user.id, ranchId: ranch.id, email: user.email });
