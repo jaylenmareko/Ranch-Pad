@@ -11,7 +11,8 @@ import {
   useListMedications, useCreateMedication, useDeleteMedication,
   useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent,
   useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore,
-  useListFieldNotes, useCreateFieldNote, useDeleteFieldNote
+  useListFieldNotes, useCreateFieldNote, useDeleteFieldNote,
+  type AnimalDetail, type AnimalRef, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
 } from "@workspace/api-client-react";
 import { formatAge } from "./List";
 import { formatDate } from "@/lib/utils";
@@ -99,7 +100,7 @@ export default function AnimalDetail() {
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha" | "notes" | "lineage")}
             className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === tab.id 
                 ? "border-primary text-primary" 
@@ -166,7 +167,7 @@ function HealthTab({ animalId }: { animalId: number }) {
           </div>
           <div className="space-y-2">
             <Label>Severity</Label>
-            <select value={sev} onChange={e => setSev(e.target.value as any)} className="flex h-12 w-full rounded-xl border-2 border-border bg-background px-4 py-2 font-medium">
+            <select value={sev} onChange={e => setSev(e.target.value as "low" | "medium" | "high")} className="flex h-12 w-full rounded-xl border-2 border-border bg-background px-4 py-2 font-medium">
               <option value="low">Low (Routine)</option>
               <option value="medium">Medium (Requires watching)</option>
               <option value="high">High (Urgent/Vet needed)</option>
@@ -183,7 +184,7 @@ function HealthTab({ animalId }: { animalId: number }) {
       {isLoading ? <div className="animate-pulse bg-card h-32 rounded-xl" /> : 
        events?.length === 0 ? <p className="text-muted-foreground p-8 text-center bg-card rounded-xl border border-dashed">No health events recorded.</p> : (
         <div className="grid gap-3">
-          {events?.sort((a,b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()).map(ev => (
+          {events?.sort((a: HealthEvent, b: HealthEvent) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()).map((ev: HealthEvent) => (
             <Card key={ev.id} className="border-l-4 overflow-hidden shadow-sm" style={{ borderLeftColor: ev.severity === 'high' ? 'var(--color-destructive)' : ev.severity === 'medium' ? '#eab308' : '#22c55e' }}>
               <CardContent className="p-4 flex justify-between items-start gap-4">
                 <div>
@@ -266,7 +267,7 @@ function MedsTab({ animalId }: { animalId: number }) {
       {isLoading ? <div className="animate-pulse bg-card h-32 rounded-xl" /> : 
        meds?.length === 0 ? <p className="text-muted-foreground p-8 text-center bg-card rounded-xl border border-dashed">No medications recorded.</p> : (
         <div className="grid gap-3">
-          {meds?.sort((a,b) => new Date(b.dateGiven).getTime() - new Date(a.dateGiven).getTime()).map(med => (
+          {meds?.sort((a: MedicationRecord, b: MedicationRecord) => new Date(b.dateGiven).getTime() - new Date(a.dateGiven).getTime()).map((med: MedicationRecord) => (
             <Card key={med.id} className="shadow-sm">
               <CardContent className="p-4 flex justify-between items-center">
                 <div>
@@ -310,8 +311,8 @@ function FamachaTab({ animalId }: { animalId: number }) {
   });
 
   const chartData = [...(scores || [])]
-    .sort((a,b) => new Date(a.recordedDate).getTime() - new Date(b.recordedDate).getTime())
-    .map(s => ({ date: new Date(s.recordedDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}), score: s.score }));
+    .sort((a: FamachaScore, b: FamachaScore) => new Date(a.recordedDate).getTime() - new Date(b.recordedDate).getTime())
+    .map((s: FamachaScore) => ({ date: new Date(s.recordedDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}), score: s.score }));
 
   return (
     <div className="space-y-6">
@@ -369,7 +370,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {scores?.sort((a,b) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map(s => (
+        {scores?.sort((a: FamachaScore, b: FamachaScore) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map((s: FamachaScore) => (
           <Card key={s.id} className="text-center shadow-sm">
             <CardContent className="p-4">
               <div className="text-3xl font-black mb-1" style={{ color: s.score >= 4 ? 'var(--color-destructive)' : s.score === 3 ? '#eab308' : 'var(--color-primary)' }}>
@@ -410,7 +411,7 @@ function NotesTab({ animalId }: { animalId: number }) {
       </form>
 
       <div className="space-y-3">
-        {notes?.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(n => (
+        {notes?.sort((a: FieldNote, b: FieldNote) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((n: FieldNote) => (
           <div key={n.id} className="bg-card border border-border p-4 rounded-xl shadow-sm">
             <p className="text-foreground whitespace-pre-wrap leading-relaxed">{n.noteText}</p>
             <p className="text-xs font-bold text-muted-foreground mt-3 uppercase tracking-wide">{formatDate(n.createdAt)}</p>
@@ -421,7 +422,7 @@ function NotesTab({ animalId }: { animalId: number }) {
   );
 }
 
-function LineageTab({ animal }: { animal: any }) {
+function LineageTab({ animal }: { animal: AnimalDetail }) {
   return (
     <div className="grid md:grid-cols-2 gap-8">
       <div>
@@ -455,7 +456,7 @@ function LineageTab({ animal }: { animal: any }) {
         <h3 className="font-display font-bold text-xl mb-4">Offspring ({animal.babies?.length || 0})</h3>
         {animal.babies?.length > 0 ? (
           <div className="space-y-3">
-            {animal.babies.map((b: any) => (
+            {animal.babies.map((b: AnimalRef) => (
               <Link key={b.id} href={`/animals/${b.id}`}>
                 <Card className="hover:border-primary transition-colors cursor-pointer shadow-sm">
                   <CardContent className="p-4 flex justify-between items-center">

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X } from "lucide-react";
-import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts } from "@workspace/api-client-react";
+import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 
@@ -12,7 +12,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading } = useListAlerts();
-  const { data: weather, isLoading: weatherLoading } = useGetWeather({ query: { retry: false } });
+  const { data: weather, isLoading: weatherLoading } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
   
   const generateMutation = useGenerateAlerts({
     mutation: {

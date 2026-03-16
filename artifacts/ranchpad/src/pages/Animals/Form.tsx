@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals } from "@workspace/api-client-react";
+import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals, getGetAnimalQueryKey, type Animal } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -33,7 +33,7 @@ export default function AnimalForm() {
   const queryClient = useQueryClient();
 
   const { data: animal, isLoading: loadingAnimal } = useGetAnimal(animalId, {
-    query: { enabled: isEditing }
+    query: { queryKey: getGetAnimalQueryKey(animalId), enabled: isEditing }
   });
 
   // Get other animals for dam/sire selection
@@ -80,7 +80,7 @@ export default function AnimalForm() {
 
   const updateMutation = useUpdateAnimal({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: (data: Animal) => {
         toast({ title: "Animal updated successfully" });
         queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
         queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
@@ -106,8 +106,8 @@ export default function AnimalForm() {
     }
   };
 
-  const femaleOptions = allAnimals?.filter(a => a.sex === "Female" && a.id !== animalId) || [];
-  const maleOptions = allAnimals?.filter(a => (a.sex === "Male" || a.sex === "Wether" || a.sex === "Castrated") && a.id !== animalId) || [];
+  const femaleOptions = allAnimals?.filter((a: Animal) => a.sex === "Female" && a.id !== animalId) || [];
+  const maleOptions = allAnimals?.filter((a: Animal) => (a.sex === "Male" || a.sex === "Wether" || a.sex === "Castrated") && a.id !== animalId) || [];
 
   if (isEditing && loadingAnimal) {
     return <div className="p-8 text-center text-muted-foreground animate-pulse font-bold">Loading...</div>;
