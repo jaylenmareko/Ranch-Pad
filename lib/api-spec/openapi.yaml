@@ -3,13 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RanchPad - Livestock Management Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: ranch
+    description: Ranch profile
+  - name: animals
+    description: Animal management
+  - name: medications
+    description: Medication records
+  - name: healthEvents
+    description: Health events
+  - name: famacha
+    description: FAMACHA scores
+  - name: fieldNotes
+    description: Field notes
+  - name: alerts
+    description: Alert system
+  - name: weather
+    description: Weather data
 paths:
   /healthz:
     get:
@@ -24,7 +42,752 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Sign up
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupBody"
+      responses:
+        "201":
+          description: Signed up successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ranch:
+    get:
+      operationId: getRanch
+      tags: [ranch]
+      summary: Get ranch profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Ranch profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ranch"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateRanch
+      tags: [ranch]
+      summary: Update ranch profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRanchBody"
+      responses:
+        "200":
+          description: Updated ranch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ranch"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals:
+    get:
+      operationId: listAnimals
+      tags: [animals]
+      summary: List all animals
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: species
+          schema:
+            type: string
+        - in: query
+          name: sex
+          schema:
+            type: string
+        - in: query
+          name: breed
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of animals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Animal"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createAnimal
+      tags: [animals]
+      summary: Create an animal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnimalBody"
+      responses:
+        "201":
+          description: Created animal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Animal"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}:
+    get:
+      operationId: getAnimal
+      tags: [animals]
+      summary: Get animal details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Animal detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnimalDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateAnimal
+      tags: [animals]
+      summary: Update an animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnimalBody"
+      responses:
+        "200":
+          description: Updated animal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Animal"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAnimal
+      tags: [animals]
+      summary: Delete an animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/medications:
+    get:
+      operationId: listMedications
+      tags: [medications]
+      summary: List medication records for an animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of medication records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MedicationRecord"
+    post:
+      operationId: createMedication
+      tags: [medications]
+      summary: Add a medication record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMedicationBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationRecord"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/medications/{medicationId}:
+    put:
+      operationId: updateMedication
+      tags: [medications]
+      summary: Update a medication record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: medicationId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMedicationBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationRecord"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteMedication
+      tags: [medications]
+      summary: Delete a medication record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: medicationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/health-events:
+    get:
+      operationId: listHealthEvents
+      tags: [healthEvents]
+      summary: List health events for an animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of health events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HealthEvent"
+    post:
+      operationId: createHealthEvent
+      tags: [healthEvents]
+      summary: Add a health event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHealthEventBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthEvent"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/health-events/{healthEventId}:
+    put:
+      operationId: updateHealthEvent
+      tags: [healthEvents]
+      summary: Update a health event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: healthEventId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHealthEventBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthEvent"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteHealthEvent
+      tags: [healthEvents]
+      summary: Delete a health event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: healthEventId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/famacha:
+    get:
+      operationId: listFamachaScores
+      tags: [famacha]
+      summary: List FAMACHA scores for an animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of FAMACHA scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FamachaScore"
+    post:
+      operationId: createFamachaScore
+      tags: [famacha]
+      summary: Record a FAMACHA score
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFamachaBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamachaScore"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/famacha/{famachaId}:
+    delete:
+      operationId: deleteFamachaScore
+      tags: [famacha]
+      summary: Delete a FAMACHA score
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: famachaId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/notes:
+    get:
+      operationId: listFieldNotes
+      tags: [fieldNotes]
+      summary: List field notes for an animal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of field notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FieldNote"
+    post:
+      operationId: createFieldNote
+      tags: [fieldNotes]
+      summary: Add a field note
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFieldNoteBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldNote"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /animals/{animalId}/notes/{noteId}:
+    delete:
+      operationId: deleteFieldNote
+      tags: [fieldNotes]
+      summary: Delete a field note
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: noteId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List active alerts for the ranch
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /alerts/generate:
+    post:
+      operationId: generateAlerts
+      tags: [alerts]
+      summary: Trigger alert generation (idempotent)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Alerts generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateAlertsResponse"
+
+  /alerts/{alertId}/dismiss:
+    post:
+      operationId: dismissAlert
+      tags: [alerts]
+      summary: Dismiss an alert
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: alertId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dismissed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /weather:
+    get:
+      operationId: getWeather
+      tags: [weather]
+      summary: Get current weather and 5-day forecast for the ranch
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Weather data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherData"
+        "400":
+          description: Ranch location not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +797,500 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    SignupBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        ranchName:
+          type: string
+        ranchCity:
+          type: string
+        ranchState:
+          type: string
+        joinRanchName:
+          type: ["string", "null"]
+      required:
+        - email
+        - password
+        - name
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        ranch:
+          $ref: "#/components/schemas/Ranch"
+      required:
+        - token
+        - user
+        - ranch
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - name
+        - createdAt
+
+    Ranch:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        locationCity:
+          type: ["string", "null"]
+        locationState:
+          type: ["string", "null"]
+        lat:
+          type: ["number", "null"]
+        lon:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - createdAt
+
+    UpdateRanchBody:
+      type: object
+      properties:
+        name:
+          type: string
+        locationCity:
+          type: ["string", "null"]
+        locationState:
+          type: ["string", "null"]
+        lat:
+          type: ["number", "null"]
+        lon:
+          type: ["number", "null"]
+
+    Animal:
+      type: object
+      properties:
+        id:
+          type: integer
+        ranchId:
+          type: integer
+        name:
+          type: string
+        tagNumber:
+          type: ["string", "null"]
+        species:
+          type: string
+        breed:
+          type: ["string", "null"]
+        sex:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+        damId:
+          type: ["integer", "null"]
+        sireId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        latestHealthSeverity:
+          type: ["string", "null"]
+      required:
+        - id
+        - ranchId
+        - name
+        - species
+        - sex
+        - createdAt
+
+    AnimalDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        ranchId:
+          type: integer
+        name:
+          type: string
+        tagNumber:
+          type: ["string", "null"]
+        species:
+          type: string
+        breed:
+          type: ["string", "null"]
+        sex:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+        damId:
+          type: ["integer", "null"]
+        sireId:
+          type: ["integer", "null"]
+        dam:
+          $ref: "#/components/schemas/AnimalRef"
+        sire:
+          $ref: "#/components/schemas/AnimalRef"
+        babies:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnimalRef"
+        createdAt:
+          type: string
+          format: date-time
+        latestHealthSeverity:
+          type: ["string", "null"]
+      required:
+        - id
+        - ranchId
+        - name
+        - species
+        - sex
+        - createdAt
+        - babies
+
+    AnimalRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tagNumber:
+          type: ["string", "null"]
+        species:
+          type: string
+      required:
+        - id
+        - name
+        - species
+
+    CreateAnimalBody:
+      type: object
+      properties:
+        name:
+          type: string
+        tagNumber:
+          type: ["string", "null"]
+        species:
+          type: string
+        breed:
+          type: ["string", "null"]
+        sex:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+        damId:
+          type: ["integer", "null"]
+        sireId:
+          type: ["integer", "null"]
+      required:
+        - name
+        - species
+        - sex
+
+    MedicationRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        ranchId:
+          type: integer
+        medicationName:
+          type: string
+        dosage:
+          type: ["string", "null"]
+        dateGiven:
+          type: string
+        nextDueDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - animalId
+        - ranchId
+        - medicationName
+        - dateGiven
+        - createdAt
+
+    CreateMedicationBody:
+      type: object
+      properties:
+        medicationName:
+          type: string
+        dosage:
+          type: ["string", "null"]
+        dateGiven:
+          type: string
+        nextDueDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - medicationName
+        - dateGiven
+
+    HealthEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        ranchId:
+          type: integer
+        description:
+          type: string
+        eventDate:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - animalId
+        - ranchId
+        - description
+        - eventDate
+        - severity
+        - createdAt
+
+    CreateHealthEventBody:
+      type: object
+      properties:
+        description:
+          type: string
+        eventDate:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+      required:
+        - description
+        - eventDate
+        - severity
+
+    FamachaScore:
+      type: object
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        ranchId:
+          type: integer
+        score:
+          type: integer
+        recordedDate:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - animalId
+        - ranchId
+        - score
+        - recordedDate
+        - createdAt
+
+    CreateFamachaBody:
+      type: object
+      properties:
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+        recordedDate:
+          type: string
+      required:
+        - score
+        - recordedDate
+
+    FieldNote:
+      type: object
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        ranchId:
+          type: integer
+        noteText:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - animalId
+        - ranchId
+        - noteText
+        - createdAt
+
+    CreateFieldNoteBody:
+      type: object
+      properties:
+        noteText:
+          type: string
+      required:
+        - noteText
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        ranchId:
+          type: integer
+        animalId:
+          type: ["integer", "null"]
+        animalName:
+          type: ["string", "null"]
+        alertType:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+        isDismissed:
+          type: boolean
+        generatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - ranchId
+        - alertType
+        - message
+        - severity
+        - isDismissed
+        - generatedAt
+
+    GenerateAlertsResponse:
+      type: object
+      properties:
+        created:
+          type: integer
+        message:
+          type: string
+      required:
+        - created
+        - message
+
+    WeatherData:
+      type: object
+      properties:
+        current:
+          $ref: "#/components/schemas/CurrentWeather"
+        forecast:
+          type: array
+          items:
+            $ref: "#/components/schemas/ForecastDay"
+      required:
+        - current
+        - forecast
+
+    CurrentWeather:
+      type: object
+      properties:
+        temp:
+          type: number
+        feelsLike:
+          type: number
+        humidity:
+          type: integer
+        windSpeed:
+          type: number
+        description:
+          type: string
+        icon:
+          type: string
+      required:
+        - temp
+        - feelsLike
+        - humidity
+        - windSpeed
+        - description
+        - icon
+
+    ForecastDay:
+      type: object
+      properties:
+        date:
+          type: string
+        tempHigh:
+          type: number
+        tempLow:
+          type: number
+        humidity:
+          type: integer
+        windSpeed:
+          type: number
+        description:
+          type: string
+        icon:
+          type: string
+        rainfall:
+          type: number
+      required:
+        - date
+        - tempHigh
+        - tempLow
+        - humidity
+        - windSpeed
+        - description
+        - icon
+        - rainfall
