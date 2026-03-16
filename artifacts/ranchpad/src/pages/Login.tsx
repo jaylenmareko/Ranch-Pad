@@ -27,7 +27,7 @@ export default function Login() {
         { data: { email, password } },
         {
           onSuccess: (data) => setAuthContext(data.token),
-          onError: (error: any) => {
+          onError: (error: Error) => {
             toast({
               title: "Login Failed",
               description: error.message || "Invalid credentials. Please try again.",
@@ -41,7 +41,7 @@ export default function Login() {
         { data: { email, password, name, ranchName } },
         {
           onSuccess: (data) => setAuthContext(data.token),
-          onError: (error: any) => {
+          onError: (error: Error) => {
             toast({
               title: "Signup Failed",
               description: error.message || "Could not create account.",

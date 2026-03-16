@@ -37,6 +37,8 @@ import type {
   MedicationRecord,
   Ranch,
   SignupBody,
+  UpdateFamachaBody,
+  UpdateFieldNoteBody,
   UpdateRanchBody,
   WeatherData,
 } from "./api.schemas";
@@ -1816,6 +1818,100 @@ export const useCreateFamachaScore = <
 };
 
 /**
+ * @summary Update a FAMACHA score
+ */
+export const getUpdateFamachaScoreUrl = (
+  animalId: number,
+  famachaId: number,
+) => {
+  return `/api/animals/${animalId}/famacha/${famachaId}`;
+};
+
+export const updateFamachaScore = async (
+  animalId: number,
+  famachaId: number,
+  updateFamachaBody: UpdateFamachaBody,
+  options?: RequestInit,
+): Promise<FamachaScore> => {
+  return customFetch<FamachaScore>(
+    getUpdateFamachaScoreUrl(animalId, famachaId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateFamachaBody),
+    },
+  );
+};
+
+export const getUpdateFamachaScoreMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFamachaScore>>,
+    TError,
+    { animalId: number; famachaId: number; data: BodyType<UpdateFamachaBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateFamachaScore>>,
+  TError,
+  { animalId: number; famachaId: number; data: BodyType<UpdateFamachaBody> },
+  TContext
+> => {
+  const mutationKey = ["updateFamachaScore"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateFamachaScore>>,
+    { animalId: number; famachaId: number; data: BodyType<UpdateFamachaBody> }
+  > = (props) => {
+    const { animalId, famachaId, data } = props ?? {};
+
+    return updateFamachaScore(animalId, famachaId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateFamachaScoreMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateFamachaScore>>
+>;
+export type UpdateFamachaScoreMutationBody = BodyType<UpdateFamachaBody>;
+export type UpdateFamachaScoreMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a FAMACHA score
+ */
+export const useUpdateFamachaScore = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFamachaScore>>,
+    TError,
+    { animalId: number; famachaId: number; data: BodyType<UpdateFamachaBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateFamachaScore>>,
+  TError,
+  { animalId: number; famachaId: number; data: BodyType<UpdateFamachaBody> },
+  TContext
+> => {
+  return useMutation(getUpdateFamachaScoreMutationOptions(options));
+};
+
+/**
  * @summary Delete a FAMACHA score
  */
 export const getDeleteFamachaScoreUrl = (
@@ -2076,6 +2172,94 @@ export const useCreateFieldNote = <
   TContext
 > => {
   return useMutation(getCreateFieldNoteMutationOptions(options));
+};
+
+/**
+ * @summary Update a field note
+ */
+export const getUpdateFieldNoteUrl = (animalId: number, noteId: number) => {
+  return `/api/animals/${animalId}/notes/${noteId}`;
+};
+
+export const updateFieldNote = async (
+  animalId: number,
+  noteId: number,
+  updateFieldNoteBody: UpdateFieldNoteBody,
+  options?: RequestInit,
+): Promise<FieldNote> => {
+  return customFetch<FieldNote>(getUpdateFieldNoteUrl(animalId, noteId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateFieldNoteBody),
+  });
+};
+
+export const getUpdateFieldNoteMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFieldNote>>,
+    TError,
+    { animalId: number; noteId: number; data: BodyType<UpdateFieldNoteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateFieldNote>>,
+  TError,
+  { animalId: number; noteId: number; data: BodyType<UpdateFieldNoteBody> },
+  TContext
+> => {
+  const mutationKey = ["updateFieldNote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateFieldNote>>,
+    { animalId: number; noteId: number; data: BodyType<UpdateFieldNoteBody> }
+  > = (props) => {
+    const { animalId, noteId, data } = props ?? {};
+
+    return updateFieldNote(animalId, noteId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateFieldNoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateFieldNote>>
+>;
+export type UpdateFieldNoteMutationBody = BodyType<UpdateFieldNoteBody>;
+export type UpdateFieldNoteMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a field note
+ */
+export const useUpdateFieldNote = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFieldNote>>,
+    TError,
+    { animalId: number; noteId: number; data: BodyType<UpdateFieldNoteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateFieldNote>>,
+  TError,
+  { animalId: number; noteId: number; data: BodyType<UpdateFieldNoteBody> },
+  TContext
+> => {
+  return useMutation(getUpdateFieldNoteMutationOptions(options));
 };
 
 /**

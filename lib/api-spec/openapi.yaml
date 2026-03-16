@@ -592,6 +592,48 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /animals/{animalId}/famacha/{famachaId}:
+    patch:
+      operationId: updateFamachaScore
+      tags: [famacha]
+      summary: Update a FAMACHA score
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: famachaId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFamachaBody"
+      responses:
+        "200":
+          description: Updated FAMACHA score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamachaScore"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: deleteFamachaScore
       tags: [famacha]
@@ -674,6 +716,48 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /animals/{animalId}/notes/{noteId}:
+    patch:
+      operationId: updateFieldNote
+      tags: [fieldNotes]
+      summary: Update a field note
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: animalId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: noteId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFieldNoteBody"
+      responses:
+        "200":
+          description: Updated field note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldNote"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: deleteFieldNote
       tags: [fieldNotes]
@@ -1158,6 +1242,16 @@ components:
         - score
         - recordedDate
 
+    UpdateFamachaBody:
+      type: object
+      properties:
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+        recordedDate:
+          type: string
+
     FieldNote:
       type: object
       properties:
@@ -1186,6 +1280,12 @@ components:
           type: string
       required:
         - noteText
+
+    UpdateFieldNoteBody:
+      type: object
+      properties:
+        noteText:
+          type: string
 
     Alert:
       type: object

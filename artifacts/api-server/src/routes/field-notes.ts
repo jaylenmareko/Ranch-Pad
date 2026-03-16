@@ -66,6 +66,41 @@ router.post("/animals/:animalId/notes", requireAuth, async (req, res): Promise<v
   res.status(201).json(note);
 });
 
+const updateFieldNoteSchema = z.object({
+  noteText: z.string().min(1).optional(),
+});
+
+router.patch("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+  const noteId = parseId(req.params.noteId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const parsed = updateFieldNoteSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const [updated] = await db
+    .update(fieldNotesTable)
+    .set(parsed.data)
+    .where(and(eq(fieldNotesTable.id, noteId), eq(fieldNotesTable.animalId, animalId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "Field note not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
 router.delete("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);

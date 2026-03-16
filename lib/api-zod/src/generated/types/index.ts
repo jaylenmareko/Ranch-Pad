@@ -32,6 +32,8 @@ export * from "./loginBody";
 export * from "./medicationRecord";
 export * from "./ranch";
 export * from "./signupBody";
+export * from "./updateFamachaBody";
+export * from "./updateFieldNoteBody";
 export * from "./updateRanchBody";
 export * from "./user";
 export * from "./weatherData";
