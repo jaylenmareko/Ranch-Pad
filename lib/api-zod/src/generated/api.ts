@@ -110,6 +110,7 @@ export const ListAnimalsResponseItem = zod.object({
   dateOfBirth: zod.string().nullish(),
   damId: zod.number().nullish(),
   sireId: zod.number().nullish(),
+  expectedDueDate: zod.string().nullish(),
   createdAt: zod.date(),
   latestHealthSeverity: zod.string().nullish(),
 });
@@ -127,6 +128,7 @@ export const CreateAnimalBody = zod.object({
   dateOfBirth: zod.string().nullish(),
   damId: zod.number().nullish(),
   sireId: zod.number().nullish(),
+  expectedDueDate: zod.string().nullish(),
 });
 
 /**
@@ -147,6 +149,7 @@ export const GetAnimalResponse = zod.object({
   dateOfBirth: zod.string().nullish(),
   damId: zod.number().nullish(),
   sireId: zod.number().nullish(),
+  expectedDueDate: zod.string().nullish(),
   dam: zod
     .object({
       id: zod.number(),
@@ -191,6 +194,7 @@ export const UpdateAnimalBody = zod.object({
   dateOfBirth: zod.string().nullish(),
   damId: zod.number().nullish(),
   sireId: zod.number().nullish(),
+  expectedDueDate: zod.string().nullish(),
 });
 
 export const UpdateAnimalResponse = zod.object({
@@ -204,6 +208,7 @@ export const UpdateAnimalResponse = zod.object({
   dateOfBirth: zod.string().nullish(),
   damId: zod.number().nullish(),
   sireId: zod.number().nullish(),
+  expectedDueDate: zod.string().nullish(),
   createdAt: zod.date(),
   latestHealthSeverity: zod.string().nullish(),
 });

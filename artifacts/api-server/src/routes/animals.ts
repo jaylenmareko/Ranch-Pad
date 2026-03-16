@@ -15,6 +15,7 @@ const createAnimalSchema = z.object({
   dateOfBirth: z.string().nullable().optional(),
   damId: z.number().int().nullable().optional(),
   sireId: z.number().int().nullable().optional(),
+  expectedDueDate: z.string().nullable().optional(),
 });
 
 // Compute health dot color from events in last 7 days
@@ -73,11 +74,29 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   res.json(result);
 });
 
+async function validateLineageOwnership(damId: number | null | undefined, sireId: number | null | undefined, ranchId: number): Promise<string | null> {
+  if (damId) {
+    const [dam] = await db.select({ id: animalsTable.id }).from(animalsTable).where(and(eq(animalsTable.id, damId), eq(animalsTable.ranchId, ranchId))).limit(1);
+    if (!dam) return `Dam with id ${damId} not found in this ranch`;
+  }
+  if (sireId) {
+    const [sire] = await db.select({ id: animalsTable.id }).from(animalsTable).where(and(eq(animalsTable.id, sireId), eq(animalsTable.ranchId, ranchId))).limit(1);
+    if (!sire) return `Sire with id ${sireId} not found in this ranch`;
+  }
+  return null;
+}
+
 router.post("/animals", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const parsed = createAnimalSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const lineageError = await validateLineageOwnership(parsed.data.damId, parsed.data.sireId, ranchId);
+  if (lineageError) {
+    res.status(400).json({ error: true, message: lineageError });
     return;
   }
 
@@ -110,12 +129,12 @@ router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   let sire = null;
 
   if (animal.damId) {
-    const [d] = await db.select().from(animalsTable).where(eq(animalsTable.id, animal.damId)).limit(1);
+    const [d] = await db.select().from(animalsTable).where(and(eq(animalsTable.id, animal.damId), eq(animalsTable.ranchId, ranchId))).limit(1);
     if (d) dam = { id: d.id, name: d.name, tagNumber: d.tagNumber, species: d.species };
   }
 
   if (animal.sireId) {
-    const [s] = await db.select().from(animalsTable).where(eq(animalsTable.id, animal.sireId)).limit(1);
+    const [s] = await db.select().from(animalsTable).where(and(eq(animalsTable.id, animal.sireId), eq(animalsTable.ranchId, ranchId))).limit(1);
     if (s) sire = { id: s.id, name: s.name, tagNumber: s.tagNumber, species: s.species };
   }
 
@@ -150,6 +169,12 @@ router.put("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   const parsed = createAnimalSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const lineageError = await validateLineageOwnership(parsed.data.damId, parsed.data.sireId, ranchId);
+  if (lineageError) {
+    res.status(400).json({ error: true, message: lineageError });
     return;
   }
 

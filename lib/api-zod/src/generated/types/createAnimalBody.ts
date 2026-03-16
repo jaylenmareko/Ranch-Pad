@@ -20,4 +20,6 @@ export interface CreateAnimalBody {
   damId?: number | null;
   /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  expectedDueDate?: string | null;
 }

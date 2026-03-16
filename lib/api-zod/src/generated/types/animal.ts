@@ -22,6 +22,8 @@ export interface Animal {
   damId?: number | null;
   /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  expectedDueDate?: string | null;
   createdAt: Date;
   /** @nullable */
   latestHealthSeverity?: string | null;

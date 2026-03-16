@@ -8,7 +8,7 @@ import {
   famachaScoresTable,
   ranchesTable,
 } from "@workspace/db";
-import { eq, and, gte, lte, isNull, sql } from "drizzle-orm";
+import { eq, and, gte, lte, isNull, sql, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -161,7 +161,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
       .select()
       .from(healthEventsTable)
       .where(eq(healthEventsTable.animalId, animal.id))
-      .orderBy(healthEventsTable.eventDate)
+      .orderBy(desc(healthEventsTable.eventDate))
       .limit(1);
 
     const referenceDate = lastEvent.length > 0 ? new Date(lastEvent[0].eventDate) : new Date(animal.createdAt);
@@ -177,6 +177,37 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
         alertKey: key,
         message: `${animal.name} (${animal.species}) may be entering her heat cycle (~${cycleDays}-day cycle)`,
         severity: "low",
+      });
+      if (wasCreated) created++;
+    }
+  }
+
+  // 5. Calving/kidding due-date alerts (2 weeks before and on due date)
+  for (const animal of animals) {
+    if (!animal.expectedDueDate) continue;
+    const dueDate = new Date(animal.expectedDueDate + "T12:00:00");
+    const daysUntil = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Alert 14 days before
+    if (daysUntil >= 12 && daysUntil <= 14) {
+      const key = makeKey("calving_soon", animal.id, animal.expectedDueDate);
+      const wasCreated = await upsertAlert({
+        ranchId, animalId: animal.id, alertType: "record",
+        alertKey: key,
+        message: `${animal.name} is due to calve/kid in ~${daysUntil} days (${animal.expectedDueDate}) — prepare birthing area`,
+        severity: "medium",
+      });
+      if (wasCreated) created++;
+    }
+
+    // Alert on due date
+    if (daysUntil >= -1 && daysUntil <= 1) {
+      const key = makeKey("calving_due", animal.id, animal.expectedDueDate);
+      const wasCreated = await upsertAlert({
+        ranchId, animalId: animal.id, alertType: "record",
+        alertKey: key,
+        message: `${animal.name} is due to calve/kid today (${animal.expectedDueDate}) — monitor closely`,
+        severity: "high",
       });
       if (wasCreated) created++;
     }
