@@ -85,6 +85,8 @@ export interface Animal {
   damId?: number | null;
   /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  expectedDueDate?: string | null;
   createdAt: string;
   /** @nullable */
   latestHealthSeverity?: string | null;
@@ -114,6 +116,8 @@ export interface AnimalDetail {
   damId?: number | null;
   /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  expectedDueDate?: string | null;
   dam?: AnimalRef;
   sire?: AnimalRef;
   babies: AnimalRef[];
@@ -136,6 +140,8 @@ export interface CreateAnimalBody {
   damId?: number | null;
   /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  expectedDueDate?: string | null;
 }
 
 export interface MedicationRecord {

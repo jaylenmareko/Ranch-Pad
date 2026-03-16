@@ -23,6 +23,8 @@ export interface AnimalDetail {
   damId?: number | null;
   /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  expectedDueDate?: string | null;
   dam?: AnimalRef;
   sire?: AnimalRef;
   babies: AnimalRef[];

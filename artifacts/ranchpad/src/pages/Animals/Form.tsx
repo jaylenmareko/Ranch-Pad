@@ -18,6 +18,7 @@ const formSchema = z.object({
   breed: z.string().nullable().optional(),
   sex: z.string().min(1, "Sex is required"),
   dateOfBirth: z.string().nullable().optional(),
+  expectedDueDate: z.string().nullable().optional(),
   damId: z.coerce.number().nullable().optional(),
   sireId: z.coerce.number().nullable().optional(),
 });
@@ -48,6 +49,7 @@ export default function AnimalForm() {
       breed: "",
       sex: "Female",
       dateOfBirth: "",
+      expectedDueDate: "",
       damId: null,
       sireId: null,
     }
@@ -62,6 +64,7 @@ export default function AnimalForm() {
         breed: animal.breed || "",
         sex: animal.sex,
         dateOfBirth: animal.dateOfBirth ? animal.dateOfBirth.split('T')[0] : "",
+        expectedDueDate: animal.expectedDueDate ? animal.expectedDueDate.split('T')[0] : "",
         damId: animal.damId || null,
         sireId: animal.sireId || null,
       });
@@ -95,6 +98,7 @@ export default function AnimalForm() {
       tagNumber: values.tagNumber || null,
       breed: values.breed || null,
       dateOfBirth: values.dateOfBirth || null,
+      expectedDueDate: values.expectedDueDate || null,
       damId: values.damId || null,
       sireId: values.sireId || null,
     };
@@ -187,6 +191,11 @@ export default function AnimalForm() {
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">Date of Birth</Label>
                 <Input id="dateOfBirth" type="date" {...form.register("dateOfBirth")} className="font-medium" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expectedDueDate">Expected Due Date <span className="text-muted-foreground font-normal text-sm">(females only)</span></Label>
+                <Input id="expectedDueDate" type="date" {...form.register("expectedDueDate")} className="font-medium" />
               </div>
 
               <div className="space-y-2 border-t border-border pt-6 md:col-span-2">

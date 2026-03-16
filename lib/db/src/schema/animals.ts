@@ -14,6 +14,7 @@ export const animalsTable = pgTable("animals", {
   dateOfBirth: text("date_of_birth"),
   damId: integer("dam_id"),
   sireId: integer("sire_id"),
+  expectedDueDate: text("expected_due_date"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

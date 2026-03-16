@@ -8,8 +8,8 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { ArrowLeft, Edit2, Activity, Pill, FileText, AlertTriangle, Trash2, Plus } from "lucide-react";
 import { 
   useGetAnimal, useDeleteAnimal, 
-  useListMedications, useCreateMedication, useDeleteMedication,
-  useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent,
+  useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
+  useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent, useUpdateHealthEvent,
   useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore, useUpdateFamachaScore,
   useListFieldNotes, useCreateFieldNote, useDeleteFieldNote, useUpdateFieldNote,
   type AnimalDetail, type AnimalRef, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
@@ -135,6 +135,10 @@ function HealthTab({ animalId }: { animalId: number }) {
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState("");
   const [sev, setSev] = useState<"low"|"medium"|"high">("low");
+  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [editDesc, setEditDesc] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editSev, setEditSev] = useState<"low"|"medium"|"high">("low");
 
   const createMutation = useCreateHealthEvent({
     mutation: {
@@ -148,8 +152,22 @@ function HealthTab({ animalId }: { animalId: number }) {
     }
   });
 
+  const updateMutation = useUpdateHealthEvent({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/health-events`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
+        setEditingEventId(null);
+        toast({ title: "Event updated" });
+      }
+    }
+  });
+
   const deleteMutation = useDeleteHealthEvent({
-    mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/health-events`] }) }
+    mutation: { onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/health-events`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
+    }}
   });
 
   return (
@@ -181,22 +199,49 @@ function HealthTab({ animalId }: { animalId: number }) {
         </form>
       </Dialog>
 
+      <Dialog open={editingEventId !== null} onOpenChange={(open) => { if (!open) setEditingEventId(null); }} title="Edit Health Event">
+        <form onSubmit={e => { e.preventDefault(); if (editingEventId) updateMutation.mutate({ animalId, healthEventId: editingEventId, data: { description: editDesc, eventDate: editDate, severity: editSev } }); }} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Input type="date" required value={editDate} onChange={e => setEditDate(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Severity</Label>
+            <select value={editSev} onChange={e => setEditSev(e.target.value as "low" | "medium" | "high")} className="flex h-12 w-full rounded-xl border-2 border-border bg-background px-4 py-2 font-medium">
+              <option value="low">Low (Routine)</option>
+              <option value="medium">Medium (Requires watching)</option>
+              <option value="high">High (Urgent/Vet needed)</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea required value={editDesc} onChange={e => setEditDesc(e.target.value)} />
+          </div>
+          <Button type="submit" className="w-full" isLoading={updateMutation.isPending}>Update Event</Button>
+        </form>
+      </Dialog>
+
       {isLoading ? <div className="animate-pulse bg-card h-32 rounded-xl" /> : 
        events?.length === 0 ? <p className="text-muted-foreground p-8 text-center bg-card rounded-xl border border-dashed">No health events recorded.</p> : (
         <div className="grid gap-3">
           {events?.sort((a: HealthEvent, b: HealthEvent) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()).map((ev: HealthEvent) => (
-            <Card key={ev.id} className="border-l-4 overflow-hidden shadow-sm" style={{ borderLeftColor: ev.severity === 'high' ? 'var(--color-destructive)' : ev.severity === 'medium' ? '#eab308' : '#22c55e' }}>
+            <Card key={ev.id} className="border-l-4 overflow-hidden shadow-sm group" style={{ borderLeftColor: ev.severity === 'high' ? 'var(--color-destructive)' : ev.severity === 'medium' ? '#eab308' : '#22c55e' }}>
               <CardContent className="p-4 flex justify-between items-start gap-4">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-bold text-sm text-foreground">{formatDate(ev.eventDate)}</span>
                     <Badge variant="outline" className="text-[10px] py-0">{ev.severity.toUpperCase()}</Badge>
                   </div>
                   <p className="text-foreground">{ev.description}</p>
                 </div>
-                <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="text-muted-foreground hover:text-destructive p-2">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); }} className="p-2 text-muted-foreground hover:text-primary rounded-full hover:bg-muted">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="p-2 text-muted-foreground hover:text-destructive rounded-full hover:bg-muted">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -211,12 +256,19 @@ function MedsTab({ animalId }: { animalId: number }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingMedId, setEditingMedId] = useState<number | null>(null);
   
   // form state
   const [name, setName] = useState("");
   const [dose, setDosage] = useState("");
   const [date, setDate] = useState("");
   const [nextDate, setNextDate] = useState("");
+
+  // edit form state
+  const [editName, setEditName] = useState("");
+  const [editDose, setEditDose] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editNextDate, setEditNextDate] = useState("");
 
   const createMutation = useCreateMedication({
     mutation: {
@@ -225,6 +277,16 @@ function MedsTab({ animalId }: { animalId: number }) {
         setIsAddOpen(false);
         setName(""); setDosage(""); setDate(""); setNextDate("");
         toast({ title: "Medication recorded" });
+      }
+    }
+  });
+
+  const updateMutation = useUpdateMedication({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/medications`] });
+        setEditingMedId(null);
+        toast({ title: "Medication updated" });
       }
     }
   });
@@ -264,13 +326,37 @@ function MedsTab({ animalId }: { animalId: number }) {
         </form>
       </Dialog>
 
+      <Dialog open={editingMedId !== null} onOpenChange={(open) => { if (!open) setEditingMedId(null); }} title="Edit Medication">
+        <form onSubmit={e => { e.preventDefault(); if (editingMedId) updateMutation.mutate({ animalId, medicationId: editingMedId, data: { medicationName: editName, dosage: editDose, dateGiven: editDate, nextDueDate: editNextDate || null } }); }} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Medication Name</Label>
+            <Input required value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Dosage</Label>
+            <Input value={editDose} onChange={e => setEditDose(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Date Given</Label>
+              <Input type="date" required value={editDate} onChange={e => setEditDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Next Due</Label>
+              <Input type="date" value={editNextDate} onChange={e => setEditNextDate(e.target.value)} />
+            </div>
+          </div>
+          <Button type="submit" className="w-full" isLoading={updateMutation.isPending}>Update Record</Button>
+        </form>
+      </Dialog>
+
       {isLoading ? <div className="animate-pulse bg-card h-32 rounded-xl" /> : 
        meds?.length === 0 ? <p className="text-muted-foreground p-8 text-center bg-card rounded-xl border border-dashed">No medications recorded.</p> : (
         <div className="grid gap-3">
           {meds?.sort((a: MedicationRecord, b: MedicationRecord) => new Date(b.dateGiven).getTime() - new Date(a.dateGiven).getTime()).map((med: MedicationRecord) => (
-            <Card key={med.id} className="shadow-sm">
+            <Card key={med.id} className="shadow-sm group">
               <CardContent className="p-4 flex justify-between items-center">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-primary text-lg">{med.medicationName}</h4>
                     {med.dosage && <Badge variant="secondary">{med.dosage}</Badge>}
@@ -280,9 +366,14 @@ function MedsTab({ animalId }: { animalId: number }) {
                     {med.nextDueDate && <span className="text-accent">Due: {formatDate(med.nextDueDate)}</span>}
                   </div>
                 </div>
-                <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="text-muted-foreground hover:text-destructive p-2">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); }} className="p-2 text-muted-foreground hover:text-primary rounded-full hover:bg-muted">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="p-2 text-muted-foreground hover:text-destructive rounded-full hover:bg-muted">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -319,6 +410,15 @@ function FamachaTab({ animalId }: { animalId: number }) {
         queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/famacha`] });
         setEditingId(null);
         toast({ title: "Score updated" });
+      }
+    }
+  });
+
+  const deleteFamachaMutation = useDeleteFamachaScore({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/famacha`] });
+        toast({ title: "Score deleted" });
       }
     }
   });
@@ -411,13 +511,22 @@ function FamachaTab({ animalId }: { animalId: number }) {
                 {s.score}
               </div>
               <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
-              <button
-                onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-muted transition-all"
-                title="Edit score"
-              >
-                <Edit2 className="w-3 h-3 text-muted-foreground" />
-              </button>
+              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all flex gap-0.5">
+                <button
+                  onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
+                  className="p-1 rounded-full hover:bg-muted"
+                  title="Edit score"
+                >
+                  <Edit2 className="w-3 h-3 text-muted-foreground" />
+                </button>
+                <button
+                  onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
+                  className="p-1 rounded-full hover:bg-muted"
+                  title="Delete score"
+                >
+                  <Trash2 className="w-3 h-3 text-destructive/70" />
+                </button>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -453,6 +562,15 @@ function NotesTab({ animalId }: { animalId: number }) {
     }
   });
 
+  const deleteNoteMutation = useDeleteFieldNote({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/notes`] });
+        toast({ title: "Note deleted" });
+      }
+    }
+  });
+
   return (
     <div className="space-y-6">
       <form onSubmit={e => { e.preventDefault(); createMutation.mutate({ animalId, data: { noteText: note } }); }} className="flex gap-3">
@@ -480,13 +598,22 @@ function NotesTab({ animalId }: { animalId: number }) {
                 <p className="text-foreground whitespace-pre-wrap leading-relaxed">{n.noteText}</p>
                 <div className="flex items-center justify-between mt-3">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{formatDate(n.createdAt)}</p>
-                  <button
-                    onClick={() => { setEditingNoteId(n.id); setEditNoteText(n.noteText); }}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-muted transition-all"
-                    title="Edit note"
-                  >
-                    <Edit2 className="w-3 h-3 text-muted-foreground" />
-                  </button>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <button
+                      onClick={() => { setEditingNoteId(n.id); setEditNoteText(n.noteText); }}
+                      className="p-1 rounded-full hover:bg-muted"
+                      title="Edit note"
+                    >
+                      <Edit2 className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                    <button
+                      onClick={() => { if(confirm("Delete this note?")) deleteNoteMutation.mutate({ animalId, noteId: n.id }); }}
+                      className="p-1 rounded-full hover:bg-muted"
+                      title="Delete note"
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive/70" />
+                    </button>
+                  </div>
                 </div>
               </>
             )}

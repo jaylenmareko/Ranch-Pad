@@ -30,16 +30,17 @@ export default function AnimalList() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [speciesFilter, setSpeciesFilter] = useState("All");
+  const [sexFilter, setSexFilter] = useState("All");
+  const [breedSearch, setBreedSearch] = useState("");
 
   // Query API with search param
   const { data: animals, isLoading } = useListAnimals({ search: search.length > 2 ? search : undefined });
 
-  // Client-side filter for species since API might only handle text search
+  // Client-side filter
   const filteredAnimals = React.useMemo(() => {
     if (!animals) return [];
     let result = animals;
     
-    // Client-side fallback for fast search if API search is missing
     if (search.length > 0 && search.length <= 2) {
       const lower = search.toLowerCase();
       result = result.filter((a: Animal) => 
@@ -51,10 +52,18 @@ export default function AnimalList() {
     if (speciesFilter !== "All") {
       result = result.filter((a: Animal) => a.species === speciesFilter);
     }
+    if (sexFilter !== "All") {
+      result = result.filter((a: Animal) => a.sex === sexFilter);
+    }
+    if (breedSearch.trim()) {
+      const lower = breedSearch.toLowerCase();
+      result = result.filter((a: Animal) => a.breed?.toLowerCase().includes(lower));
+    }
     return result;
-  }, [animals, search, speciesFilter]);
+  }, [animals, search, speciesFilter, sexFilter, breedSearch]);
 
   const uniqueSpecies: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.species)))];
+  const hasActiveFilters = speciesFilter !== "All" || sexFilter !== "All" || breedSearch.trim();
 
   return (
     <div className="space-y-6">
@@ -70,17 +79,37 @@ export default function AnimalList() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-card border border-border p-3 rounded-2xl shadow-sm flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input 
-            placeholder="Search by name or tag..." 
-            className="pl-12 border-none bg-muted/30 focus-visible:bg-background"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      <div className="bg-card border border-border p-3 rounded-2xl shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input 
+              placeholder="Search by name or tag..." 
+              className="pl-12 border-none bg-muted/30 focus-visible:bg-background"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="relative w-full md:w-48">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Filter by breed..."
+              className="pl-10 border-none bg-muted/30 focus-visible:bg-background"
+              value={breedSearch}
+              onChange={e => setBreedSearch(e.target.value)}
+            />
+          </div>
+          <select
+            value={sexFilter}
+            onChange={e => setSexFilter(e.target.value)}
+            className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
+          >
+            <option value="All">All Sexes</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar px-1">
+        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar px-1">
           {uniqueSpecies.map(species => (
             <button
               key={species}
@@ -94,6 +123,14 @@ export default function AnimalList() {
               {species}
             </button>
           ))}
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setSpeciesFilter("All"); setSexFilter("All"); setBreedSearch(""); }}
+              className="px-3 py-2 rounded-xl text-sm font-bold whitespace-nowrap bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+            >
+              Clear
+            </button>
+          )}
         </div>
       </div>
 
@@ -109,11 +146,11 @@ export default function AnimalList() {
           </div>
           <h3 className="text-xl font-bold text-foreground">No animals found</h3>
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            {search || speciesFilter !== "All" 
+            {search || hasActiveFilters
               ? "Try adjusting your search or filters to find what you're looking for." 
               : "Your herd is empty. Add your first animal to get started."}
           </p>
-          {!search && speciesFilter === "All" && (
+          {!search && !hasActiveFilters && (
             <Button className="mt-6" onClick={() => setLocation("/animals/new")}>Add First Animal</Button>
           )}
         </div>
