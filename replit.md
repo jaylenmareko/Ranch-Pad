@@ -1,8 +1,8 @@
-# Workspace
+# RanchPad
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+RanchPad is a full-stack livestock management platform for small farmers and ranchers. It features JWT authentication, animal records with lineage tracking, health events, FAMACHA scores, medications, field notes, AI-powered weather alerts, and a mobile-first React frontend.
 
 ## Stack
 
@@ -12,85 +12,156 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **TypeScript version**: 5.9
 - **API framework**: Express 5
 - **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
+- **Validation**: Zod, drizzle-zod
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **Frontend**: React 19 + Vite + Tailwind CSS v4
+- **Auth**: JWT (jsonwebtoken + bcrypt)
+- **AI**: Anthropic Claude (claude-sonnet-4-5) for weather alert analysis
+- **Weather**: OpenWeatherMap API
 
 ## Structure
 
 ```text
 artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
-├── lib/                    # Shared libraries
+├── artifacts/
+│   ├── api-server/         # Express API server (port 8080)
+│   └── ranchpad/           # React + Vite frontend (previewPath: /)
+├── lib/
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
 │   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+├── scripts/                # Utility scripts
+├── pnpm-workspace.yaml
+├── tsconfig.base.json
+└── replit.md
 ```
 
 ## TypeScript & Composite Projects
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
+Every package extends `tsconfig.base.json` which sets `composite: true`. Always typecheck from the root:
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly`
+- `pnpm run build` — runs typecheck, then recursively builds all packages
 
-## Root Scripts
+## Database Schema
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
+All tables in PostgreSQL via Drizzle ORM (`lib/db/src/schema/`):
+
+- **users** — email, bcrypt password hash, name
+- **ranches** — name, city, state, lat/lon
+- **ranch_users** — many-to-many join with roles (owner/viewer)
+- **animals** — name, species, sex, tag number, date of birth, dam/sire (self-referential), notes, status
+- **medication_records** — animal FK, medication name, dose, frequency, dates, vet info
+- **health_events** — animal FK, event type, severity (low/medium/high), notes, date
+- **famacha_scores** — animal FK, score (1-5), date, notes
+- **field_notes** — animal FK, free-text notes with date
+- **alerts** — ranch FK, optional animal FK, alert type, message, severity, dismissed flag, alert key (idempotency)
+
+## API Routes (all at /api/)
+
+### Auth
+- `POST /api/auth/signup` — create user + ranch, returns JWT
+- `POST /api/auth/login` — returns JWT
+
+### Ranch
+- `GET /api/ranch` — ranch profile with weather coords
+- `PUT /api/ranch` — update ranch name/location
+
+### Animals
+- `GET /api/animals` — list all for ranch (optional `?search=`)
+- `POST /api/animals` — create animal
+- `GET /api/animals/:id` — animal detail with lineage/offspring
+- `PUT /api/animals/:id` — update animal
+- `DELETE /api/animals/:id` — soft delete
+
+### Sub-resources (all under /api/animals/:animalId)
+- `GET/POST /api/animals/:id/medications`
+- `GET/POST /api/animals/:id/health-events`
+- `GET/POST /api/animals/:id/famacha`
+- `GET/POST /api/animals/:id/field-notes`
+
+### Alerts
+- `GET /api/alerts` — list active/all alerts
+- `POST /api/alerts/generate` — run AI + record-based alert generation
+- `PATCH /api/alerts/:id/dismiss` — dismiss alert
+
+### Weather
+- `GET /api/weather` — proxy to OpenWeatherMap for ranch location
+
+## Authentication
+
+- JWT stored in `localStorage` as `"ranchpad_token"`
+- Fetch interceptor (`src/lib/fetch-interceptor.ts`) auto-injects `Authorization: Bearer <token>` for all `/api/` requests
+- Auto-logout on 401 via `auth-expired` DOM event
+
+## Alert System
+
+Record-based alerts check:
+- Medications ending within 3 days
+- FAMACHA score ≥ 4 or 3 consecutive worsening scores
+- Health events with medium/high severity in past 7 days
+
+AI weather alerts:
+- Calls OpenWeatherMap for current conditions
+- Sends prompt to Anthropic claude-sonnet-4-5 with weather data
+- Generates ranch-relevant alerts (extreme heat/cold, high winds, drought, flood risk)
+- Idempotency via `alertKey` (date + type + animal_id) — no duplicates
+
+## Frontend Pages
+
+- `/login` — Login + Signup tabs with ranch setup on first login
+- `/` — Dashboard: herd stats, weather widget, active alerts
+- `/animals` — Herd directory with search and species filter
+- `/animals/new` — Add animal form
+- `/animals/:id` — Animal detail with health history, FAMACHA sparkline, medications, field notes, lineage
+- `/alerts` — Full alerts list with dismiss
+
+## Environment Variables / Secrets
+
+- `DATABASE_URL` — PostgreSQL (provided by Replit automatically)
+- `JWT_SECRET` — secret for signing JWTs
+- `OPENWEATHERMAP_API_KEY` — for weather data
+- `ANTHROPIC_API_KEY` — for AI weather alert analysis
 
 ## Packages
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
+Express 5 API server.
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+- App setup: `src/app.ts` — CORS, JSON parsing, routes at `/api`
+- Auth middleware: `src/middlewares/auth.ts` (requireAuth)
+- JWT utils: `src/lib/jwt.ts`
+- Routes: `src/routes/index.ts` mounts all sub-routers
+
+### `artifacts/ranchpad` (`@workspace/ranchpad`)
+
+React 19 + Vite frontend.
+
+- Preview path: `/` (root)
+- `src/App.tsx` — router, providers
+- `src/hooks/use-auth.tsx` — auth context
+- `src/lib/fetch-interceptor.ts` — auto JWT injection
+- Pages in `src/pages/`
 
 ### `lib/db` (`@workspace/db`)
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
-
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
-
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
+- `src/schema/index.ts` — all Drizzle table definitions
+- `drizzle.config.ts` — Drizzle Kit config
+- Push: `pnpm --filter @workspace/db run push`
 
 ### `lib/api-spec` (`@workspace/api-spec`)
 
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
-
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
-
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
+- `openapi.yaml` — full OpenAPI 3.1 spec for all RanchPad endpoints
+- Run codegen: `pnpm --filter @workspace/api-spec run codegen`
 
 ### `lib/api-client-react` (`@workspace/api-client-react`)
 
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
+Generated React Query hooks used by the frontend.
 
-### `scripts` (`@workspace/scripts`)
+### `lib/api-zod` (`@workspace/api-zod`)
 
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+Generated Zod schemas used by the API server for validation.
