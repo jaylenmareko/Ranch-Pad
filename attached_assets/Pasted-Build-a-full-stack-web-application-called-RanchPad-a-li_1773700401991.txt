@@ -1,0 +1,124 @@
+Build a full-stack web application called RanchPad — a livestock management platform for small farmers and ranchers. Use React + Vite for the frontend, Express for the backend, and Replit's built-in PostgreSQL database for all data storage. Handle authentication with JWT tokens (no third-party auth service). Structure everything to run entirely on Replit.
+
+---
+
+AUTHENTICATION
+
+Build JWT-based auth from scratch. On sign-up, hash passwords with bcrypt and store them in the database. On login, issue a signed JWT (store the JWT_SECRET in Replit Secrets). Protect all API routes with a middleware that validates the token from the Authorization header. Each user belongs to a Ranch account. Multiple users can belong to the same ranch.
+
+---
+
+DATABASE SCHEMA
+
+Use Replit's built-in PostgreSQL. Create all tables via migration files that run on server startup if the tables don't already exist.
+
+users (id, email, password_hash, name, created_at)
+
+ranches (id, name, location_city, location_state, lat, lon, stripe_customer_id, stripe_subscription_status, trial_ends_at, created_at)
+
+ranch_users (id, ranch_id, user_id, role, created_at)
+
+animals (id, ranch_id, name, tag_number, species, breed, sex, date_of_birth, dam_id [nullable, FK to animals], sire_id [nullable, FK to animals], created_at)
+
+medication_records (id, animal_id, ranch_id, medication_name, dosage, date_given, next_due_date [nullable], notes, created_at)
+
+health_events (id, animal_id, ranch_id, description, event_date, severity [enum: low/medium/high], created_at)
+
+famacha_scores (id, animal_id, ranch_id, score [integer 1-5], recorded_date, created_at)
+
+field_notes (id, animal_id, ranch_id, note_text, created_at)
+
+births (id, animal_id [the baby], dam_id, sire_id [nullable], ranch_id, birth_date, created_at)
+
+alerts (id, ranch_id, animal_id [nullable], alert_type, message, severity, is_dismissed, generated_at)
+
+---
+
+BACKEND — EXPRESS API
+
+Build a RESTful Express API with the following route groups, all protected by JWT middleware except /api/auth routes:
+
+/api/auth/signup — create user, create or join ranch, return JWT
+/api/auth/login — validate credentials, return JWT
+/api/ranch — GET and PUT ranch profile including location
+/api/animals — CRUD for animal profiles, with lineage and babies linked
+/api/animals/:id/medications — CRUD for medication records
+/api/animals/:id/health-events — CRUD for health events
+/api/animals/:id/famacha — CRUD for FAMACHA scores
+/api/animals/:id/notes — CRUD for field notes
+/api/alerts — GET all active alerts for the ranch, POST to dismiss an alert
+/api/alerts/generate — POST endpoint that triggers alert generation (call this on dashboard load and once daily)
+/api/weather — GET current weather and 5-day forecast from OpenWeatherMap using the ranch's lat/lon
+/api/subscription — POST to create Stripe checkout session, POST to handle Stripe webhook
+
+Enforce subscription gating on the backend: after the trial period ends, block all write operations (POST/PUT/DELETE) and return a 402 with a message prompting upgrade. Read access remains available.
+
+---
+
+ALERT SYSTEM
+
+Build an alert generation service that runs two parallel pipelines:
+
+WEATHER-BASED ALERTS — Fetch current conditions and 5-day forecast from OpenWeatherMap for the ranch's lat/lon. Pass a structured summary (temperature highs/lows, humidity, rainfall, wind) to Claude claude-sonnet-4-6 via the Anthropic API. Prompt Claude to analyze conditions and return structured JSON alerts in plain English a farmer would understand. Assess risk for: barber pole worm and parasite pressure (warm + wet), respiratory illness (cold + wet + wind), foot rot (wet + muddy), and heat stress (high heat + humidity). Each alert object should have: alert_type, message, severity (low/medium/high). Save to the alerts table tagged as weather-type. Do not duplicate alerts generated within the last 24 hours.
+
+RECORD-BASED ALERTS — Run these checks directly against the database in JavaScript, no AI needed:
+- Overdue medications: any medication where next_due_date has passed
+- Heat cycle reminders: female animals flagged for cycle tracking, alert every ~21 days for cattle, ~17 days for goats and sheep
+- Calving/kidding due dates: alert 2 weeks before and on the expected due date calculated from a recorded breeding date on the animal record
+- Repeat health flags: any animal with 3 or more health events in the last 30 days
+- Declining FAMACHA scores: any animal whose last 3 recorded scores show a consistent downward trend
+
+Save all generated alerts to the alerts table. The generation function must be idempotent — safe to call multiple times per day without creating duplicates.
+
+---
+
+STRIPE SUBSCRIPTION
+
+Integrate Stripe with two tiers:
+- Free Trial: 14 days, full access, no card required at sign-up
+- Paid Plan: $12/month, full access
+
+On trial expiration show a persistent banner prompting upgrade. Use Stripe Checkout for payment. Handle webhooks: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted. Update the ranch's stripe_subscription_status on each webhook event. Store STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, and STRIPE_PRICE_ID in Replit Secrets.
+
+---
+
+FRONTEND — REACT + VITE
+
+Build a mobile-first UI using Tailwind CSS. The app must be fully usable on a phone browser — large tap targets, readable fonts, simple navigation. Store the JWT in localStorage and attach it to every API request via an Axios interceptor or fetch wrapper.
+
+Pages and components to build:
+
+LOGIN / SIGNUP PAGE — Email, password, and name fields. After sign-up, prompt the user to create a new ranch (enter name, city, state) or join an existing one by ranch name.
+
+DASHBOARD — Active alerts sorted by severity (high first), each with a dismiss button. Quick-add button for a new animal. Summary count of animals by species. Weather widget showing current temp, conditions, and a 3-day mini forecast for the ranch location.
+
+ANIMAL LIST PAGE — Searchable, filterable list of all ranch animals. Filter by species, sex, breed. Each card shows name/tag, species, calculated age, and a colored health dot (red = high severity event in last 7 days, yellow = medium, green = clear). Tap to open the animal detail page.
+
+ANIMAL DETAIL PAGE — Full profile at top (name, tag, species, breed, sex, DOB, calculated age). Tabs or collapsible sections for: Medications, Health Events, FAMACHA Scores, Field Notes, Lineage (dam and sire shown as clickable links if linked), Babies (list of offspring). Each section has an Add button that opens a modal or slide-up form. FAMACHA section shows a score history list or simple sparkline so trends are visible at a glance.
+
+ADD/EDIT ANIMAL FORM — Fields: name, tag number, species (dropdown: Cattle, Goat, Sheep, Pig, Horse, Other), breed, sex (dropdown: Male, Female, Wether, Castrated), date of birth, dam (searchable dropdown of existing female animals in the ranch), sire (searchable dropdown of existing male animals in the ranch).
+
+ALERTS PAGE — Full list of all alerts grouped by type (weather vs. record-based), sorted by severity. Each alert shows message, severity badge, linked animal name if applicable, timestamp, and a dismiss button.
+
+SUBSCRIPTION PAGE — Shows plan status, trial days remaining if on trial, and an upgrade button that opens Stripe Checkout. Shows confirmation message after successful payment.
+
+---
+
+ENVIRONMENT VARIABLES NEEDED
+
+Store all of these in Replit Secrets:
+JWT_SECRET, OPENWEATHERMAP_API_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID
+
+Replit's PostgreSQL connection is available automatically via the DATABASE_URL environment variable — use that directly with the pg package (node-postgres). Do not hardcode any credentials.
+
+---
+
+REPLIT CONFIGURATION
+
+Structure the project with /client for the Vite + React frontend and /server for the Express backend. Use concurrently or a Replit-compatible run command to start both. In production, have Express serve the Vite build output as static files. Run all database migrations automatically on server startup before any routes are registered.
+
+---
+
+CODE QUALITY REQUIREMENTS
+
+Use async/await with proper try/catch error handling on all routes. Validate all incoming request bodies and return consistent JSON error shapes: { error: true, message: "..." }. The alert generation service must be idempotent. Comment non-obvious logic, especially the Claude prompt construction and the FAMACHA trend detection. Never commit or log secrets.
