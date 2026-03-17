@@ -133,18 +133,18 @@ export default function Login() {
             <span className="font-display font-bold text-3xl">RanchPad</span>
           </div>
 
-          <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden backdrop-blur-sm bg-card/95">
+          <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden bg-primary">
             <CardHeader className="pt-8 pb-4 text-center">
-              <CardTitle className="text-3xl">Welcome</CardTitle>
-              <CardDescription className="text-base">
-                Practical, powerful livestock management for modern ranches.
+              <CardTitle className="text-3xl text-primary-foreground">Welcome</CardTitle>
+              <CardDescription className="text-base text-primary-foreground/70">
+                Livestock management for modern ranches.
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               <div className="flex gap-3">
                 <Button
                   size="lg"
-                  className="flex-1 whitespace-nowrap"
+                  className="flex-1 whitespace-nowrap bg-white text-primary hover:bg-white/90"
                   onClick={() => setShowSignup(true)}
                 >
                   Sign Up
@@ -152,7 +152,7 @@ export default function Login() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="flex-1 whitespace-nowrap"
+                  className="flex-1 whitespace-nowrap border-white/50 text-white hover:bg-white/10 hover:text-white"
                   onClick={() => setShowLogin(true)}
                 >
                   Log In
