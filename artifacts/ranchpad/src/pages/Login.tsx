@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
@@ -126,42 +125,22 @@ export default function Login() {
       </div>
 
       {/* ══════════════ DESKTOP LAYOUT (hidden on mobile) ══════════════ */}
-      <div className="hidden md:flex min-h-screen flex-row">
-        {/* Left: Hero Panel */}
-        <div className="flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90" />
-          <div className="relative z-10 text-center p-12 text-primary-foreground">
-            <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/20">
-              <PawPrint className="w-12 h-12 text-white" />
-            </div>
-            <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
-            <p className="text-xl font-medium text-white/80 max-w-md mx-auto">
-              Manage your livestock and get AI alerts before disease hits your animals.
-            </p>
+      <div className="hidden md:flex min-h-screen flex-col bg-gradient-to-br from-primary/80 to-foreground/90 text-white">
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+          <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 shadow-2xl border border-white/20">
+            <PawPrint className="w-12 h-12 text-white" />
           </div>
-        </div>
-
-        {/* Right: CTA Card */}
-        <div className="w-[40%] flex items-center justify-center p-10">
-          <div className="w-full max-w-md animate-in">
-            <Card className="border shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
-              <CardHeader className="pt-8 pb-4 text-center">
-                <CardTitle className="text-3xl text-primary-foreground">Welcome</CardTitle>
-                <CardDescription className="text-base text-primary-foreground/70">
-                  Livestock management for modern ranches.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-8">
-                <div className="flex gap-3">
-                  <Button size="lg" className="flex-1 whitespace-nowrap bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
-                    Sign Up
-                  </Button>
-                  <Button size="lg" variant="outline" className="flex-1 whitespace-nowrap border-white/50 text-white hover:bg-white/10 hover:text-white" onClick={() => setShowLogin(true)}>
-                    Log In
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
+          <p className="text-xl font-medium text-white/80 max-w-md mb-10">
+            Manage your livestock and get AI alerts before disease hits your animals.
+          </p>
+          <div className="flex gap-3 w-full max-w-sm">
+            <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
+              Sign Up
+            </Button>
+            <Button size="lg" variant="outline" className="flex-1 border-white/50 text-white hover:bg-white/10 hover:text-white" onClick={() => setShowLogin(true)}>
+              Log In
+            </Button>
           </div>
         </div>
       </div>
