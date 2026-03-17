@@ -14,8 +14,7 @@ import {
   useListFieldNotes, useCreateFieldNote, useDeleteFieldNote, useUpdateFieldNote,
   type AnimalDetail, type AnimalRef, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
 } from "@workspace/api-client-react";
-import { formatAge } from "./List";
-import { formatDate } from "@/lib/utils";
+import { formatAge, formatDate } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
