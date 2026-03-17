@@ -324,7 +324,7 @@ Only generate alerts for genuine risks based on the forecast data. Return valid 
       const wasCreated = await upsertAlert({
         ranchId,
         animalId: null,
-        alertType: "weather",
+        alertType: "weather_forecast",
         alertKey: `weather_${alert.alertKey}`,
         message: alert.message,
         severity: alert.severity,
