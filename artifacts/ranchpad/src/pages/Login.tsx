@@ -106,22 +106,8 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
 
-      {/* ── Top/Left: Hero Panel ── */}
-      <div className="flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center min-h-[280px] md:min-h-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90" />
-        <div className="relative z-10 text-center p-10 md:p-12 text-primary-foreground">
-          <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-2xl border border-white/20">
-            <PawPrint className="w-10 h-10 md:w-12 md:h-12 text-white" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-display font-black mb-3 md:mb-4 drop-shadow-lg">RanchPad</h1>
-          <p className="text-lg md:text-xl font-medium text-white/80 max-w-md mx-auto">
-            Manage your livestock and get AI alerts before disease hits your animals.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Bottom/Right: CTA Panel ── */}
-      <div className="md:w-[40%] flex items-center justify-center p-6 sm:p-10">
+      {/* ── Top (mobile) / Right (desktop): CTA Panel ── */}
+      <div className="order-first md:order-last md:w-[40%] flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md animate-in">
           <Card className="border shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
             <CardHeader className="pt-8 pb-4 text-center">
@@ -150,6 +136,20 @@ export default function Login() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* ── Bottom (mobile) / Left (desktop): Hero Panel ── */}
+      <div className="order-last md:order-first flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center min-h-[280px] md:min-h-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90" />
+        <div className="relative z-10 text-center p-10 md:p-12 text-primary-foreground">
+          <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-2xl border border-white/20">
+            <PawPrint className="w-10 h-10 md:w-12 md:h-12 text-white" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-display font-black mb-3 md:mb-4 drop-shadow-lg">RanchPad</h1>
+          <p className="text-lg md:text-xl font-medium text-white/80 max-w-md mx-auto">
+            Manage your livestock and get AI alerts before disease hits your animals.
+          </p>
         </div>
       </div>
 
