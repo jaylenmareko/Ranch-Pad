@@ -72,10 +72,6 @@ export default function AnimalList() {
           <h1 className="text-3xl font-black text-foreground">Herd Directory</h1>
           <p className="text-muted-foreground font-medium mt-1">Manage all your animals in one place.</p>
         </div>
-        <Button onClick={() => setLocation("/animals/new")}>
-          <Plus className="w-5 h-5 mr-2" />
-          Add Animal
-        </Button>
       </div>
 
       {/* Filter Bar */}
