@@ -29,7 +29,7 @@ export function Dialog({ open, onOpenChange, title, description, children }: Dia
     <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in" 
+        className="absolute inset-0 bg-black/60 transition-opacity animate-in fade-in" 
         onClick={() => onOpenChange(false)}
       />
       
