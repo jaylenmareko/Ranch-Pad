@@ -121,13 +121,13 @@ export default function Login() {
       </div>
 
       {/* ── Right: CTA Panel ── */}
-      <div className="md:w-[40%] flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
+      <div className="md:w-[40%] flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden">
         {/* Mobile background */}
         <div className="absolute top-0 left-0 right-0 h-64 bg-primary md:hidden rounded-b-[40px] -z-10" />
 
-        <div className="w-full max-w-md animate-in">
+        <div className="w-full max-w-md animate-in space-y-6">
           {/* Mobile logo */}
-          <div className="md:hidden flex items-center justify-center gap-3 mb-8 text-primary-foreground">
+          <div className="md:hidden flex items-center justify-center gap-3 mb-2 text-primary-foreground">
             <PawPrint className="w-8 h-8" />
             <span className="font-display font-bold text-3xl">RanchPad</span>
           </div>
@@ -159,6 +159,23 @@ export default function Login() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Mobile feature highlights */}
+          <div className="md:hidden space-y-3 pt-2">
+            {[
+              { icon: "🐄", title: "Track Your Herd", desc: "Manage every animal — tags, health, age, and breed in one place." },
+              { icon: "⚠️", title: "AI Health Alerts", desc: "Get notified before disease spreads through your livestock." },
+              { icon: "🌤️", title: "Ranch Weather", desc: "Live forecast tailored to your ranch location." },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-4 p-4 bg-card rounded-2xl border border-border shadow-sm">
+                <span className="text-2xl mt-0.5">{icon}</span>
+                <div>
+                  <p className="font-bold text-foreground">{title}</p>
+                  <p className="text-sm text-muted-foreground">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
