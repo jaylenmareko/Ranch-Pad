@@ -134,12 +134,12 @@ export default function Dashboard() {
           </div>
 
           {/* Weather Widget */}
-          <Card className="overflow-hidden border-none shadow-lg shadow-black/5 relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-            
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <CloudRain className="w-5 h-5 text-primary" /> Ranch Weather
+          <Card className="overflow-hidden shadow-lg shadow-blue-500/10 relative border-blue-200 dark:border-blue-900">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+
+            <CardHeader className="pb-2 bg-blue-50/50 dark:bg-blue-950/20 border-b border-blue-100 dark:border-blue-900">
+              <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                <CloudRain className="w-5 h-5" /> Ranch Weather
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -216,11 +216,11 @@ export default function Dashboard() {
 
         {/* Right Column: Alerts */}
         <div className="lg:col-span-1">
-          <Card className="h-full flex flex-col border-accent/20 shadow-lg shadow-accent/5">
-            <CardHeader className="border-b border-border/50 bg-accent/5 pb-4">
+          <Card className="h-full flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10">
+            <CardHeader className="border-b border-red-100 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20 pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xl flex items-center gap-2 text-accent">
-                  <AlertTriangle className="w-5 h-5" /> 
+                <CardTitle className="text-xl flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertTriangle className="w-5 h-5" />
                   Action Needed
                 </CardTitle>
                 <Badge variant="outline" className="bg-card font-bold">{activeAlerts.length}</Badge>
