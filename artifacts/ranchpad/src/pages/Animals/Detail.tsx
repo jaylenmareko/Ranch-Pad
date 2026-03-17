@@ -12,7 +12,7 @@ import {
   useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent, useUpdateHealthEvent,
   useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore, useUpdateFamachaScore,
   useListFieldNotes, useCreateFieldNote, useDeleteFieldNote, useUpdateFieldNote,
-  type AnimalDetail, type AnimalRef, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
+  type AnimalDetail, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
 } from "@workspace/api-client-react";
 import { formatAge, formatDate } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as Recharts
 export default function AnimalDetail() {
   const params = useParams();
   const animalId = parseInt(params.id || "0", 10);
-  const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha" | "notes" | "lineage">("health");
+  const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha" | "notes">("health");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -95,11 +95,10 @@ export default function AnimalDetail() {
           { id: "meds", label: "Medications", icon: Pill },
           { id: "famacha", label: "FAMACHA", icon: AlertTriangle },
           { id: "notes", label: "Field Notes", icon: FileText },
-          { id: "lineage", label: "Lineage & Offspring", icon: null },
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha" | "notes" | "lineage")}
+            onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha" | "notes")}
             className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === tab.id 
                 ? "border-primary text-primary" 
@@ -118,7 +117,6 @@ export default function AnimalDetail() {
         {activeTab === "meds" && <MedsTab animalId={animalId} />}
         {activeTab === "famacha" && <FamachaTab animalId={animalId} />}
         {activeTab === "notes" && <NotesTab animalId={animalId} />}
-        {activeTab === "lineage" && <LineageTab animal={animal} />}
       </div>
     </div>
   );
@@ -626,55 +624,3 @@ function NotesTab({ animalId }: { animalId: number }) {
   );
 }
 
-function LineageTab({ animal }: { animal: AnimalDetail }) {
-  return (
-    <div className="grid md:grid-cols-2 gap-8">
-      <div>
-        <h3 className="font-display font-bold text-xl mb-4">Parents</h3>
-        <div className="space-y-3">
-          {animal.dam ? (
-             <Link href={`/animals/${animal.dam.id}`}>
-               <Card className="hover:border-primary transition-colors cursor-pointer bg-pink-50/50 dark:bg-pink-900/10">
-                 <CardContent className="p-4">
-                   <p className="text-xs font-bold text-pink-600 dark:text-pink-400 mb-1 uppercase tracking-wide">Dam (Mother)</p>
-                   <p className="font-bold text-lg">{animal.dam.name} {animal.dam.tagNumber && <span className="text-muted-foreground ml-1 text-sm font-normal">#{animal.dam.tagNumber}</span>}</p>
-                 </CardContent>
-               </Card>
-             </Link>
-          ) : <div className="p-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-sm font-bold">Unknown Dam</div>}
-          
-          {animal.sire ? (
-             <Link href={`/animals/${animal.sire.id}`}>
-               <Card className="hover:border-primary transition-colors cursor-pointer bg-blue-50/50 dark:bg-blue-900/10">
-                 <CardContent className="p-4">
-                   <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide">Sire (Father)</p>
-                   <p className="font-bold text-lg">{animal.sire.name} {animal.sire.tagNumber && <span className="text-muted-foreground ml-1 text-sm font-normal">#{animal.sire.tagNumber}</span>}</p>
-                 </CardContent>
-               </Card>
-             </Link>
-          ) : <div className="p-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-sm font-bold">Unknown Sire</div>}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="font-display font-bold text-xl mb-4">Offspring ({animal.babies?.length || 0})</h3>
-        {animal.babies?.length > 0 ? (
-          <div className="space-y-3">
-            {animal.babies.map((b: AnimalRef) => (
-              <Link key={b.id} href={`/animals/${b.id}`}>
-                <Card className="hover:border-primary transition-colors cursor-pointer shadow-sm">
-                  <CardContent className="p-4 flex justify-between items-center">
-                    <p className="font-bold">{b.name}</p>
-                    {b.tagNumber && <Badge variant="secondary">#{b.tagNumber}</Badge>}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground italic">No recorded offspring.</p>
-        )}
-      </div>
-    </div>
-  );
-}

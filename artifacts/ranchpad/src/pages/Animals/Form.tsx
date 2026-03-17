@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals, getGetAnimalQueryKey, type Animal } from "@workspace/api-client-react";
+import { useCreateAnimal, useGetAnimal, useUpdateAnimal, getGetAnimalQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -19,8 +19,6 @@ const formSchema = z.object({
   sex: z.string().min(1, "Sex is required"),
   dateOfBirth: z.string().nullable().optional(),
   expectedDueDate: z.string().nullable().optional(),
-  damId: z.coerce.number().nullable().optional(),
-  sireId: z.coerce.number().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -37,8 +35,6 @@ export default function AnimalForm() {
     query: { queryKey: getGetAnimalQueryKey(animalId), enabled: isEditing }
   });
 
-  // Get other animals for dam/sire selection
-  const { data: allAnimals } = useListAnimals();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,8 +46,6 @@ export default function AnimalForm() {
       sex: "Female",
       dateOfBirth: "",
       expectedDueDate: "",
-      damId: null,
-      sireId: null,
     }
   });
 
@@ -65,8 +59,6 @@ export default function AnimalForm() {
         sex: animal.sex,
         dateOfBirth: animal.dateOfBirth ? animal.dateOfBirth.split('T')[0] : "",
         expectedDueDate: animal.expectedDueDate ? animal.expectedDueDate.split('T')[0] : "",
-        damId: animal.damId || null,
-        sireId: animal.sireId || null,
       });
     }
   }, [animal, isEditing, form]);
@@ -99,8 +91,6 @@ export default function AnimalForm() {
       breed: values.breed || null,
       dateOfBirth: values.dateOfBirth || null,
       expectedDueDate: values.expectedDueDate || null,
-      damId: values.damId || null,
-      sireId: values.sireId || null,
     };
 
     if (isEditing) {
@@ -109,9 +99,6 @@ export default function AnimalForm() {
       createMutation.mutate({ data: payload });
     }
   };
-
-  const femaleOptions = allAnimals?.filter((a: Animal) => a.sex === "Female" && a.id !== animalId) || [];
-  const maleOptions = allAnimals?.filter((a: Animal) => (a.sex === "Male" || a.sex === "Wether" || a.sex === "Castrated") && a.id !== animalId) || [];
 
   if (isEditing && loadingAnimal) {
     return <div className="p-8 text-center text-muted-foreground animate-pulse font-bold">Loading...</div>;
@@ -128,7 +115,7 @@ export default function AnimalForm() {
 
       <div>
         <h1 className="text-3xl font-black text-foreground">{isEditing ? "Edit Animal Profile" : "Add New Animal"}</h1>
-        <p className="text-muted-foreground mt-1 font-medium">Record basic information and lineage.</p>
+        <p className="text-muted-foreground mt-1 font-medium">Record basic information about this animal.</p>
       </div>
 
       <Card className="border-border shadow-xl shadow-black/5">
