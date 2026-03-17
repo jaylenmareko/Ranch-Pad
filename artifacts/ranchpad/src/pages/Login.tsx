@@ -128,7 +128,7 @@ export default function Login() {
             <span className="font-display font-bold text-3xl">RanchPad</span>
           </div>
 
-          <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden bg-primary">
+          <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
             <CardHeader className="pt-8 pb-4 text-center">
               <CardTitle className="text-3xl text-primary-foreground">Welcome</CardTitle>
               <CardDescription className="text-base text-primary-foreground/70">
