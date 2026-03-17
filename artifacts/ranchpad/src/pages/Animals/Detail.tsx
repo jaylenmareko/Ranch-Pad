@@ -447,8 +447,8 @@ function FamachaTab({ animalId }: { animalId: number }) {
                   key={num} 
                   type="button"
                   onClick={() => setScore(num)}
-                  className={`flex-1 h-14 rounded-xl font-black text-xl transition-all ${
-                    score === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'
+                  className={`flex-1 h-14 rounded-xl font-black text-xl ${
+                    score === num ? 'ring-4 ring-offset-2 ring-primary shadow-lg' : 'opacity-60 hover:opacity-100'
                   }`}
                   style={{
                     backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f87171' : num === 3 ? '#fca5a5' : num === 4 ? '#fecaca' : '#fee2e2',
@@ -489,7 +489,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
             <div className="flex justify-between gap-2">
               {[1,2,3,4,5].map(num => (
                 <button key={num} type="button" onClick={() => setEditScore(num)}
-                  className={`flex-1 h-14 rounded-xl font-black text-xl transition-all ${editScore === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'}`}
+                  className={`flex-1 h-14 rounded-xl font-black text-xl ${editScore === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'}`}
                   style={{ backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f87171' : num === 3 ? '#fca5a5' : num === 4 ? '#fecaca' : '#fee2e2', color: num <= 2 ? 'white' : '#7f1d1d' }}
                 >{num}</button>
               ))}
