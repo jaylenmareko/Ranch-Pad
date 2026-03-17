@@ -106,33 +106,24 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
 
-      {/* ── Left: Hero Image Panel ── */}
-      <div className="hidden md:flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center">
+      {/* ── Top/Left: Hero Panel ── */}
+      <div className="flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center min-h-[280px] md:min-h-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90" />
-        <div className="relative z-10 text-center p-12 text-primary-foreground">
-          <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/20">
-            <PawPrint className="w-12 h-12 text-white" />
+        <div className="relative z-10 text-center p-10 md:p-12 text-primary-foreground">
+          <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-2xl border border-white/20">
+            <PawPrint className="w-10 h-10 md:w-12 md:h-12 text-white" />
           </div>
-          <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
-          <p className="text-xl font-medium text-white/80 max-w-md mx-auto">
+          <h1 className="text-4xl md:text-5xl font-display font-black mb-3 md:mb-4 drop-shadow-lg">RanchPad</h1>
+          <p className="text-lg md:text-xl font-medium text-white/80 max-w-md mx-auto">
             Manage your livestock and get AI alerts before disease hits your animals.
           </p>
         </div>
       </div>
 
-      {/* ── Right: CTA Panel ── */}
-      <div className="md:w-[40%] flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden">
-        {/* Mobile background */}
-        <div className="absolute top-0 left-0 right-0 h-64 bg-primary md:hidden rounded-b-[40px] -z-10" />
-
-        <div className="w-full max-w-md animate-in space-y-6">
-          {/* Mobile logo */}
-          <div className="md:hidden flex items-center justify-center gap-3 mb-2 text-primary-foreground">
-            <PawPrint className="w-8 h-8" />
-            <span className="font-display font-bold text-3xl">RanchPad</span>
-          </div>
-
-          <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
+      {/* ── Bottom/Right: CTA Panel ── */}
+      <div className="md:w-[40%] flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-md animate-in">
+          <Card className="border shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
             <CardHeader className="pt-8 pb-4 text-center">
               <CardTitle className="text-3xl text-primary-foreground">Welcome</CardTitle>
               <CardDescription className="text-base text-primary-foreground/70">
@@ -159,23 +150,6 @@ export default function Login() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Mobile feature highlights */}
-          <div className="md:hidden space-y-3 pt-2">
-            {[
-              { icon: "🐄", title: "Track Your Herd", desc: "Manage every animal — tags, health, age, and breed in one place." },
-              { icon: "⚠️", title: "AI Health Alerts", desc: "Get notified before disease spreads through your livestock." },
-              { icon: "🌤️", title: "Ranch Weather", desc: "Live forecast tailored to your ranch location." },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-4 p-4 bg-card rounded-2xl border border-border shadow-sm">
-                <span className="text-2xl mt-0.5">{icon}</span>
-                <div>
-                  <p className="font-bold text-foreground">{title}</p>
-                  <p className="text-sm text-muted-foreground">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
