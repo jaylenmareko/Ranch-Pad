@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { ArrowLeft, Edit2, Activity, Pill, FileText, AlertTriangle, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus } from "lucide-react";
 import { 
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
   useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent, useUpdateHealthEvent,
   useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore, useUpdateFamachaScore,
-  useListFieldNotes, useCreateFieldNote, useDeleteFieldNote, useUpdateFieldNote,
-  type AnimalDetail, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
+  type AnimalDetail, type HealthEvent, type MedicationRecord, type FamachaScore
 } from "@workspace/api-client-react";
 import { formatAge, formatDate } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,7 +21,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as Recharts
 export default function AnimalDetail() {
   const params = useParams();
   const animalId = parseInt(params.id || "0", 10);
-  const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha" | "notes">("health");
+  const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha">("health");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -94,11 +93,10 @@ export default function AnimalDetail() {
           { id: "health", label: "Health Events", icon: Activity },
           { id: "meds", label: "Medications", icon: Pill },
           { id: "famacha", label: "FAMACHA", icon: AlertTriangle },
-          { id: "notes", label: "Field Notes", icon: FileText },
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha" | "notes")}
+            onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
             className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === tab.id 
                 ? "border-primary text-primary" 
@@ -116,7 +114,6 @@ export default function AnimalDetail() {
         {activeTab === "health" && <HealthTab animalId={animalId} />}
         {activeTab === "meds" && <MedsTab animalId={animalId} />}
         {activeTab === "famacha" && <FamachaTab animalId={animalId} />}
-        {activeTab === "notes" && <NotesTab animalId={animalId} />}
       </div>
     </div>
   );
@@ -535,92 +532,4 @@ function FamachaTab({ animalId }: { animalId: number }) {
   );
 }
 
-function NotesTab({ animalId }: { animalId: number }) {
-  const { data: notes, isLoading } = useListFieldNotes(animalId);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const [note, setNote] = useState("");
-  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
-  const [editNoteText, setEditNoteText] = useState("");
-  
-  const createMutation = useCreateFieldNote({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/notes`] });
-        setNote("");
-      }
-    }
-  });
-
-  const updateNoteMutation = useUpdateFieldNote({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/notes`] });
-        setEditingNoteId(null);
-        toast({ title: "Note updated" });
-      }
-    }
-  });
-
-  const deleteNoteMutation = useDeleteFieldNote({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}/notes`] });
-        toast({ title: "Note deleted" });
-      }
-    }
-  });
-
-  return (
-    <div className="space-y-6">
-      <form onSubmit={e => { e.preventDefault(); createMutation.mutate({ animalId, data: { noteText: note } }); }} className="flex gap-3">
-        <Textarea 
-          placeholder="Add a quick field observation..." 
-          className="min-h-[60px] h-[60px] flex-1" 
-          value={note} onChange={e => setNote(e.target.value)} required 
-        />
-        <Button type="submit" className="h-[60px]" disabled={createMutation.isPending}>Add</Button>
-      </form>
-
-      <div className="space-y-3">
-        {notes?.sort((a: FieldNote, b: FieldNote) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((n: FieldNote) => (
-          <div key={n.id} className="bg-card border border-border p-4 rounded-xl shadow-sm group">
-            {editingNoteId === n.id ? (
-              <form onSubmit={e => { e.preventDefault(); updateNoteMutation.mutate({ animalId, noteId: n.id, data: { noteText: editNoteText } }); }} className="space-y-2">
-                <Textarea value={editNoteText} onChange={e => setEditNoteText(e.target.value)} className="min-h-[80px]" required />
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" isLoading={updateNoteMutation.isPending}>Save</Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => setEditingNoteId(null)}>Cancel</Button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <p className="text-foreground whitespace-pre-wrap leading-relaxed">{n.noteText}</p>
-                <div className="flex items-center justify-between mt-3">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{formatDate(n.createdAt)}</p>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                    <button
-                      onClick={() => { setEditingNoteId(n.id); setEditNoteText(n.noteText); }}
-                      className="p-1 rounded-full hover:bg-muted"
-                      title="Edit note"
-                    >
-                      <Edit2 className="w-3 h-3 text-muted-foreground" />
-                    </button>
-                    <button
-                      onClick={() => { if(confirm("Delete this note?")) deleteNoteMutation.mutate({ animalId, noteId: n.id }); }}
-                      className="p-1 rounded-full hover:bg-muted"
-                      title="Delete note"
-                    >
-                      <Trash2 className="w-3 h-3 text-destructive/70" />
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
