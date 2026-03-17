@@ -74,6 +74,10 @@ export default function Login() {
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    if (geocodedLat === null || geocodedLon === null) {
+      toast({ title: "Location required", description: "Enter your ranch address and click Find before signing up.", variant: "destructive" });
+      return;
+    }
     signupMutation.mutate(
       { data: { email: signupEmail, password: signupPassword, name, ranchName } },
       {
@@ -250,10 +254,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label>
-                Ranch Location{" "}
-                <span className="text-muted-foreground font-normal">(optional)</span>
-              </Label>
+              <Label>Ranch Location</Label>
               <div className="flex gap-2">
                 <Input
                   placeholder="e.g. 1234 County Rd, Wichita, KS"
