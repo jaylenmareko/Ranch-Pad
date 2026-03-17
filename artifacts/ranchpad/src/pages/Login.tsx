@@ -136,21 +136,23 @@ export default function Login() {
           <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden backdrop-blur-sm bg-card/95">
             <CardHeader className="pt-8 pb-4 text-center">
               <CardTitle className="text-3xl">Welcome</CardTitle>
+              <CardDescription className="text-base">
+                Practical, powerful livestock management for modern ranches.
+              </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               <div className="flex gap-3">
                 <Button
                   size="lg"
-                  className="flex-1 gap-2 whitespace-nowrap"
+                  className="flex-1 whitespace-nowrap"
                   onClick={() => setShowSignup(true)}
                 >
                   Sign Up
-                  <ArrowRight className="w-5 h-5" />
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 whitespace-nowrap"
                   onClick={() => setShowLogin(true)}
                 >
                   Log In
