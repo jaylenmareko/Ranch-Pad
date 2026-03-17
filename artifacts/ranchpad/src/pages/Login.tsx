@@ -108,21 +108,15 @@ export default function Login() {
 
       {/* ══════════════ MOBILE LAYOUT (hidden on desktop) ══════════════ */}
       <div className="md:hidden min-h-screen flex flex-col bg-gradient-to-br from-primary/80 to-foreground/90 text-white">
-        {/* Logo + name + description */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-8 pb-6">
+        {/* Logo + name + description + buttons */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
           <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-5 shadow-2xl border border-white/20">
             <PawPrint className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-display font-black mb-3 drop-shadow-lg">RanchPad</h1>
-          <p className="text-lg font-medium text-white/80 max-w-xs">
+          <p className="text-lg font-medium text-white/80 max-w-xs mb-8">
             Manage your livestock and get AI alerts before disease hits your animals.
           </p>
-        </div>
-
-        {/* Welcome + buttons (no card) */}
-        <div className="flex flex-col items-center text-center px-8 pb-14">
-          <h2 className="text-2xl font-bold mb-1">Welcome</h2>
-          <p className="text-white/70 mb-6">Livestock management for modern ranches.</p>
           <div className="flex gap-3 w-full max-w-sm">
             <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
               Sign Up
