@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { PawPrint, Tractor, ArrowRight, Search, CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
+import { PawPrint, Tractor, ArrowRight, Search, CheckCircle2, XCircle } from "lucide-react";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -11,17 +12,17 @@ export default function Login() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
-  // Login form state
+  // Login form
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  // Signup form state
+  // Signup form
   const [name, setName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [ranchName, setRanchName] = useState("");
 
-  // Address geocoding state
+  // Address geocoding
   const [address, setAddress] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedLat, setGeocodedLat] = useState<number | null>(null);
@@ -65,7 +66,7 @@ export default function Login() {
       {
         onSuccess: (data) => setAuthContext(data.token),
         onError: (error: Error) => {
-          toast({ title: "Login Failed", description: error.message || "Invalid credentials.", variant: "destructive" });
+          toast({ title: "Login Failed", description: error.message || "Invalid credentials. Please try again.", variant: "destructive" });
         },
       }
     );
@@ -101,71 +102,65 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
 
-      {/* ── Left: Hero Panel ── */}
-      <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-primary/10 p-10 md:p-16">
+      {/* ── Left: Hero Image Panel ── */}
+      <div className="hidden md:flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center">
         <img
           src={`${import.meta.env.BASE_URL}images/hero-bg.png`}
           alt="Ranch landscape"
-          className="absolute inset-0 h-full w-full object-cover opacity-80"
+          className="absolute inset-0 w-full h-full object-cover opacity-80"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90 mix-blend-multiply" />
-
-        <div className="relative z-10 max-w-md text-primary-foreground">
-          {/* Logo */}
-          <div className="mb-10 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 shadow-2xl backdrop-blur-md border border-white/20">
-              <PawPrint className="h-8 w-8 text-white" />
-            </div>
-            <span className="font-display text-4xl font-black drop-shadow-lg">RanchPad</span>
+        <div className="relative z-10 text-center p-12 text-primary-foreground">
+          <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/20">
+            <PawPrint className="w-12 h-12 text-white" />
           </div>
-
-          {/* Description */}
-          <ul className="space-y-4">
-            <li className="flex items-start gap-3">
-              <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
-                <PawPrint className="h-3.5 w-3.5 text-white" />
-              </div>
-              <p className="text-xl font-semibold text-white/90 leading-snug">
-                Manage your livestock.
-              </p>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
-                <ShieldAlert className="h-3.5 w-3.5 text-white" />
-              </div>
-              <p className="text-xl font-semibold text-white/90 leading-snug">
-                Get AI alerts before disease hits your animals.
-              </p>
-            </li>
-          </ul>
+          <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
+          <p className="text-xl font-medium text-white/80 max-w-md mx-auto">
+            Manage your livestock and get AI alerts before disease hits your animals.
+          </p>
         </div>
       </div>
 
       {/* ── Right: CTA Panel ── */}
-      <div className="flex flex-col items-center justify-center gap-6 p-10 md:w-96 md:p-16">
-        <div className="w-full text-center mb-2">
-          <h2 className="text-2xl font-black font-display text-foreground">Get started</h2>
-          <p className="text-muted-foreground font-medium mt-1 text-sm">Your herd is waiting.</p>
-        </div>
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative overflow-hidden">
+        {/* Mobile background */}
+        <div className="absolute top-0 left-0 right-0 h-64 bg-primary md:hidden rounded-b-[40px] -z-10" />
 
-        <div className="flex gap-3 w-full">
-          <Button
-            size="lg"
-            className="flex-1 gap-2"
-            onClick={() => setShowSignup(true)}
-          >
-            Sign Up
-            <ArrowRight className="w-5 h-5" />
-          </Button>
+        <div className="w-full max-w-md animate-in">
+          {/* Mobile logo */}
+          <div className="md:hidden flex items-center justify-center gap-3 mb-8 text-primary-foreground">
+            <PawPrint className="w-8 h-8" />
+            <span className="font-display font-bold text-3xl">RanchPad</span>
+          </div>
 
-          <Button
-            size="lg"
-            variant="outline"
-            className="flex-1"
-            onClick={() => setShowLogin(true)}
-          >
-            Log In
-          </Button>
+          <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden backdrop-blur-sm bg-card/95">
+            <CardHeader className="pt-8 pb-4">
+              <CardTitle className="text-3xl">Welcome</CardTitle>
+              <CardDescription className="text-base">
+                Practical, powerful livestock management for modern ranches.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pb-8">
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  className="flex-1 gap-2"
+                  onClick={() => setShowSignup(true)}
+                >
+                  Sign Up
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowLogin(true)}
+                >
+                  Log In
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -245,12 +240,11 @@ export default function Login() {
             />
           </div>
 
-          <div className="space-y-4 pt-2 border-t border-border/50">
-            <div className="flex items-center gap-2">
-              <Tractor className="w-4 h-4 text-accent" />
-              <span className="text-sm font-bold text-accent">Ranch Details</span>
+          <div className="space-y-4 pt-4 border-t border-border/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Tractor className="w-5 h-5 text-accent" />
+              <Label className="text-accent font-bold">Ranch Details</Label>
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="signup-ranchName">Ranch Name</Label>
               <Input
@@ -261,7 +255,6 @@ export default function Login() {
                 required
               />
             </div>
-
             <div className="space-y-2">
               <Label>
                 Ranch Location{" "}
@@ -292,7 +285,6 @@ export default function Login() {
                   <Search className="w-4 h-4" />
                 </Button>
               </div>
-
               {geocodedLat !== null && geocodedLon !== null && (
                 <div className="rounded-xl border bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800 p-3">
                   <div className="flex items-start gap-2">
