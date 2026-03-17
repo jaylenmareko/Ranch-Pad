@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -15,18 +15,45 @@ export default function Settings() {
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
-  const [lat, setLat] = useState("");
-  const [lon, setLon] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lon, setLon] = useState<number | null>(null);
+
+  const [address, setAddress] = useState("");
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
 
   useEffect(() => {
     if (ranch) {
       setName(ranch.name ?? "");
       setCity(ranch.locationCity ?? "");
       setState(ranch.locationState ?? "");
-      setLat(ranch.lat != null ? String(ranch.lat) : "");
-      setLon(ranch.lon != null ? String(ranch.lon) : "");
+      setLat(ranch.lat ?? null);
+      setLon(ranch.lon ?? null);
     }
   }, [ranch]);
+
+  async function handleGeocode() {
+    if (!address.trim()) return;
+    setIsGeocoding(true);
+    setGeocodeLabel(null);
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      const results = await res.json();
+      if (!results || results.length === 0) {
+        toast({ title: "Address not found", description: "Try a more specific address or check for typos.", variant: "destructive" });
+        return;
+      }
+      const { lat: foundLat, lon: foundLon, display_name } = results[0];
+      setLat(parseFloat(parseFloat(foundLat).toFixed(6)));
+      setLon(parseFloat(parseFloat(foundLon).toFixed(6)));
+      setGeocodeLabel(display_name);
+    } catch {
+      toast({ title: "Geocode failed", description: "Could not reach the location service. Try again.", variant: "destructive" });
+    } finally {
+      setIsGeocoding(false);
+    }
+  }
 
   const updateMutation = useUpdateRanch({
     mutation: {
@@ -47,8 +74,8 @@ export default function Settings() {
         name: name || undefined,
         locationCity: city || null,
         locationState: state || null,
-        lat: lat !== "" ? parseFloat(lat) : null,
-        lon: lon !== "" ? parseFloat(lon) : null,
+        lat: lat ?? null,
+        lon: lon ?? null,
       },
     });
   }
@@ -109,36 +136,63 @@ export default function Settings() {
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <MapPin className="w-5 h-5 text-primary" />
-              Location Coordinates
+              Location
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground font-medium">
-              Required for weather data and weather alerts. Find your coordinates on{" "}
-              <span className="font-bold text-foreground">Google Maps</span> by right-clicking your ranch location — the lat/lon appears at the top of the menu.
+              Enter your ranch address to automatically find coordinates. These are used for weather data and AI alerts.
             </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Latitude</Label>
-                <Input
-                  type="number"
-                  step="any"
-                  value={lat}
-                  onChange={e => setLat(e.target.value)}
-                  placeholder="e.g. 37.6872"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Longitude</Label>
-                <Input
-                  type="number"
-                  step="any"
-                  value={lon}
-                  onChange={e => setLon(e.target.value)}
-                  placeholder="e.g. -97.3301"
-                />
-              </div>
+
+            <div className="flex gap-2">
+              <Input
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+                placeholder="e.g. 1234 County Road, Wichita, KS 67202"
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleGeocode(); } }}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleGeocode}
+                isLoading={isGeocoding}
+                className="shrink-0"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Find
+              </Button>
             </div>
+
+            {/* Result */}
+            {lat !== null && lon !== null && (
+              <div className={`rounded-xl border p-4 space-y-2 ${geocodeLabel ? "bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800" : "bg-muted/40 border-border"}`}>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    {geocodeLabel && (
+                      <p className="text-xs text-muted-foreground font-medium truncate mb-1">{geocodeLabel}</p>
+                    )}
+                    <p className="text-sm font-bold text-foreground font-mono">
+                      {lat.toFixed(6)}, {lon.toFixed(6)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); }}
+                    className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
+                    title="Clear coordinates"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {lat === null && lon === null && (
+              <p className="text-xs text-muted-foreground font-medium">
+                No coordinates set — weather data won't be available until you search for your location.
+              </p>
+            )}
           </CardContent>
         </Card>
 
