@@ -53,22 +53,7 @@ export default function AnimalList() {
   }, [animals, search, speciesFilter, sexFilter, breedFilter]);
 
   const uniqueSpecies: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.species)))];
-  const PRESET_BREEDS = [
-    // Cattle
-    "Angus", "Black Angus", "Red Angus", "Hereford", "Charolais", "Simmental",
-    "Limousin", "Brahman", "Brangus", "Longhorn", "Shorthorn", "Gelbvieh",
-    "Beefmaster", "Santa Gertrudis", "Wagyu",
-    // Sheep
-    "Merino", "Dorper", "Suffolk", "Rambouillet", "Katahdin", "Hampshire", "Corriedale",
-    // Goats
-    "Boer", "Nubian", "Alpine", "Saanen", "LaMancha", "Kiko", "Pygmy",
-    // Pigs
-    "Duroc", "Yorkshire", "Berkshire", "Hampshire Pig", "Poland China",
-    // Horses
-    "Quarter Horse", "Thoroughbred", "Paint", "Appaloosa", "Arabian", "Morgan",
-  ];
-  const animalBreeds = (animals || []).map((a: Animal) => a.breed).filter(Boolean) as string[];
-  const uniqueBreeds: string[] = ["All", ...Array.from(new Set([...PRESET_BREEDS, ...animalBreeds])).sort()];
+  const uniqueBreeds: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.breed).filter(Boolean))).sort() as string[]];
   const hasActiveFilters = speciesFilter !== "All" || sexFilter !== "All" || breedFilter !== "All";
 
   return (
