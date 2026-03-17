@@ -134,11 +134,8 @@ export default function Login() {
           </div>
 
           <Card className="border-0 shadow-2xl shadow-black/5 md:border md:shadow-xl rounded-3xl overflow-hidden backdrop-blur-sm bg-card/95">
-            <CardHeader className="pt-8 pb-4">
+            <CardHeader className="pt-8 pb-4 text-center">
               <CardTitle className="text-3xl">Welcome</CardTitle>
-              <CardDescription className="text-base">
-                Practical, powerful livestock management for modern ranches.
-              </CardDescription>
             </CardHeader>
             <CardContent className="pb-8">
               <div className="flex gap-3">
