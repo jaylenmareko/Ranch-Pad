@@ -102,15 +102,9 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
 
-      {/* ── Left: Hero Image Panel ── */}
-      <div className="hidden md:flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center">
-        <img
-          src={`${import.meta.env.BASE_URL}images/hero-bg.png`}
-          alt="Ranch landscape"
-          className="absolute inset-0 w-full h-full object-cover opacity-80"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90 mix-blend-multiply" />
-        <div className="relative z-10 text-center p-12 text-primary-foreground">
+      {/* ── Left: Hero Panel ── */}
+      <div className="hidden md:flex flex-1 relative bg-primary overflow-hidden items-center justify-center">
+        <div className="text-center p-12 text-primary-foreground">
           <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/20">
             <PawPrint className="w-12 h-12 text-white" />
           </div>
