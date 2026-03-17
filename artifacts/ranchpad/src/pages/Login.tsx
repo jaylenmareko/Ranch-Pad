@@ -20,7 +20,6 @@ export default function Login() {
   const [name, setName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-  const [ranchName, setRanchName] = useState("");
 
   // Address geocoding
   const [address, setAddress] = useState("");
@@ -79,7 +78,7 @@ export default function Login() {
       return;
     }
     signupMutation.mutate(
-      { data: { email: signupEmail, password: signupPassword, name, ranchName } },
+      { data: { email: signupEmail, password: signupPassword, name } },
       {
         onSuccess: async (data) => {
           localStorage.setItem("ranchpad_token", data.token);
@@ -249,16 +248,6 @@ export default function Login() {
             <div className="flex items-center gap-2 mb-2">
               <Tractor className="w-5 h-5 text-accent" />
               <Label className="text-accent font-bold">Ranch Details</Label>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="signup-ranchName">Ranch Name</Label>
-              <Input
-                id="signup-ranchName"
-                placeholder="e.g. Rolling Hills Ranch"
-                value={ranchName}
-                onChange={e => setRanchName(e.target.value)}
-                required
-              />
             </div>
             <div className="space-y-2">
               <Label>Ranch Location</Label>
