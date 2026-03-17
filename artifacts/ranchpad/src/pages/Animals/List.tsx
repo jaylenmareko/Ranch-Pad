@@ -87,7 +87,7 @@ export default function AnimalList() {
             className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
           >
             {uniqueBreeds.map(breed => (
-              <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
+              <option key={breed} value={breed}>{breed === "All" ? "Choose Breed" : breed}</option>
             ))}
           </select>
           <select
@@ -95,7 +95,7 @@ export default function AnimalList() {
             onChange={e => setSexFilter(e.target.value)}
             className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
           >
-            <option value="All">Both Sexes</option>
+            <option value="All">Choose Sex</option>
             <option value="Female">Female</option>
             <option value="Male">Male</option>
             <option value="Wether">Wether</option>

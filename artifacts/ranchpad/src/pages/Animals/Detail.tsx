@@ -63,7 +63,6 @@ export default function AnimalDetail() {
 
       {/* Header Card */}
       <Card className="border-none shadow-xl shadow-black/5 bg-gradient-to-br from-card to-card/50 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <CardContent className="p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center relative z-10">
           <div className="w-24 h-24 rounded-3xl bg-secondary flex items-center justify-center border-4 border-background shadow-md shrink-0">
             <span className="text-4xl font-display font-black text-secondary-foreground opacity-50">{animal.species[0]}</span>
