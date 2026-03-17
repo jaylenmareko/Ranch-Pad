@@ -6,16 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, FileText } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
-import { differenceInYears, differenceInMonths } from "date-fns";
-
-export function formatAge(dob: string | null | undefined): string {
-  if (!dob) return "Age unknown";
-  const date = new Date(dob);
-  const years = differenceInYears(new Date(), date);
-  const months = differenceInMonths(new Date(), date) % 12;
-  if (years === 0) return `${months} mo`;
-  return `${years}y ${months}mo`;
-}
+import { formatAge } from "@/lib/utils";
 
 function HealthDot({ severity }: { severity?: string | null }) {
   let colorClass = "bg-muted border-border/50";
@@ -59,7 +50,7 @@ export default function AnimalList() {
       result = result.filter((a: Animal) => a.breed === breedFilter);
     }
     return result;
-  }, [animals, search, speciesFilter, sexFilter, breedSearch]);
+  }, [animals, search, speciesFilter, sexFilter, breedFilter]);
 
   const uniqueSpecies: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.species)))];
   const uniqueBreeds: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.breed).filter(Boolean))) as string[]];
