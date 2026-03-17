@@ -34,7 +34,7 @@ export function Dialog({ open, onOpenChange, title, description, children }: Dia
       />
       
       {/* Content */}
-      <div className="relative z-50 w-full h-full sm:h-auto max-h-[100dvh] sm:max-h-[85vh] max-w-lg bg-background sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="relative z-50 w-full h-full sm:h-auto max-h-[100dvh] sm:max-h-[85vh] max-w-lg bg-background sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in duration-150">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-muted/30">
           <div>
             <h2 className="text-xl font-bold font-display">{title}</h2>
