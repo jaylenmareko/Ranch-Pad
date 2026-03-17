@@ -213,7 +213,7 @@ export default function Dashboard() {
                           {alert.animalName ? ' - ' : ''}
                           {alert.message}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">{alert.alertType.replace('_', ' ')}</p>
+                        <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">{alert.alertType.replace(/_/g, ' ')}</p>
                       </div>
                       <button 
                         onClick={() => dismissMutation.mutate({ alertId: alert.id })}
