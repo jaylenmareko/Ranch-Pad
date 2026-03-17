@@ -7,10 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return "Unknown";
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(date);
+  const date = new Date(dateString.length === 10 ? dateString + "T12:00:00" : dateString);
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${mm}-${dd}-${yyyy}`;
 }

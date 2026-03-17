@@ -20,6 +20,7 @@ import AnimalList from "@/pages/Animals/List";
 import AnimalForm from "@/pages/Animals/Form";
 import AnimalDetail from "@/pages/Animals/Detail";
 import AlertsList from "@/pages/Alerts/List";
+import Settings from "@/pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ function Router() {
               <Route path="/animals/:id/edit" component={AnimalForm} />
               <Route path="/animals/:id" component={AnimalDetail} />
               <Route path="/alerts" component={AlertsList} />
+              <Route path="/settings" component={Settings} />
               <Route component={NotFound} />
             </Switch>
           </Layout>
