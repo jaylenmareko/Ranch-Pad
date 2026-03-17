@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGetRanch, getGetRanchQueryKey } from "@workspace/api-client-react";
 
 interface AuthContextType {
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
   const [token, setToken] = useState<string | null>(localStorage.getItem("ranchpad_token"));
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const handleAuthExpired = () => {
@@ -43,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (newToken: string) => {
     localStorage.setItem("ranchpad_token", newToken);
+    queryClient.removeQueries({ queryKey: getGetRanchQueryKey() });
     setToken(newToken);
     setLocation("/");
   };
