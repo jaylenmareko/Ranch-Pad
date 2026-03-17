@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useCreateAnimal, useGetAnimal, useUpdateAnimal, getGetAnimalQueryKey } from "@workspace/api-client-react";
+import { useCreateAnimal, useGetAnimal, useUpdateAnimal, getGetAnimalQueryKey, type Animal } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
