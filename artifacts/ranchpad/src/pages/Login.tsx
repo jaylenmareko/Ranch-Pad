@@ -107,7 +107,7 @@ export default function Login() {
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
 
       {/* ── Top (mobile) / Right (desktop): CTA Panel ── */}
-      <div className="order-first md:order-last md:w-[40%] flex items-center justify-center p-6 sm:p-10">
+      <div className="order-first md:order-last flex-1 md:flex-none md:w-[40%] flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md animate-in">
           <Card className="border shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
             <CardHeader className="pt-8 pb-4 text-center">
