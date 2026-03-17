@@ -119,18 +119,13 @@ export default function Login() {
             <span className="font-display text-4xl font-black drop-shadow-lg">RanchPad</span>
           </div>
 
-          {/* Tagline */}
-          <h1 className="font-display text-4xl font-black leading-tight drop-shadow-md mb-8 md:text-5xl">
-            Built for the rancher in the field.
-          </h1>
-
-          {/* Bullet points */}
+          {/* Description */}
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
               <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
                 <PawPrint className="h-3.5 w-3.5 text-white" />
               </div>
-              <p className="text-lg font-semibold text-white/90 leading-snug">
+              <p className="text-xl font-semibold text-white/90 leading-snug">
                 Manage your livestock.
               </p>
             </li>
@@ -138,7 +133,7 @@ export default function Login() {
               <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
                 <ShieldAlert className="h-3.5 w-3.5 text-white" />
               </div>
-              <p className="text-lg font-semibold text-white/90 leading-snug">
+              <p className="text-xl font-semibold text-white/90 leading-snug">
                 Get AI alerts before disease hits your animals.
               </p>
             </li>
@@ -153,23 +148,25 @@ export default function Login() {
           <p className="text-muted-foreground font-medium mt-1 text-sm">Your herd is waiting.</p>
         </div>
 
-        <Button
-          size="lg"
-          className="w-full gap-2"
-          onClick={() => setShowSignup(true)}
-        >
-          Create Account
-          <ArrowRight className="w-5 h-5" />
-        </Button>
+        <div className="flex gap-3 w-full">
+          <Button
+            size="lg"
+            className="flex-1 gap-2"
+            onClick={() => setShowSignup(true)}
+          >
+            Sign Up
+            <ArrowRight className="w-5 h-5" />
+          </Button>
 
-        <Button
-          size="lg"
-          variant="outline"
-          className="w-full"
-          onClick={() => setShowLogin(true)}
-        >
-          Log In
-        </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="flex-1"
+            onClick={() => setShowLogin(true)}
+          >
+            Log In
+          </Button>
+        </div>
       </div>
 
       {/* ── Login Modal ── */}
