@@ -198,48 +198,6 @@ export default function AnimalForm() {
                 <Input id="expectedDueDate" type="date" {...form.register("expectedDueDate")} className="font-medium" />
               </div>
 
-              <div className="space-y-2 border-t border-border pt-6 md:col-span-2">
-                <h3 className="font-display font-bold text-lg mb-2">Lineage (Optional)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="damId">Dam (Mother)</Label>
-                    <div className="relative">
-                      <select 
-                        id="damId"
-                        {...form.register("damId")}
-                        className="flex h-12 w-full appearance-none rounded-xl border-2 border-border bg-background px-4 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 transition-all font-medium text-foreground"
-                      >
-                        <option value="">Unknown / Not in system</option>
-                        {femaleOptions.map(a => (
-                          <option key={a.id} value={a.id}>{a.name} {a.tagNumber ? `(#${a.tagNumber})` : ''}</option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                        <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="sireId">Sire (Father)</Label>
-                    <div className="relative">
-                      <select 
-                        id="sireId"
-                        {...form.register("sireId")}
-                        className="flex h-12 w-full appearance-none rounded-xl border-2 border-border bg-background px-4 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 transition-all font-medium text-foreground"
-                      >
-                        <option value="">Unknown / Not in system</option>
-                        {maleOptions.map(a => (
-                          <option key={a.id} value={a.id}>{a.name} {a.tagNumber ? `(#${a.tagNumber})` : ''}</option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                        <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <div className="pt-6 border-t border-border flex justify-end gap-3">
