@@ -81,21 +81,23 @@ export default function AnimalList() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <select
-            value={breedFilter}
-            onChange={e => setBreedFilter(e.target.value)}
-            className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
-          >
-            {uniqueBreeds.map(breed => (
-              <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
-            ))}
-          </select>
+          {uniqueBreeds.length > 1 && (
+            <select
+              value={breedFilter}
+              onChange={e => setBreedFilter(e.target.value)}
+              className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
+            >
+              {uniqueBreeds.map(breed => (
+                <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
+              ))}
+            </select>
+          )}
           <select
             value={sexFilter}
             onChange={e => setSexFilter(e.target.value)}
             className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
           >
-            <option value="All">All Sexes</option>
+            <option value="All">Both Sexes</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
           </select>
