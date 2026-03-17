@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Plus, FileText } from "lucide-react";
+import { Search, Plus, FileText } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { differenceInYears, differenceInMonths } from "date-fns";
 
@@ -31,7 +31,7 @@ export default function AnimalList() {
   const [search, setSearch] = useState("");
   const [speciesFilter, setSpeciesFilter] = useState("All");
   const [sexFilter, setSexFilter] = useState("All");
-  const [breedSearch, setBreedSearch] = useState("");
+  const [breedFilter, setBreedFilter] = useState("All");
 
   // Query API with search param
   const { data: animals, isLoading } = useListAnimals({ search: search.length > 2 ? search : undefined });
@@ -55,15 +55,15 @@ export default function AnimalList() {
     if (sexFilter !== "All") {
       result = result.filter((a: Animal) => a.sex === sexFilter);
     }
-    if (breedSearch.trim()) {
-      const lower = breedSearch.toLowerCase();
-      result = result.filter((a: Animal) => a.breed?.toLowerCase().includes(lower));
+    if (breedFilter !== "All") {
+      result = result.filter((a: Animal) => a.breed === breedFilter);
     }
     return result;
   }, [animals, search, speciesFilter, sexFilter, breedSearch]);
 
   const uniqueSpecies: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.species)))];
-  const hasActiveFilters = speciesFilter !== "All" || sexFilter !== "All" || breedSearch.trim();
+  const uniqueBreeds: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.breed).filter(Boolean))) as string[]];
+  const hasActiveFilters = speciesFilter !== "All" || sexFilter !== "All" || breedFilter !== "All";
 
   return (
     <div className="space-y-6">
@@ -90,15 +90,15 @@ export default function AnimalList() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="relative w-full md:w-48">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Filter by breed..."
-              className="pl-10 border-none bg-muted/30 focus-visible:bg-background"
-              value={breedSearch}
-              onChange={e => setBreedSearch(e.target.value)}
-            />
-          </div>
+          <select
+            value={breedFilter}
+            onChange={e => setBreedFilter(e.target.value)}
+            className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
+          >
+            {uniqueBreeds.map(breed => (
+              <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
+            ))}
+          </select>
           <select
             value={sexFilter}
             onChange={e => setSexFilter(e.target.value)}
@@ -125,7 +125,7 @@ export default function AnimalList() {
           ))}
           {hasActiveFilters && (
             <button
-              onClick={() => { setSpeciesFilter("All"); setSexFilter("All"); setBreedSearch(""); }}
+              onClick={() => { setSpeciesFilter("All"); setSexFilter("All"); setBreedFilter("All"); }}
               className="px-3 py-2 rounded-xl text-sm font-bold whitespace-nowrap bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
             >
               Clear
