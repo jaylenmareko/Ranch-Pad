@@ -63,6 +63,10 @@ export default function AnimalList() {
           <h1 className="text-3xl font-black text-foreground">Herd Directory</h1>
           <p className="text-muted-foreground font-medium mt-1">Manage all your animals in one place.</p>
         </div>
+        <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform w-full sm:w-auto">
+          <Plus className="w-5 h-5 mr-2" />
+          Add Animal
+        </Link>
       </div>
 
       {/* Filter Bar */}

@@ -41,6 +41,22 @@ export default function Dashboard() {
     }, {} as Record<string, number>);
   }, [animals]);
 
+  // Fallback stats to fill empty card slots when fewer than 3 species
+  const avgAgeMonths = React.useMemo(() => {
+    if (!animals || animals.length === 0) return null;
+    const now = new Date();
+    const totalMonths = animals.reduce((sum, a) => {
+      if (!a.dateOfBirth) return sum;
+      const dob = new Date(a.dateOfBirth);
+      return sum + (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
+    }, 0);
+    const counted = animals.filter(a => a.dateOfBirth).length;
+    return counted > 0 ? Math.round(totalMonths / counted) : null;
+  }, [animals]);
+
+  const femaleCount = React.useMemo(() => animals?.filter(a => a.sex === "Female").length ?? 0, [animals]);
+  const maleCount = React.useMemo(() => animals?.filter(a => a.sex === "Male").length ?? 0, [animals]);
+
   const activeAlerts = alerts?.filter(a => !a.isDismissed) || [];
   
   // Sort alerts: high > medium > low
@@ -79,14 +95,40 @@ export default function Dashboard() {
                     <p className="text-4xl font-black font-display text-primary">{animals?.length || 0}</p>
                   </CardContent>
                 </Card>
-                {Object.entries(speciesCounts).slice(0,3).map(([species, count]) => (
-                  <Card key={species} className="border-none shadow-md shadow-black/5">
-                    <CardContent className="p-5">
-                      <p className="text-sm font-semibold text-muted-foreground mb-1">{species}s</p>
-                      <p className="text-3xl font-bold font-display text-foreground">{count}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+                {(() => {
+                  const speciesCards = Object.entries(speciesCounts).slice(0, 3).map(([species, count]) => (
+                    <Card key={species} className="border-none shadow-md shadow-black/5">
+                      <CardContent className="p-5">
+                        <p className="text-sm font-semibold text-muted-foreground mb-1">{species}s</p>
+                        <p className="text-3xl font-bold font-display text-foreground">{count}</p>
+                      </CardContent>
+                    </Card>
+                  ));
+                  const fallbacks = [
+                    <Card key="female" className="border-none shadow-md shadow-black/5">
+                      <CardContent className="p-5">
+                        <p className="text-sm font-semibold text-muted-foreground mb-1">Female</p>
+                        <p className="text-3xl font-bold font-display text-foreground">{femaleCount}</p>
+                      </CardContent>
+                    </Card>,
+                    <Card key="male" className="border-none shadow-md shadow-black/5">
+                      <CardContent className="p-5">
+                        <p className="text-sm font-semibold text-muted-foreground mb-1">Male</p>
+                        <p className="text-3xl font-bold font-display text-foreground">{maleCount}</p>
+                      </CardContent>
+                    </Card>,
+                    avgAgeMonths !== null ? (
+                      <Card key="age" className="border-none shadow-md shadow-black/5">
+                        <CardContent className="p-5">
+                          <p className="text-sm font-semibold text-muted-foreground mb-1">Avg Age</p>
+                          <p className="text-3xl font-bold font-display text-foreground">{avgAgeMonths}<span className="text-base font-medium text-muted-foreground ml-1">mo</span></p>
+                        </CardContent>
+                      </Card>
+                    ) : null,
+                  ].filter(Boolean);
+                  const combined = [...speciesCards, ...fallbacks.slice(0, 3 - speciesCards.length)];
+                  return combined;
+                })()}
               </>
             )}
           </div>
@@ -215,9 +257,9 @@ export default function Dashboard() {
                         </p>
                         <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">{alert.alertType.replace(/_/g, ' ')}</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => dismissMutation.mutate({ alertId: alert.id })}
-                        className="opacity-0 group-hover:opacity-100 p-2 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all shrink-0 self-start"
+                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all shrink-0 self-start"
                         title="Dismiss alert"
                       >
                         <X className="w-4 h-4" />
