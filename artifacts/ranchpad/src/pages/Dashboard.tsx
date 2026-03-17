@@ -134,7 +134,7 @@ export default function Dashboard() {
           </div>
 
           {/* Weather Widget */}
-          <Card className="overflow-hidden shadow-lg shadow-blue-500/10 relative border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30">
+          <Card className="overflow-hidden shadow-lg shadow-blue-500/10 relative border-blue-200 dark:border-blue-900 bg-blue-200 dark:bg-blue-900/50">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
             <CardHeader className="pb-2 border-b border-blue-100 dark:border-blue-900">
@@ -216,7 +216,7 @@ export default function Dashboard() {
 
         {/* Right Column: Alerts */}
         <div className="lg:col-span-1">
-          <Card className="h-full flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10 bg-red-50 dark:bg-red-950/30">
+          <Card className="h-full flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10 bg-red-200 dark:bg-red-900/50">
             <CardHeader className="border-b border-red-100 dark:border-red-900 pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl flex items-center gap-2 text-red-600 dark:text-red-400">
