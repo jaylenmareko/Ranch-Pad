@@ -104,52 +104,74 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-primary md:bg-background">
+    <div className="min-h-screen bg-background">
 
-      {/* ── Top (mobile) / Right (desktop): CTA Panel ── */}
-      <div className="order-first md:order-last md:flex-none md:w-[40%] flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-md animate-in">
-          <Card className="border shadow-xl rounded-3xl overflow-hidden bg-white md:bg-transparent md:border-none md:shadow-none md:bg-gradient-to-br md:from-primary/80 md:to-foreground/90">
-            <CardHeader className="pt-8 pb-4 text-center">
-              <CardTitle className="text-3xl text-foreground md:text-primary-foreground">Welcome</CardTitle>
-              <CardDescription className="text-base text-muted-foreground md:text-primary-foreground/70">
-                Livestock management for modern ranches.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-8">
-              <div className="flex gap-3">
-                <Button
-                  size="lg"
-                  className="flex-1 whitespace-nowrap md:bg-white md:text-primary md:hover:bg-white/90"
-                  onClick={() => setShowSignup(true)}
-                >
-                  Sign Up
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="flex-1 whitespace-nowrap md:border-white/50 md:text-white md:hover:bg-white/10 md:hover:text-white"
-                  onClick={() => setShowLogin(true)}
-                >
-                  Log In
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      {/* ══════════════ MOBILE LAYOUT (hidden on desktop) ══════════════ */}
+      <div className="md:hidden min-h-screen flex flex-col bg-gradient-to-br from-primary/80 to-foreground/90 text-white">
+        {/* Logo + name + description */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-8 pb-6">
+          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-5 shadow-2xl border border-white/20">
+            <PawPrint className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-4xl font-display font-black mb-3 drop-shadow-lg">RanchPad</h1>
+          <p className="text-lg font-medium text-white/80 max-w-xs">
+            Manage your livestock and get AI alerts before disease hits your animals.
+          </p>
+        </div>
+
+        {/* Welcome + buttons (no card) */}
+        <div className="flex flex-col items-center text-center px-8 pb-14">
+          <h2 className="text-2xl font-bold mb-1">Welcome</h2>
+          <p className="text-white/70 mb-6">Livestock management for modern ranches.</p>
+          <div className="flex gap-3 w-full max-w-sm">
+            <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
+              Sign Up
+            </Button>
+            <Button size="lg" variant="outline" className="flex-1 border-white/50 text-white hover:bg-white/10 hover:text-white" onClick={() => setShowLogin(true)}>
+              Log In
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* ── Bottom (mobile) / Left (desktop): Hero Panel ── */}
-      <div className="order-last md:order-first flex flex-1 relative md:bg-primary/10 overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 md:bg-gradient-to-br md:from-primary/80 md:to-foreground/90" />
-        <div className="relative z-10 text-center p-6 md:p-12 text-white">
-          <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-4 md:mb-8 shadow-2xl border border-white/20">
-            <PawPrint className="w-10 h-10 md:w-12 md:h-12 text-white" />
+      {/* ══════════════ DESKTOP LAYOUT (hidden on mobile) ══════════════ */}
+      <div className="hidden md:flex min-h-screen flex-row">
+        {/* Left: Hero Panel */}
+        <div className="flex flex-1 relative bg-primary/10 overflow-hidden items-center justify-center">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-foreground/90" />
+          <div className="relative z-10 text-center p-12 text-primary-foreground">
+            <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-white/20">
+              <PawPrint className="w-12 h-12 text-white" />
+            </div>
+            <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
+            <p className="text-xl font-medium text-white/80 max-w-md mx-auto">
+              Manage your livestock and get AI alerts before disease hits your animals.
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-black mb-3 md:mb-4 drop-shadow-lg">RanchPad</h1>
-          <p className="text-lg md:text-xl font-medium text-white/80 max-w-md mx-auto">
-            Manage your livestock and get AI alerts before disease hits your animals.
-          </p>
+        </div>
+
+        {/* Right: CTA Card */}
+        <div className="w-[40%] flex items-center justify-center p-10">
+          <div className="w-full max-w-md animate-in">
+            <Card className="border shadow-xl rounded-3xl overflow-hidden bg-primary/10 bg-gradient-to-br from-primary/80 to-foreground/90">
+              <CardHeader className="pt-8 pb-4 text-center">
+                <CardTitle className="text-3xl text-primary-foreground">Welcome</CardTitle>
+                <CardDescription className="text-base text-primary-foreground/70">
+                  Livestock management for modern ranches.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-8">
+                <div className="flex gap-3">
+                  <Button size="lg" className="flex-1 whitespace-nowrap bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
+                    Sign Up
+                  </Button>
+                  <Button size="lg" variant="outline" className="flex-1 whitespace-nowrap border-white/50 text-white hover:bg-white/10 hover:text-white" onClick={() => setShowLogin(true)}>
+                    Log In
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
