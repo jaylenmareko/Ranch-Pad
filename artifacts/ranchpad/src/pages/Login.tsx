@@ -104,12 +104,12 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-green-600 md:bg-background">
+    <div className="min-h-screen flex flex-col md:flex-row bg-primary md:bg-background">
 
       {/* ── Top (mobile) / Right (desktop): CTA Panel ── */}
-      <div className="order-first md:order-last flex-1 md:flex-none md:w-[40%] flex items-center justify-center p-6 sm:p-10">
+      <div className="order-first md:order-last md:flex-none md:w-[40%] flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md animate-in">
-          <Card className="border shadow-xl rounded-3xl overflow-hidden bg-white md:bg-primary/10 md:bg-gradient-to-br md:from-primary/80 md:to-foreground/90">
+          <Card className="border shadow-xl rounded-3xl overflow-hidden bg-white md:bg-transparent md:border-none md:shadow-none md:bg-gradient-to-br md:from-primary/80 md:to-foreground/90">
             <CardHeader className="pt-8 pb-4 text-center">
               <CardTitle className="text-3xl text-foreground md:text-primary-foreground">Welcome</CardTitle>
               <CardDescription className="text-base text-muted-foreground md:text-primary-foreground/70">
@@ -120,7 +120,7 @@ export default function Login() {
               <div className="flex gap-3">
                 <Button
                   size="lg"
-                  className="flex-1 whitespace-nowrap"
+                  className="flex-1 whitespace-nowrap md:bg-white md:text-primary md:hover:bg-white/90"
                   onClick={() => setShowSignup(true)}
                 >
                   Sign Up
@@ -140,7 +140,7 @@ export default function Login() {
       </div>
 
       {/* ── Bottom (mobile) / Left (desktop): Hero Panel ── */}
-      <div className="order-last md:order-first flex flex-1 relative md:bg-primary/10 overflow-hidden items-center justify-center min-h-[280px] md:min-h-0">
+      <div className="order-last md:order-first flex flex-1 relative md:bg-primary/10 overflow-hidden items-center justify-center">
         <div className="absolute inset-0 md:bg-gradient-to-br md:from-primary/80 md:to-foreground/90" />
         <div className="relative z-10 text-center p-6 md:p-12 text-white">
           <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-4 md:mb-8 shadow-2xl border border-white/20">
