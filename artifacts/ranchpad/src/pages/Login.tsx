@@ -122,7 +122,7 @@ export default function Login() {
       </div>
 
       {/* ── Right: CTA Panel ── */}
-      <div className="md:w-80 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
+      <div className="md:w-[38%] flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
         {/* Mobile background */}
         <div className="absolute top-0 left-0 right-0 h-64 bg-primary md:hidden rounded-b-[40px] -z-10" />
 
