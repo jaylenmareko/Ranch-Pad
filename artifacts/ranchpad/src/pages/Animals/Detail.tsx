@@ -425,7 +425,10 @@ function FamachaTab({ animalId }: { animalId: number }) {
 
   const chartData = [...(scores || [])]
     .sort((a: FamachaScore, b: FamachaScore) => new Date(a.recordedDate).getTime() - new Date(b.recordedDate).getTime())
-    .map((s: FamachaScore) => ({ date: new Date(s.recordedDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}), score: s.score }));
+    .map((s: FamachaScore) => {
+      const d = new Date(s.recordedDate + "T12:00:00");
+      return { date: `${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`, score: s.score };
+    });
 
   return (
     <div className="space-y-6">
