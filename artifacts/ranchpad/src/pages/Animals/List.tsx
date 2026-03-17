@@ -96,8 +96,10 @@ export default function AnimalList() {
             className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
           >
             <option value="All">Both Sexes</option>
-            <option value="Male">Male</option>
             <option value="Female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Wether">Wether</option>
+            <option value="Castrated">Castrated</option>
           </select>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar px-1">
@@ -167,12 +169,25 @@ export default function AnimalList() {
                     </div>
                   </div>
                   
-                  <div className="mt-auto pt-4 flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="bg-secondary/50">{animal.species}</Badge>
-                    <Badge variant="outline" className="border-border text-muted-foreground">{animal.sex}</Badge>
-                    <span className="text-sm font-medium text-muted-foreground ml-auto">
-                      {formatAge(animal.dateOfBirth)}
-                    </span>
+                  <div className="mt-auto pt-4 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="secondary" className="bg-secondary/50">{animal.species}</Badge>
+                      <Badge variant="outline" className="border-border text-muted-foreground">{animal.sex}</Badge>
+                      {animal.breed && (
+                        <Badge variant="outline" className="border-border text-muted-foreground">{animal.breed}</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground font-medium">
+                      {animal.dateOfBirth && (
+                        <span>DOB: {new Date(animal.dateOfBirth).toLocaleDateString()}</span>
+                      )}
+                      <span className="ml-auto">{formatAge(animal.dateOfBirth)}</span>
+                    </div>
+                    {animal.sex === "Female" && animal.expectedDueDate && (
+                      <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
+                        Due: {new Date(animal.expectedDueDate).toLocaleDateString()}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
