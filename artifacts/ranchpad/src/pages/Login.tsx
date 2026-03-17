@@ -13,6 +13,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [ranchName, setRanchName] = useState("");
+  const [ranchCity, setRanchCity] = useState("");
+  const [ranchState, setRanchState] = useState("");
   
   const { login: setAuthContext } = useAuth();
   const { toast } = useToast();
@@ -38,7 +40,7 @@ export default function Login() {
       );
     } else {
       signupMutation.mutate(
-        { data: { email, password, name, ranchName } },
+        { data: { email, password, name, ranchName, ranchCity: ranchCity || undefined, ranchState: ranchState || undefined } },
         {
           onSuccess: (data) => setAuthContext(data.token),
           onError: (error: Error) => {
@@ -148,18 +150,41 @@ export default function Login() {
                 </div>
 
                 {!isLogin && (
-                  <div className="space-y-2 pt-4 border-t border-border/50">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="space-y-4 pt-4 border-t border-border/50">
+                    <div className="flex items-center gap-2">
                       <Tractor className="w-5 h-5 text-accent" />
-                      <Label htmlFor="ranchName" className="text-accent font-bold">New Ranch Name</Label>
+                      <Label className="text-accent font-bold">Ranch Details</Label>
                     </div>
-                    <Input 
-                      id="ranchName" 
-                      placeholder="e.g. Rolling Hills Ranch" 
-                      value={ranchName} 
-                      onChange={e => setRanchName(e.target.value)} 
-                      required={!isLogin} 
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="ranchName">Ranch Name</Label>
+                      <Input
+                        id="ranchName"
+                        placeholder="e.g. Rolling Hills Ranch"
+                        value={ranchName}
+                        onChange={e => setRanchName(e.target.value)}
+                        required={!isLogin}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="ranchCity">City</Label>
+                        <Input
+                          id="ranchCity"
+                          placeholder="e.g. Wichita"
+                          value={ranchCity}
+                          onChange={e => setRanchCity(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="ranchState">State</Label>
+                        <Input
+                          id="ranchState"
+                          placeholder="e.g. Kansas"
+                          value={ranchState}
+                          onChange={e => setRanchState(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
 
