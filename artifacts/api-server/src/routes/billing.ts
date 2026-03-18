@@ -255,10 +255,12 @@ router.post("/billing/webhook", async (req: Request, res: Response): Promise<voi
           .limit(1);
 
         if (ranch) {
+          const allowed = ["trialing", "active", "past_due", "canceled"];
+          const normalized = allowed.includes(sub.status) ? sub.status : "canceled";
           await db.update(ranchesTable)
             .set({
               stripeSubscriptionId: sub.id,
-              subscriptionStatus: sub.status as string,
+              subscriptionStatus: normalized,
             })
             .where(eq(ranchesTable.id, ranch.id));
         }
