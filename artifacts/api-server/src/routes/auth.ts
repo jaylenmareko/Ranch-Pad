@@ -162,6 +162,11 @@ const updateMeSchema = z.object({
   name: z.string().min(1),
 });
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+});
+
 router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   const userId = req.user!.userId;
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -192,6 +197,35 @@ router.put("/auth/me", requireAuth, async (req, res): Promise<void> => {
   }
 
   res.json({ id: updated.id, name: updated.name, email: updated.email });
+});
+
+router.put("/auth/me/password", requireAuth, async (req, res): Promise<void> => {
+  const parsed = changePasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "Invalid request";
+    res.status(400).json({ error: true, message: msg });
+    return;
+  }
+
+  const userId = req.user!.userId;
+  const { currentPassword, newPassword } = parsed.data;
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: true, message: "User not found" });
+    return;
+  }
+
+  const passwordMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!passwordMatch) {
+    res.status(401).json({ error: true, message: "Current password is incorrect" });
+    return;
+  }
+
+  const newPasswordHash = await bcrypt.hash(newPassword, 12);
+  await db.update(usersTable).set({ passwordHash: newPasswordHash }).where(eq(usersTable.id, userId));
+
+  res.json({ success: true });
 });
 
 export default router;

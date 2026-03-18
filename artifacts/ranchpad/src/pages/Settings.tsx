@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut, KeyRound } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,11 @@ export default function Settings() {
   const [displayName, setDisplayName] = useState("");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isSavingName, setIsSavingName] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     if (ranch) {
@@ -88,6 +93,32 @@ export default function Settings() {
       toast({ title: "Save failed", description: message, variant: "destructive" });
     } finally {
       setIsSavingName(false);
+    }
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) return;
+    setIsChangingPassword(true);
+    try {
+      const res = await fetch("/api/auth/me/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message ?? "Password change failed");
+      }
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({ title: "Password updated", description: "Your new password is active." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong.";
+      toast({ title: "Password change failed", description: message, variant: "destructive" });
+    } finally {
+      setIsChangingPassword(false);
     }
   }
 
@@ -197,6 +228,72 @@ export default function Settings() {
               </div>
             </form>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Change Password */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <KeyRound className="w-5 h-5 text-primary" />
+            Change Password
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Current Password</Label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={e => setCurrentPassword(e.target.value)}
+                placeholder="Enter your current password"
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                required
+                minLength={6}
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Confirm New Password</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Repeat new password"
+                required
+                autoComplete="new-password"
+              />
+              {confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-destructive font-medium">Passwords do not match.</p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              variant="secondary"
+              isLoading={isChangingPassword}
+              disabled={
+                isChangingPassword ||
+                !currentPassword ||
+                newPassword.length < 6 ||
+                newPassword !== confirmPassword
+              }
+              className="w-full gap-2"
+            >
+              <KeyRound className="w-4 h-4" />
+              Update Password
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
