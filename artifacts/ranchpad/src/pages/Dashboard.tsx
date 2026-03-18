@@ -200,8 +200,9 @@ export default function Dashboard() {
                 <button
                   onClick={() => refetchWeather()}
                   disabled={weatherFetching}
-                  className="ml-auto p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/50 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
+                  className="ml-auto p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/50 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
                   title="Refresh weather"
+                  aria-label="Refresh weather"
                 >
                   <RefreshCw className={`w-4 h-4 ${weatherFetching ? "animate-spin" : ""}`} />
                 </button>

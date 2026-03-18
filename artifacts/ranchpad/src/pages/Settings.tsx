@@ -500,8 +500,9 @@ export default function Settings() {
                   <button
                     type="button"
                     onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); }}
-                    className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
+                    className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                     title="Clear coordinates"
+                    aria-label="Clear coordinates"
                   >
                     <XCircle className="w-4 h-4" />
                   </button>
