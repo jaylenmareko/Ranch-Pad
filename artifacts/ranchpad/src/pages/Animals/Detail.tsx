@@ -459,7 +459,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
       <div className="flex justify-between items-center">
         <div>
           <h3 className="font-display font-bold text-xl">FAMACHA Eye Scores</h3>
-          <p className="text-sm text-muted-foreground">Monitor anemia/parasite load (1=Optimal, 5=Fatal)</p>
+          <p className="text-sm text-muted-foreground">Monitor anemia/parasite load (1=Critical, 5=Healthy)</p>
         </div>
         <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Score</Button>
       </div>
@@ -482,13 +482,13 @@ function FamachaTab({ animalId }: { animalId: number }) {
                     score === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'
                   }`}
                   style={{
-                    backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f87171' : num === 3 ? '#fca5a5' : num === 4 ? '#fecaca' : '#fee2e2',
-                    color: num <= 2 ? 'white' : '#7f1d1d'
+                    backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f97316' : num === 3 ? '#eab308' : num === 4 ? '#86efac' : '#22c55e',
+                    color: num <= 3 ? 'white' : '#14532d'
                   }}
                 >{num}</button>
               ))}
             </div>
-            <p className="text-xs text-center text-muted-foreground font-bold">1 = Deep Red (Good) <span className="mx-2">|</span> 5 = White (Danger)</p>
+            <p className="text-xs text-center text-muted-foreground font-bold">1 = Critical (Anemic) <span className="mx-2">|</span> 5 = Healthy (Clear)</p>
           </div>
           <Button type="submit" className="w-full" isLoading={createMutation.isPending}>Save Score</Button>
         </form>
@@ -521,7 +521,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
               {[1,2,3,4,5].map(num => (
                 <button key={num} type="button" onClick={() => setEditScore(num)}
                   className={`flex-1 h-14 rounded-xl font-black text-xl transition-all ${editScore === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'}`}
-                  style={{ backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f87171' : num === 3 ? '#fca5a5' : num === 4 ? '#fecaca' : '#fee2e2', color: num <= 2 ? 'white' : '#7f1d1d' }}
+                  style={{ backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f97316' : num === 3 ? '#eab308' : num === 4 ? '#86efac' : '#22c55e', color: num <= 3 ? 'white' : '#14532d' }}
                 >{num}</button>
               ))}
             </div>
@@ -534,7 +534,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
         {scores?.sort((a: FamachaScore, b: FamachaScore) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map((s: FamachaScore) => (
           <Card key={s.id} className="text-center shadow-sm group relative">
             <CardContent className="p-3">
-              <div className="text-3xl font-black mb-1" style={{ color: s.score >= 4 ? 'var(--color-destructive)' : s.score === 3 ? '#eab308' : 'var(--color-primary)' }}>
+              <div className="text-3xl font-black mb-1" style={{ color: s.score === 1 ? '#ef4444' : s.score === 2 ? '#f97316' : s.score === 3 ? '#eab308' : '#22c55e' }}>
                 {s.score}
               </div>
               <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
