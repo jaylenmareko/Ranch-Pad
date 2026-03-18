@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { db, usersTable, ranchesTable, ranchUsersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { signToken } from "../lib/jwt.js";
+import { requireAuth } from "../middlewares/auth.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -155,6 +156,42 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       createdAt: ranch.createdAt,
     },
   });
+});
+
+const updateMeSchema = z.object({
+  name: z.string().min(1),
+});
+
+router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
+  const userId = req.user!.userId;
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: true, message: "User not found" });
+    return;
+  }
+  res.json({ id: user.id, name: user.name, email: user.email });
+});
+
+router.put("/auth/me", requireAuth, async (req, res): Promise<void> => {
+  const parsed = updateMeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const userId = req.user!.userId;
+  const [updated] = await db
+    .update(usersTable)
+    .set({ name: parsed.data.name })
+    .where(eq(usersTable.id, userId))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "User not found" });
+    return;
+  }
+
+  res.json({ id: updated.id, name: updated.name, email: updated.email });
 });
 
 export default router;
