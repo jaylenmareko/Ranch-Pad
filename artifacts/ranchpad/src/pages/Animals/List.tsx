@@ -1,12 +1,49 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
+
+// ─── CSV Template ──────────────────────────────────────────────────────────────
+
+const CSV_TEMPLATE_HEADERS = [
+  "name", "tag_number", "species", "breed", "sex", "date_of_birth",
+  "health_event_description", "health_event_date", "health_event_severity",
+  "medication_name", "dosage", "date_given", "next_due_date",
+].join(",");
+
+const CSV_EXAMPLE_ROW = [
+  "Bessie", "A101", "Cattle", "Angus", "Heifer", "2023-04-15",
+  "Routine checkup", "2024-01-10", "low",
+  "Ivermectin", "5ml", "2024-01-10", "2025-01-10",
+].join(",");
+
+function downloadTemplate() {
+  const content = `${CSV_TEMPLATE_HEADERS}\n${CSV_EXAMPLE_ROW}\n`;
+  const blob = new Blob([content], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ranchpad-animal-template.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+interface ImportSkip { row: number; reason: string; }
+interface ImportSummary {
+  animalsCreated: number;
+  healthEventsCreated: number;
+  medicationRecordsCreated: number;
+  skipped: ImportSkip[];
+}
+
+// ─── Species Icons ─────────────────────────────────────────────────────────────
 
 const SPECIES_ICONS: Record<string, string> = {
   Cattle: "🐄",
@@ -147,8 +184,41 @@ export default function AnimalList() {
   const [search, setSearch] = useState("");
   const [sexFilter, setSexFilter] = useState("All");
   const [breedFilter, setBreedFilter] = useState("All");
+  const [importing, setImporting] = useState(false);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   const { data: animals, isLoading } = useListAnimals({ search: search.length > 2 ? search : undefined });
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setImporting(true);
+    setImportError(null);
+    setImportSummary(null);
+
+    try {
+      const res = await fetch("/api/animals/import-csv", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.message ?? "Import failed. Please check your file and try again.");
+      } else {
+        setImportSummary(data as ImportSummary);
+        queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+      }
+    } catch {
+      setImportError("Network error — please try again.");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   const filteredAnimals = React.useMemo(() => {
     if (!animals) return [];
@@ -181,18 +251,108 @@ export default function AnimalList() {
 
   return (
     <div className="space-y-5">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* Import result dialog */}
+      <Dialog
+        open={importSummary !== null || importError !== null}
+        onOpenChange={open => { if (!open) { setImportSummary(null); setImportError(null); } }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {importError ? "Import Failed" : "Import Complete"}
+            </DialogTitle>
+            <DialogDescription>
+              {importError
+                ? importError
+                : importSummary && `${importSummary.animalsCreated} animal${importSummary.animalsCreated !== 1 ? "s" : ""} added to your herd.`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          {importSummary && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-3">
+                  <div className="text-2xl font-black text-green-600 dark:text-green-400">{importSummary.animalsCreated}</div>
+                  <div className="text-xs text-muted-foreground font-medium mt-1">Animals</div>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-3">
+                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400">{importSummary.healthEventsCreated}</div>
+                  <div className="text-xs text-muted-foreground font-medium mt-1">Health Events</div>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-950/30 rounded-xl p-3">
+                  <div className="text-2xl font-black text-purple-600 dark:text-purple-400">{importSummary.medicationRecordsCreated}</div>
+                  <div className="text-xs text-muted-foreground font-medium mt-1">Medications</div>
+                </div>
+              </div>
+              {importSummary.skipped.length > 0 && (
+                <div className="border border-yellow-300 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/20 rounded-xl p-3">
+                  <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400 mb-2">
+                    {importSummary.skipped.length} row{importSummary.skipped.length !== 1 ? "s" : ""} skipped:
+                  </p>
+                  <ul className="space-y-1 max-h-40 overflow-y-auto">
+                    {importSummary.skipped.map((s, i) => (
+                      <li key={i} className="flex gap-2 text-xs text-yellow-700 dark:text-yellow-400">
+                        <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span><span className="font-bold">Row {s.row}:</span> {s.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {importSummary.animalsCreated > 0 && importSummary.skipped.length === 0 && (
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                  <CheckCircle className="w-4 h-4" />
+                  All rows imported successfully.
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-foreground">Herd Directory</h1>
           <p className="text-muted-foreground font-medium mt-1">
             {isLoading ? "Loading…" : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
           </p>
         </div>
-        <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform w-full sm:w-auto">
-          <Plus className="w-5 h-5 mr-2" />
-          Add Animal
-        </Link>
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+          <Button
+            variant="outline"
+            onClick={downloadTemplate}
+            className="h-10 px-4 rounded-xl font-semibold text-sm"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Template
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="h-10 px-4 rounded-xl font-semibold text-sm"
+          >
+            {importing ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importing…</>
+            ) : (
+              <><Upload className="w-4 h-4 mr-2" />Import CSV</>
+            )}
+          </Button>
+          <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Animal
+          </Link>
+        </div>
       </div>
 
       {/* Filter bar */}
