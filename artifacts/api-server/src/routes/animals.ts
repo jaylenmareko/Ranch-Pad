@@ -303,18 +303,14 @@ router.post("/animals/import-csv", requireAuth, upload.single("file"), async (re
     const breed = (row["breed"] ?? "").trim() || null;
     const dateOfBirth = (row["date_of_birth"] ?? "").trim() || null;
 
-    // Health event fields — validate before starting transaction
+    // Health event — only created when all three fields are present and severity is valid.
+    // Partial or invalid fields do not block animal creation; the health event is simply omitted.
     const heDesc = (row["health_event_description"] ?? "").trim();
     const heDate = (row["health_event_date"] ?? "").trim();
     const heSev = (row["health_event_severity"] ?? "").trim().toLowerCase();
-    const hasHealthFields = !!(heDesc && heDate);
-    if (hasHealthFields && !VALID_SEVERITIES.has(heSev)) {
-      summary.skipped.push({ row: rowNum, reason: `Invalid health_event_severity "${heSev}": must be low, medium, or high` });
-      continue;
-    }
-    const includeHealth = hasHealthFields && VALID_SEVERITIES.has(heSev);
+    const includeHealth = !!(heDesc && heDate && VALID_SEVERITIES.has(heSev));
 
-    // Medication fields
+    // Medication record — only created when medication_name and date_given are both present.
     const medName = (row["medication_name"] ?? "").trim();
     const dateGiven = (row["date_given"] ?? "").trim();
     const includeMed = !!(medName && dateGiven);
