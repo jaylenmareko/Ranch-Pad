@@ -124,16 +124,46 @@ function AnimalCard({ animal }: { animal: Animal }) {
   );
 }
 
+const FOLDER_STORAGE_KEY = "ranchpad:folderOpen";
+
+function getFolderOpen(species: string): boolean {
+  try {
+    const stored = localStorage.getItem(FOLDER_STORAGE_KEY);
+    if (!stored) return false;
+    const map = JSON.parse(stored) as Record<string, boolean>;
+    return map[species] ?? false;
+  } catch {
+    return false;
+  }
+}
+
+function setFolderOpen(species: string, value: boolean): void {
+  try {
+    const stored = localStorage.getItem(FOLDER_STORAGE_KEY);
+    const map = stored ? (JSON.parse(stored) as Record<string, boolean>) : {};
+    map[species] = value;
+    localStorage.setItem(FOLDER_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
+}
+
 function SpeciesFolder({
   species,
   animals,
-  defaultOpen = false,
 }: {
   species: string;
   animals: Animal[];
-  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(() => getFolderOpen(species));
+
+  function toggle() {
+    setOpen(o => {
+      const next = !o;
+      setFolderOpen(species, next);
+      return next;
+    });
+  }
 
   const highCount = animals.filter(a => a.latestHealthSeverity === "high").length;
   const medCount = animals.filter(a => a.latestHealthSeverity === "medium").length;
@@ -142,7 +172,7 @@ function SpeciesFolder({
     <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Folder header */}
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={toggle}
         className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
       >
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
