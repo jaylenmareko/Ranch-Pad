@@ -2,14 +2,22 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+
+interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+}
 
 export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { logout } = useAuth();
   const { data: ranch, isLoading } = useGetRanch();
 
   const [name, setName] = useState("");
@@ -22,6 +30,11 @@ export default function Settings() {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
 
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [displayName, setDisplayName] = useState("");
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isSavingName, setIsSavingName] = useState(false);
+
   useEffect(() => {
     if (ranch) {
       setName(ranch.name ?? "");
@@ -31,6 +44,52 @@ export default function Settings() {
       setLon(ranch.lon ?? null);
     }
   }, [ranch]);
+
+  useEffect(() => {
+    setIsLoadingProfile(true);
+    fetch("/api/auth/me")
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { message?: string }).message ?? "Could not load account info");
+        }
+        return res.json() as Promise<UserProfile>;
+      })
+      .then((data) => {
+        setUserProfile(data);
+        setDisplayName(data.name ?? "");
+      })
+      .catch(() => {
+        toast({ title: "Could not load account info", variant: "destructive" });
+      })
+      .finally(() => setIsLoadingProfile(false));
+  }, []);
+
+  async function handleSaveName(e: React.FormEvent) {
+    e.preventDefault();
+    if (!displayName.trim()) return;
+    setIsSavingName(true);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: displayName.trim() }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message ?? "Save failed");
+      }
+      const updated: UserProfile = await res.json();
+      setUserProfile(updated);
+      setDisplayName(updated.name);
+      toast({ title: "Name updated", description: "Your display name has been saved." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong.";
+      toast({ title: "Save failed", description: message, variant: "destructive" });
+    } finally {
+      setIsSavingName(false);
+    }
+  }
 
   async function handleGeocode() {
     if (!address.trim()) return;
@@ -88,8 +147,58 @@ export default function Settings() {
     <div className="space-y-8 max-w-2xl mx-auto">
       <div>
         <h1 className="text-3xl font-black font-display text-foreground">Settings</h1>
-        <p className="text-muted-foreground font-medium mt-1">Manage your ranch profile and location.</p>
+        <p className="text-muted-foreground font-medium mt-1">Manage your account and ranch profile.</p>
       </div>
+
+      {/* Your Account */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <User className="w-5 h-5 text-primary" />
+            Your Account
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoadingProfile ? (
+            <p className="text-sm text-muted-foreground animate-pulse font-medium">Loading account info...</p>
+          ) : (
+            <form onSubmit={handleSaveName} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Display Name</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Your name"
+                    required
+                    className="flex-1"
+                  />
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    isLoading={isSavingName}
+                    disabled={isSavingName || displayName.trim() === (userProfile?.name ?? "")}
+                    className="shrink-0"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  value={userProfile?.email ?? ""}
+                  readOnly
+                  disabled
+                  className="bg-muted/50 text-muted-foreground cursor-not-allowed"
+                />
+                <p className="text-xs text-muted-foreground font-medium">Email cannot be changed at this time.</p>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Ranch Info */}
@@ -198,9 +307,21 @@ export default function Settings() {
 
         <Button type="submit" className="w-full gap-2" isLoading={updateMutation.isPending}>
           <Save className="w-4 h-4" />
-          Save Settings
+          Save Ranch Settings
         </Button>
       </form>
+
+      {/* Log Out */}
+      <div className="border-t pt-6">
+        <Button
+          variant="destructive"
+          className="w-full gap-2"
+          onClick={logout}
+        >
+          <LogOut className="w-4 h-4" />
+          Log Out
+        </Button>
+      </div>
     </div>
   );
 }
