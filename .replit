@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-24", "postgresql-16"]
 
 [[artifacts]]
 id = "artifacts/api-server"
@@ -31,3 +31,6 @@ timeoutMs = 20000
 STRIPE_SECRET_KEY = "sk_test_51TBjEq9ZQ5U4BxKAZqqupkZTKhan2ayYAw9pVrWKCb7hL7FjaMsLEVzJX1keW34u47DGNwxwgUARwnXaBQAGBRxZ00J1VNhWrS"
 STRIPE_WEBHOOK_SECRET = "whsec_g5kB4zqlrwmcdf0NoqM2A6XJnTTpaFHq"
 STRIPE_PRICE_ID = "price_1TCRQG9ZQ5U4BxKA7TYeiFDB"
+
+[nix]
+channel = "stable-25_05"
