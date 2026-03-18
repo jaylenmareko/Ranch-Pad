@@ -1,0 +1,24 @@
+Please review the entire RanchPad app and do the following:
+1. GitHub Setup
+What do I need to push this code to GitHub? List the exact steps and whether I need a personal access token or any other credentials.
+2. Stripe Setup
+I have Stripe test keys. Set up the following:
+
+14 day free trial with no credit card required at signup
+$12/month paid plan after trial ends
+When the trial expires, users can still log in but are immediately shown a full screen paywall with no access to anything else in the app until they subscribe. No partial access, no read-only mode — just a clean upgrade page with a pay button
+Add a Billing section inside the app settings where users can see their current plan status, trial days remaining, next billing date, and a button to manage or upgrade their subscription via Stripe Checkout
+Tell me exactly what I need to create in my Stripe dashboard and what values to add to Replit Secrets (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID)
+Use test keys for now so I can test the full payment flow without real charges
+
+3. Web App Readiness Review
+This app will launch as a web app at a .com domain, used on phone browsers by farmers. Review the entire app for v1 readiness and fix the following:
+
+Is the app easy enough for a non-technical farmer to understand and use immediately without any instructions?
+The app will be used on a phone browser, not a native app — make sure every page is fully responsive and usable on mobile screens with large tap targets, readable fonts, and no horizontal scrolling
+Review all color coding throughout the app — colors should instantly communicate meaning. Weather alerts and action-required items should use red for urgent, yellow for warning, green for clear, blue for informational. Apply this consistently everywhere including the dashboard, animal health dots, alert severity badges, and weather widget
+Review the CSV upload feature and any other data entry flows — is there anything else that could be simplified or made faster for a farmer standing in a field on their phone?
+Are there any missing labels, confusing buttons, or unclear navigation that needs to be fixed before real users see this?
+Fix anything that would confuse a first time user on a phone browser
+
+List everything you changed and flag anything I should review before publishing.
