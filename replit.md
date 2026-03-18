@@ -24,13 +24,20 @@ A full-stack livestock management app for modern ranches. Features include anima
 ### Backend (`artifacts/api-server`)
 - Express + TypeScript (ESM, tsx)
 - JWT auth middleware: `artifacts/api-server/src/middleware/auth.ts`
-- Routes: auth, animals, alerts, famacha, field-notes, health-events, medications, ranch, weather
+- Routes: auth, animals, alerts, famacha, field-notes, health-events, medications, ranch, weather, billing
 - Startup: checks DB connectivity, generates initial alerts for all ranches
 - Requires env vars: `PORT`, `JWT_SECRET`, `DATABASE_URL`
+- Optional Stripe env vars: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
+- Billing routes: `artifacts/api-server/src/routes/billing.ts`
+  - `GET /api/billing/status` — returns BillingStatus (trialing/active/past_due/canceled/expired, hasAccess)
+  - `POST /api/billing/checkout` — creates Stripe checkout session, returns redirect URL
+  - `POST /api/billing/portal` — creates Stripe billing portal session, returns redirect URL
+  - `POST /api/billing/webhook` — processes Stripe webhook events (checkout.session.completed, customer.subscription.updated/deleted)
 
 ### Database (`lib/db`)
 - PostgreSQL via Drizzle ORM
 - Tables: users, ranches, ranch_users, animals, alerts, famacha_scores, field_notes, health_events, medication_records
+- ranches table has billing columns: trial_ends_at, stripe_customer_id, stripe_subscription_id, subscription_status
 - Push schema: `pnpm --filter @workspace/db run push`
 
 ### API Client (`lib/api-client-react`)

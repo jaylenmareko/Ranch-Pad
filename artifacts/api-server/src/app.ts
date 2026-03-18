@@ -11,7 +11,7 @@ const app: Express = express();
 
 app.use(cors());
 // Raw body for webhook verification (before JSON parser)
-app.use("/api/subscription/webhook", express.raw({ type: "application/json" }));
+app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

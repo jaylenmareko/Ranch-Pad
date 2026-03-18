@@ -65,12 +65,14 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
       txRanch = joinTarget;
     } else {
       const newRanchName = ranchName || `${name}'s Ranch`;
+      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
       const [createdRanch] = await tx
         .insert(ranchesTable)
         .values({
           name: newRanchName,
           locationCity: ranchCity || null,
           locationState: ranchState || null,
+          trialEndsAt,
         })
         .returning();
       txRanch = createdRanch;
