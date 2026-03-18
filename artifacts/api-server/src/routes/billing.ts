@@ -72,11 +72,24 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
 
   // Past-due or canceled subscription — no access
   if (ranch.subscriptionStatus === "past_due" || ranch.subscriptionStatus === "canceled") {
+    let currentPeriodEnd: string | null = null;
+    if (ranch.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = getStripe();
+        const sub = await stripe.subscriptions.retrieve(ranch.stripeSubscriptionId);
+        const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end;
+        if (typeof periodEnd === "number") {
+          currentPeriodEnd = new Date(periodEnd * 1000).toISOString();
+        }
+      } catch {
+        // Non-fatal — just won't show expiry date
+      }
+    }
     const billingStatus: BillingStatus = {
       status: ranch.subscriptionStatus as "past_due" | "canceled",
       trialDaysLeft: null,
       trialEndsAt: null,
-      currentPeriodEnd: null,
+      currentPeriodEnd,
       hasAccess: false,
     };
     res.json(billingStatus);
