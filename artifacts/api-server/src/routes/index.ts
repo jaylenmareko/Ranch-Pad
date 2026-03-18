@@ -10,6 +10,7 @@ import fieldNotesRouter from "./field-notes.js";
 import alertsRouter from "./alerts.js";
 import weatherRouter from "./weather.js";
 import upcomingRouter from "./upcoming.js";
+import billingRouter from "./billing.js";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(fieldNotesRouter);
 router.use(alertsRouter);
 router.use(weatherRouter);
 router.use(upcomingRouter);
+router.use(billingRouter);
 
 export default router;

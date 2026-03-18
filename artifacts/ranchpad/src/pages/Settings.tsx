@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut, KeyRound } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut, KeyRound, CreditCard, Loader2 } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import type { BillingStatus } from "@/hooks/use-billing";
 
 interface UserProfile {
   id: number;
@@ -19,6 +20,53 @@ export default function Settings() {
   const { toast } = useToast();
   const { logout } = useAuth();
   const { data: ranch, isLoading } = useGetRanch();
+
+  const { data: billing, isLoading: isBillingLoading } = useQuery<BillingStatus>({
+    queryKey: ["/api/billing/status"],
+    queryFn: async () => {
+      const res = await fetch("/api/billing/status");
+      if (!res.ok) throw new Error("Failed to fetch billing status");
+      return res.json() as Promise<BillingStatus>;
+    },
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+
+  const [isBillingRedirecting, setIsBillingRedirecting] = useState(false);
+
+  async function handleSubscribe() {
+    setIsBillingRedirecting(true);
+    try {
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Checkout failed", description: data.message ?? "Please try again.", variant: "destructive" });
+        return;
+      }
+      if (data.url) window.location.href = data.url;
+    } catch {
+      toast({ title: "Checkout failed", description: "Network error. Try again.", variant: "destructive" });
+    } finally {
+      setIsBillingRedirecting(false);
+    }
+  }
+
+  async function handleManageBilling() {
+    setIsBillingRedirecting(true);
+    try {
+      const res = await fetch("/api/billing/portal", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Portal error", description: data.message ?? "Please try again.", variant: "destructive" });
+        return;
+      }
+      if (data.url) window.location.href = data.url;
+    } catch {
+      toast({ title: "Portal error", description: "Network error. Try again.", variant: "destructive" });
+    } finally {
+      setIsBillingRedirecting(false);
+    }
+  }
 
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
@@ -474,6 +522,93 @@ export default function Settings() {
           Save Ranch Settings
         </Button>
       </form>
+
+      {/* Subscription / Billing */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <CreditCard className="w-5 h-5 text-primary" />
+            Subscription
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isBillingLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading subscription info...
+            </div>
+          ) : !billing ? (
+            <p className="text-sm text-muted-foreground font-medium">Billing information unavailable.</p>
+          ) : (
+            <div className="space-y-4">
+              {/* Status badge */}
+              <div className="flex items-center gap-3">
+                {billing.status === "active" && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Active
+                  </span>
+                )}
+                {billing.status === "trialing" && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                    Free Trial
+                  </span>
+                )}
+                {billing.status === "past_due" && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    Past Due
+                  </span>
+                )}
+                {billing.status === "canceled" && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                    Canceled
+                  </span>
+                )}
+                {billing.status === "expired" && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    Trial Expired
+                  </span>
+                )}
+              </div>
+
+              {/* Trial days left */}
+              {billing.status === "trialing" && billing.trialDaysLeft !== null && (
+                <p className="text-sm font-medium text-muted-foreground">
+                  {billing.trialDaysLeft} day{billing.trialDaysLeft !== 1 ? "s" : ""} left in your free trial.
+                </p>
+              )}
+              {billing.status === "active" && billing.currentPeriodEnd && (
+                <p className="text-sm font-medium text-muted-foreground">
+                  Next billing date: {new Date(billing.currentPeriodEnd).toLocaleDateString()}
+                </p>
+              )}
+
+              {/* CTA button */}
+              {billing.status === "active" ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="gap-2"
+                  onClick={handleManageBilling}
+                  disabled={isBillingRedirecting}
+                >
+                  {isBillingRedirecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                  Manage Subscription
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  className="gap-2"
+                  onClick={handleSubscribe}
+                  disabled={isBillingRedirecting}
+                >
+                  {isBillingRedirecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                  {billing.status === "trialing" ? "Subscribe · $12/month" : "Re-subscribe · $12/month"}
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Log Out */}
       <div className="border-t pt-6">
