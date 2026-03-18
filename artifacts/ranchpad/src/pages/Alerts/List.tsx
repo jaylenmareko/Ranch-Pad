@@ -64,7 +64,7 @@ export default function AlertsList() {
       <Button 
         variant="outline" 
         size="sm" 
-        className="shrink-0 bg-background/50 hover:bg-background border-transparent shadow-none w-full md:w-auto"
+        className="shrink-0 bg-background/50 hover:bg-background border-transparent shadow-none w-full md:w-auto min-h-[44px]"
         onClick={() => dismissMutation.mutate({ alertId: alert.id })}
       >
         <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Resolved
