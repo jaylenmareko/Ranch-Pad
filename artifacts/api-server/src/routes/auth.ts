@@ -167,6 +167,11 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(6, "New password must be at least 6 characters"),
 });
 
+const changeEmailSchema = z.object({
+  newEmail: z.string().email("Please enter a valid email address"),
+  currentPassword: z.string().min(1, "Current password is required"),
+});
+
 router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   const userId = req.user!.userId;
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -226,6 +231,53 @@ router.put("/auth/me/password", requireAuth, async (req, res): Promise<void> => 
   await db.update(usersTable).set({ passwordHash: newPasswordHash }).where(eq(usersTable.id, userId));
 
   res.json({ success: true });
+});
+
+router.put("/auth/me/email", requireAuth, async (req, res): Promise<void> => {
+  const parsed = changeEmailSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "Invalid request";
+    res.status(400).json({ error: true, message: msg });
+    return;
+  }
+
+  const userId = req.user!.userId;
+  const { newEmail, currentPassword } = parsed.data;
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: true, message: "User not found" });
+    return;
+  }
+
+  const passwordMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!passwordMatch) {
+    res.status(401).json({ error: true, message: "Current password is incorrect" });
+    return;
+  }
+
+  if (newEmail.toLowerCase() === user.email.toLowerCase()) {
+    res.status(400).json({ error: true, message: "New email is the same as your current email" });
+    return;
+  }
+
+  const [existing] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(eq(usersTable.email, newEmail.toLowerCase()))
+    .limit(1);
+  if (existing) {
+    res.status(409).json({ error: true, message: "That email address is already in use" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(usersTable)
+    .set({ email: newEmail.toLowerCase() })
+    .where(eq(usersTable.id, userId))
+    .returning();
+
+  res.json({ id: updated.id, name: updated.name, email: updated.email });
 });
 
 export default router;
