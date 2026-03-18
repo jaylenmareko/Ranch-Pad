@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background -->
+  <rect width="64" height="64" fill="#ffffff"/>
+  
+  <!-- Barn -->
+  <path d="M 16 24 L 32 12 L 48 24 L 48 52 L 16 52 Z" fill="#8B6B47" stroke="#6b5338" stroke-width="1"/>
+  
+  <!-- Barn door -->
+  <rect x="20" y="28" width="12" height="20" fill="#6b5338" stroke="#5a4630" stroke-width="0.5"/>
+  <rect x="32" y="28" width="12" height="20" fill="#7a6342" stroke="#5a4630" stroke-width="0.5"/>
+  
+  <!-- Door handle -->
+  <circle cx="25" cy="38" r="1.5" fill="#c4a76e"/>
+  <circle cx="37" cy="38" r="1.5" fill="#c4a76e"/>
+  
+  <!-- Roof peak -->
+  <polygon points="32,12 16,24 48,24" fill="#a0795a" stroke="#6b5338" stroke-width="1"/>
+  
+  <!-- Cattle symbol - simple horns and head -->
+  <g transform="translate(32, 18)">
+    <!-- Horns -->
+    <path d="M -3 -2 L -6 -4" stroke="#8B6B47" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 3 -2 L 6 -4" stroke="#8B6B47" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    
+    <!-- Head -->
+    <ellipse cx="0" cy="0" rx="2" ry="2.5" fill="#2d5a3d" opacity="0.8"/>
+    
+    <!-- Eyes -->
+    <circle cx="-1" cy="-0.5" r="0.5" fill="#ffffff"/>
+    <circle cx="1" cy="-0.5" r="0.5" fill="#ffffff"/>
+  </g>
+  
+  <!-- Fence posts at base (grass/pasture) -->
+  <line x1="18" y1="52" x2="18" y2="56" stroke="#8B6B47" stroke-width="1"/>
+  <line x1="46" y1="52" x2="46" y2="56" stroke="#8B6B47" stroke-width="1"/>
+  
+  <!-- Grass/ground -->
+  <rect x="16" y="53" width="32" height="11" fill="#2d5a3d" opacity="0.7"/>
+  
+  <!-- Grass blades -->
+  <g stroke="#3d7a4d" stroke-width="0.5" opacity="0.6">
+    <line x1="22" y1="55" x2="21" y2="60"/>
+    <line x1="28" y1="55" x2="29" y2="60"/>
+    <line x1="36" y1="55" x2="35" y2="60"/>
+    <line x1="42" y1="55" x2="43" y2="60"/>
+  </g>
+</svg>
