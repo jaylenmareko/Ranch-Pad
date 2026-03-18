@@ -84,7 +84,11 @@ export interface Animal {
   /** @nullable */
   damId?: number | null;
   /** @nullable */
+  damName?: string | null;
+  /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  sireName?: string | null;
   /** @nullable */
   expectedDueDate?: string | null;
   createdAt: string;
@@ -115,7 +119,11 @@ export interface AnimalDetail {
   /** @nullable */
   damId?: number | null;
   /** @nullable */
+  damName?: string | null;
+  /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  sireName?: string | null;
   /** @nullable */
   expectedDueDate?: string | null;
   dam?: AnimalRef;
@@ -139,7 +147,11 @@ export interface CreateAnimalBody {
   /** @nullable */
   damId?: number | null;
   /** @nullable */
+  damName?: string | null;
+  /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  sireName?: string | null;
   /** @nullable */
   expectedDueDate?: string | null;
 }
