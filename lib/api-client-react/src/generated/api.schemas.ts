@@ -305,3 +305,26 @@ export type ListAnimalsParams = {
   breed?: string;
   search?: string;
 };
+
+export interface UpcomingMedication {
+  id: number;
+  animalId: number;
+  animalName: string;
+  medicationName: string;
+  nextDueDate: string;
+  isOverdue: boolean;
+}
+
+export interface UpcomingPregnancy {
+  animalId: number;
+  animalName: string;
+  species: string;
+  expectedDueDate: string;
+}
+
+export interface UpcomingData {
+  medications: UpcomingMedication[];
+  pregnancies: UpcomingPregnancy[];
+  overdueMedsCount: number;
+  dueSoonCount: number;
+}

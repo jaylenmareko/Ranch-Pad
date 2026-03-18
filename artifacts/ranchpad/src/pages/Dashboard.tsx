@@ -3,16 +3,17 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X } from "lucide-react";
-import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey } from "@workspace/api-client-react";
+import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X, Pill, Baby, Stethoscope, Users, CheckCircle2 } from "lucide-react";
+import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, differenceInDays, parseISO } from "date-fns";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading } = useListAlerts();
   const { data: weather, isLoading: weatherLoading } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
+  const { data: upcoming, isLoading: upcomingLoading } = useGetUpcoming();
   
   const generateMutation = useGenerateAlerts({
     mutation: {
@@ -65,6 +66,11 @@ export default function Dashboard() {
     return weights[b.severity as keyof typeof weights] - weights[a.severity as keyof typeof weights];
   }).slice(0, 5); // top 5
 
+  const totalAnimals = animals?.length ?? 0;
+  const activeAlertCount = activeAlerts.length;
+  const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
+  const dueSoonCount = upcoming?.dueSoonCount ?? 0;
+
   return (
     <div className="space-y-8">
       {/* Header Area */}
@@ -76,6 +82,57 @@ export default function Dashboard() {
         <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform w-full sm:w-auto">
           <PlusCircle className="w-5 h-5 mr-2" />
           Add Animal
+        </Link>
+      </div>
+
+      {/* Stats Strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Link href="/animals">
+          <div className="group cursor-pointer bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Animals</p>
+              <p className="text-3xl font-black font-display text-primary leading-none mt-0.5">{animalsLoading ? "—" : totalAnimals}</p>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/alerts">
+          <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${activeAlertCount > 0 ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-card border-border"}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${activeAlertCount > 0 ? "bg-red-100 dark:bg-red-900/50" : "bg-muted"}`}>
+              <AlertTriangle className={`w-5 h-5 ${activeAlertCount > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Alerts</p>
+              <p className={`text-3xl font-black font-display leading-none mt-0.5 ${activeAlertCount > 0 ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>{alertsLoading ? "—" : activeAlertCount}</p>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/animals">
+          <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${overdueMedsCount > 0 ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800" : "bg-card border-border"}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${overdueMedsCount > 0 ? "bg-amber-100 dark:bg-amber-900/50" : "bg-muted"}`}>
+              <Pill className={`w-5 h-5 ${overdueMedsCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Overdue Meds</p>
+              <p className={`text-3xl font-black font-display leading-none mt-0.5 ${overdueMedsCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}>{upcomingLoading ? "—" : overdueMedsCount}</p>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/animals">
+          <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${dueSoonCount > 0 ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800" : "bg-card border-border"}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${dueSoonCount > 0 ? "bg-purple-100 dark:bg-purple-900/50" : "bg-muted"}`}>
+              <Baby className={`w-5 h-5 ${dueSoonCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Due Soon</p>
+              <p className={`text-3xl font-black font-display leading-none mt-0.5 ${dueSoonCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-foreground"}`}>{upcomingLoading ? "—" : dueSoonCount}</p>
+            </div>
+          </div>
         </Link>
       </div>
 
@@ -214,9 +271,9 @@ export default function Dashboard() {
 
         </div>
 
-        {/* Right Column: Alerts */}
-        <div className="lg:col-span-1">
-          <Card className="h-full flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10 bg-red-200 dark:bg-red-900/50">
+        {/* Right Column: Alerts + Upcoming */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10 bg-red-200 dark:bg-red-900/50">
             <CardHeader className="border-b border-red-100 dark:border-red-900 pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl flex items-center gap-2 text-red-600 dark:text-red-400">
@@ -234,7 +291,7 @@ export default function Dashboard() {
               ) : sortedAlerts.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
                   <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
                   </div>
                   <h3 className="font-bold text-lg text-foreground">All clear!</h3>
                   <p className="text-muted-foreground text-sm mt-1">Your herd is looking good. No active alerts right now.</p>
@@ -277,17 +334,87 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* Upcoming Panel */}
+          <Card className="flex flex-col border-violet-200 dark:border-violet-900 shadow-lg shadow-violet-500/10 bg-violet-50 dark:bg-violet-900/20">
+            <CardHeader className="border-b border-violet-100 dark:border-violet-900 pb-4">
+              <CardTitle className="text-xl flex items-center gap-2 text-violet-600 dark:text-violet-400">
+                <Stethoscope className="w-5 h-5" />
+                Upcoming
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 flex flex-col">
+              {upcomingLoading ? (
+                <div className="p-6 space-y-3">
+                  {[1,2,3].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}
+                </div>
+              ) : (!upcoming || (upcoming.medications.length === 0 && upcoming.pregnancies.length === 0)) ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center">
+                  <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
+                    <CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="font-bold text-base text-foreground">All clear!</h3>
+                  <p className="text-muted-foreground text-sm mt-1">No medications or births due soon.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {upcoming.medications.length > 0 && (
+                    <div className="p-4">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <Pill className="w-3.5 h-3.5" /> Medications
+                      </p>
+                      <div className="space-y-2">
+                        {upcoming.medications.map(med => {
+                          const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
+                          return (
+                            <Link key={med.id} href={`/animals/${med.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-violet-100/50 dark:hover:bg-violet-900/30 rounded-lg p-1.5 -mx-1.5 transition-colors">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-violet-700 dark:group-hover:text-violet-300">{med.animalName}</p>
+                                <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
+                              </div>
+                              <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${
+                                med.isOverdue
+                                  ? "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400"
+                                  : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400"
+                              }`}>
+                                {med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {upcoming.pregnancies.length > 0 && (
+                    <div className="p-4">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <Baby className="w-3.5 h-3.5" /> Expected Births
+                      </p>
+                      <div className="space-y-2">
+                        {upcoming.pregnancies.map(preg => {
+                          const daysUntil = differenceInDays(parseISO(preg.expectedDueDate), new Date());
+                          return (
+                            <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-violet-100/50 dark:hover:bg-violet-900/30 rounded-lg p-1.5 -mx-1.5 transition-colors">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-violet-700 dark:group-hover:text-violet-300">{preg.animalName}</p>
+                                <p className="text-xs text-muted-foreground">{preg.species}</p>
+                              </div>
+                              <span className="text-xs font-bold shrink-0 px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400">
+                                {daysUntil === 0 ? "Today" : `${daysUntil}d`}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   );
 }
 
-function CheckCircleIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  );
-}

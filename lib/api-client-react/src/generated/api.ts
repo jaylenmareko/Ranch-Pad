@@ -40,6 +40,7 @@ import type {
   UpdateFamachaBody,
   UpdateFieldNoteBody,
   UpdateRanchBody,
+  UpcomingData,
   WeatherData,
 } from "./api.schemas";
 
@@ -2652,6 +2653,74 @@ export function useGetWeather<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetWeatherQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getUpcomingUrl = () => {
+  return `/api/upcoming`;
+};
+
+export const getUpcoming = async (
+  options?: RequestInit,
+): Promise<UpcomingData> => {
+  return customFetch<UpcomingData>(getUpcomingUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetUpcomingQueryKey = () => {
+  return [`/api/upcoming`] as const;
+};
+
+export const getGetUpcomingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUpcoming>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getUpcoming>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetUpcomingQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUpcoming>>> = ({
+    signal,
+  }) => getUpcoming({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUpcoming>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetUpcomingQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUpcoming>>
+>;
+export type GetUpcomingQueryError = ErrorType<ErrorResponse>;
+
+export function useGetUpcoming<
+  TData = Awaited<ReturnType<typeof getUpcoming>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getUpcoming>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetUpcomingQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

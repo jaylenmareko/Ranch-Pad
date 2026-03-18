@@ -9,6 +9,7 @@ import famachaRouter from "./famacha.js";
 import fieldNotesRouter from "./field-notes.js";
 import alertsRouter from "./alerts.js";
 import weatherRouter from "./weather.js";
+import upcomingRouter from "./upcoming.js";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(famachaRouter);
 router.use(fieldNotesRouter);
 router.use(alertsRouter);
 router.use(weatherRouter);
+router.use(upcomingRouter);
 
 export default router;
