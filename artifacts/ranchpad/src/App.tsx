@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -33,6 +33,41 @@ const queryClient = new QueryClient();
 
 function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, logout } = useAuth();
+  const qc = useQueryClient();
+  const verifiedRef = useRef(false);
+
+  // After Stripe checkout redirect, verify the session immediately so the
+  // subscription activates without relying on webhooks alone.
+  useEffect(() => {
+    if (!isAuthenticated || verifiedRef.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const isBillingSuccess = params.get("billing") === "success";
+    const sessionId = params.get("session_id");
+
+    if (!isBillingSuccess || !sessionId) return;
+    verifiedRef.current = true;
+
+    // Clean the URL immediately
+    const clean = window.location.pathname;
+    window.history.replaceState(null, "", clean);
+
+    fetch("/api/billing/verify-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        // Invalidate so billing status re-fetches and paywall drops
+        qc.invalidateQueries({ queryKey: ["/api/billing/status"] });
+      })
+      .catch((err) => {
+        console.error("[billing] verify-session failed:", err);
+        // Invalidate anyway — the status endpoint will re-check
+        qc.invalidateQueries({ queryKey: ["/api/billing/status"] });
+      });
+  }, [isAuthenticated, qc]);
 
   const { data: billing, isLoading, isError } = useQuery<BillingStatus>({
     queryKey: ["/api/billing/status"],

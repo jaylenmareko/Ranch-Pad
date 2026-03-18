@@ -134,7 +134,7 @@ router.post("/billing/checkout", requireAuth, async (req: Request, res: Response
   }
 
   const base = getAppBaseUrl(req);
-  const successUrl = `${base}/?billing=success`;
+  const successUrl = `${base}/?billing=success&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${base}/settings`;
 
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -194,6 +194,60 @@ router.post("/billing/portal", requireAuth, async (req: Request, res: Response):
     const message = err instanceof Error ? err.message : "Stripe error";
     res.status(500).json({ error: true, message });
   }
+});
+
+// ─── POST /api/billing/verify-session ─────────────────────────────────────────
+// Called by the frontend immediately after Stripe checkout redirects back.
+// Verifies the session directly with Stripe and activates the subscription in DB.
+// This makes payment activation instant without relying solely on webhooks.
+
+router.post("/billing/verify-session", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { sessionId } = req.body as { sessionId?: string };
+  if (!sessionId) {
+    res.status(400).json({ error: true, message: "Missing sessionId" });
+    return;
+  }
+
+  const stripe = getStripe();
+  const ranchId = req.user!.ranchId;
+
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["subscription"],
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to retrieve session";
+    console.error("[billing/verify-session] Stripe error:", message);
+    res.status(400).json({ error: true, message });
+    return;
+  }
+
+  if (session.payment_status !== "paid" && session.status !== "complete") {
+    res.status(400).json({ error: true, message: "Session not completed" });
+    return;
+  }
+
+  // Confirm ranchId from metadata matches the authenticated user's ranch
+  const metaRanchId = session.metadata?.ranchId ? parseInt(session.metadata.ranchId, 10) : null;
+  if (metaRanchId !== ranchId) {
+    res.status(403).json({ error: true, message: "Session does not belong to this account" });
+    return;
+  }
+
+  const customerId = typeof session.customer === "string" ? session.customer : (session.customer as Stripe.Customer | null)?.id ?? null;
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : (session.subscription as Stripe.Subscription | null)?.id ?? null;
+
+  await db.update(ranchesTable)
+    .set({
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscriptionId,
+      subscriptionStatus: "active",
+    })
+    .where(eq(ranchesTable.id, ranchId));
+
+  console.log(`[billing/verify-session] Activated subscription for ranch ${ranchId}`);
+  res.json({ success: true, status: "active" });
 });
 
 // ─── POST /api/billing/webhook ────────────────────────────────────────────────
