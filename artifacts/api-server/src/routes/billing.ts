@@ -51,7 +51,10 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
       try {
         const stripe = getStripe();
         const sub = await stripe.subscriptions.retrieve(ranch.stripeSubscriptionId);
-        currentPeriodEnd = new Date((sub as Stripe.Subscription & { current_period_end: number }).current_period_end * 1000).toISOString();
+        const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end;
+        if (typeof periodEnd === "number") {
+          currentPeriodEnd = new Date(periodEnd * 1000).toISOString();
+        }
       } catch {
         // Non-fatal — just won't show next billing date
       }
@@ -161,6 +164,10 @@ router.post("/billing/checkout", requireAuth, async (req: Request, res: Response
 // ─── POST /api/billing/portal ─────────────────────────────────────────────────
 
 router.post("/billing/portal", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    res.status(503).json({ error: true, message: "Billing is not configured. Please contact support." });
+    return;
+  }
   const stripe = getStripe();
   const ranchId = req.user!.ranchId;
 
