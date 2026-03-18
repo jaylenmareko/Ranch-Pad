@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X, Pill, Baby, Stethoscope, Users, CheckCircle2 } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X, Pill, Baby, Calendar, RefreshCw, Stethoscope, Users, CheckCircle2 } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -12,7 +12,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading } = useListAlerts();
-  const { data: weather, isLoading: weatherLoading } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
+  const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
   const { data: upcoming, isLoading: upcomingLoading } = useGetUpcoming();
   
   const generateMutation = useGenerateAlerts({
@@ -126,7 +126,7 @@ export default function Dashboard() {
         <Link href="/animals">
           <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${dueSoonCount > 0 ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800" : "bg-card border-border"}`}>
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${dueSoonCount > 0 ? "bg-purple-100 dark:bg-purple-900/50" : "bg-muted"}`}>
-              <Baby className={`w-5 h-5 ${dueSoonCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-muted-foreground"}`} />
+              <Calendar className={`w-5 h-5 ${dueSoonCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-muted-foreground"}`} />
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Due Soon</p>
@@ -197,6 +197,14 @@ export default function Dashboard() {
             <CardHeader className="pb-2 border-b border-blue-100 dark:border-blue-900">
               <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
                 <CloudRain className="w-5 h-5" /> Ranch Weather
+                <button
+                  onClick={() => refetchWeather()}
+                  disabled={weatherFetching}
+                  className="ml-auto p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/50 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
+                  title="Refresh weather"
+                >
+                  <RefreshCw className={`w-4 h-4 ${weatherFetching ? "animate-spin" : ""}`} />
+                </button>
               </CardTitle>
             </CardHeader>
             <CardContent>

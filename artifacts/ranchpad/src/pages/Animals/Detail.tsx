@@ -82,37 +82,65 @@ export default function AnimalDetail() {
               <span className="w-1.5 h-1.5 rounded-full bg-border" />
               <span>{formatAge(animal.dateOfBirth)}</span>
             </div>
+            {(animal.sire || animal.sireName || animal.dam || animal.damName) && (
+              <div className="flex flex-wrap gap-3 mt-2">
+                {(animal.sire || animal.sireName) && (
+                  <span className="text-xs font-semibold text-muted-foreground bg-muted/60 rounded-lg px-2.5 py-1">
+                    Sire:{" "}
+                    {animal.sire
+                      ? <Link href={`/animals/${animal.sire.id}`} className="text-primary hover:underline">{animal.sire.name}</Link>
+                      : <span>{animal.sireName}</span>
+                    }
+                  </span>
+                )}
+                {(animal.dam || animal.damName) && (
+                  <span className="text-xs font-semibold text-muted-foreground bg-muted/60 rounded-lg px-2.5 py-1">
+                    Dam:{" "}
+                    {animal.dam
+                      ? <Link href={`/animals/${animal.dam.id}`} className="text-primary hover:underline">{animal.dam.name}</Link>
+                      : <span>{animal.damName}</span>
+                    }
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Tab Navigation */}
-      <div className="flex overflow-x-auto hide-scrollbar border-b border-border/60 pb-px gap-2 sm:gap-6">
-        {[
+      {(() => {
+        const showFamacha = ["Sheep", "Goat"].includes(animal.species);
+        const tabs = [
           { id: "health", label: "Health Events", icon: Activity },
           { id: "meds", label: "Medications", icon: Pill },
-          { id: "famacha", label: "FAMACHA", icon: AlertTriangle },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
-            className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === tab.id 
-                ? "border-primary text-primary" 
-                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-            }`}
-          >
-            {tab.icon && <tab.icon className="w-4 h-4" />}
-            {tab.label}
-          </button>
-        ))}
-      </div>
+          ...(showFamacha ? [{ id: "famacha", label: "FAMACHA", icon: AlertTriangle }] : []),
+        ];
+        return (
+          <div className="flex overflow-x-auto hide-scrollbar border-b border-border/60 pb-px gap-2 sm:gap-6">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
+                className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                }`}
+              >
+                {tab.icon && <tab.icon className="w-4 h-4" />}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Tab Content */}
       <div className="animate-in fade-in duration-300 min-h-[400px]">
         {activeTab === "health" && <HealthTab animalId={animalId} />}
         {activeTab === "meds" && <MedsTab animalId={animalId} />}
-        {activeTab === "famacha" && <FamachaTab animalId={animalId} />}
+        {activeTab === "famacha" && ["Sheep", "Goat"].includes(animal.species) && <FamachaTab animalId={animalId} />}
       </div>
     </div>
   );

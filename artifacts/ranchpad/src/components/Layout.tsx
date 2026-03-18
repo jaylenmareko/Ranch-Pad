@@ -19,12 +19,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card shadow-sm z-10">
-        <div className="p-6 flex items-center gap-3">
+        <Link href="/" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-inner">
             <PawPrint className="w-6 h-6" />
           </div>
           <span className="font-display font-bold text-2xl tracking-tight text-primary">RanchPad</span>
-        </div>
+        </Link>
 
         <nav className="flex-1 px-4 py-6 flex flex-col gap-2">
           {navItems.map((item) => {
@@ -62,10 +62,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col max-w-[100vw] overflow-x-hidden pb-20 md:pb-0">
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-20 shadow-sm">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <PawPrint className="w-6 h-6 text-primary" />
             <span className="font-display font-bold text-xl text-primary">RanchPad</span>
-          </div>
+          </Link>
           <button onClick={logout} className="p-2 text-muted-foreground hover:bg-muted rounded-full">
             <LogOut className="w-5 h-5" />
           </button>

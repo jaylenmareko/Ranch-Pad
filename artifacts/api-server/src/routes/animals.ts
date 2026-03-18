@@ -14,7 +14,9 @@ const createAnimalSchema = z.object({
   sex: z.string().min(1),
   dateOfBirth: z.string().nullable().optional(),
   damId: z.number().int().nullable().optional(),
+  damName: z.string().nullable().optional(),
   sireId: z.number().int().nullable().optional(),
+  sireName: z.string().nullable().optional(),
   expectedDueDate: z.string().nullable().optional(),
 });
 
