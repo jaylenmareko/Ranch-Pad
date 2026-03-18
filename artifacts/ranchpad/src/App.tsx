@@ -32,9 +32,9 @@ const queryClient = new QueryClient();
 // ─── Subscription Guard ────────────────────────────────────────────────────────
 
 function SubscriptionGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
-  const { data: billing, isLoading } = useQuery<BillingStatus>({
+  const { data: billing, isLoading, isError } = useQuery<BillingStatus>({
     queryKey: ["/api/billing/status"],
     queryFn: async () => {
       const res = await fetch("/api/billing/status");
@@ -43,14 +43,41 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     },
     enabled: isAuthenticated,
     staleTime: 60 * 1000,
-    retry: false,
+    retry: 1,
   });
 
-  // While loading billing status show a brief spinner (covered by AuthGuard's own loader)
+  // While loading billing status, show nothing (AuthGuard already shows loader)
   if (isLoading) return null;
 
-  // No billing data at all (e.g. Stripe not configured) → allow access
-  if (!billing) return <>{children}</>;
+  // Fetch error — block access to avoid bypassing paywall on transient failures
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12 gap-4">
+        <p className="text-muted-foreground font-medium text-sm text-center">
+          Unable to verify your subscription status. Please check your connection and try again.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => window.location.reload()}
+            className="text-sm font-semibold text-primary underline underline-offset-2"
+          >
+            Retry
+          </button>
+          <button
+            onClick={logout}
+            className="text-sm font-semibold text-muted-foreground underline underline-offset-2"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No billing data returned — conservative: block access
+  if (!billing) {
+    return <Paywall billingStatus={null} />;
+  }
 
   // No access → show full-screen paywall
   if (!billing.hasAccess) {

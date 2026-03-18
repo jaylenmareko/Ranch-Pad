@@ -583,7 +583,7 @@ export default function Settings() {
               )}
 
               {/* CTA button */}
-              {billing.status === "active" ? (
+              {(billing.status === "active" || billing.status === "past_due") ? (
                 <Button
                   type="button"
                   variant="secondary"
