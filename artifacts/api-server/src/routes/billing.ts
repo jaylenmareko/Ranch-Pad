@@ -25,6 +25,7 @@ export interface BillingStatus {
   trialDaysLeft: number | null;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
   hasAccess: boolean;
 }
 
@@ -47,6 +48,7 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
   // Active Stripe subscription — always has access
   if (ranch.subscriptionStatus === "active") {
     let currentPeriodEnd: string | null = null;
+    let cancelAtPeriodEnd = false;
     if (ranch.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
       try {
         const stripe = getStripe();
@@ -55,8 +57,9 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
         if (typeof periodEnd === "number") {
           currentPeriodEnd = new Date(periodEnd * 1000).toISOString();
         }
+        cancelAtPeriodEnd = !!(sub as unknown as { cancel_at_period_end: boolean }).cancel_at_period_end;
       } catch {
-        // Non-fatal — just won't show next billing date
+        // Non-fatal
       }
     }
     const billingStatus: BillingStatus = {
@@ -64,6 +67,7 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
       trialDaysLeft: null,
       trialEndsAt: null,
       currentPeriodEnd,
+      cancelAtPeriodEnd,
       hasAccess: true,
     };
     res.json(billingStatus);
@@ -90,6 +94,7 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
       trialDaysLeft: null,
       trialEndsAt: null,
       currentPeriodEnd,
+      cancelAtPeriodEnd: false,
       hasAccess: false,
     };
     res.json(billingStatus);
@@ -105,6 +110,7 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
       trialDaysLeft: daysLeft,
       trialEndsAt: ranch.trialEndsAt.toISOString(),
       currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
       hasAccess: true,
     };
     res.json(billingStatus);
@@ -117,6 +123,7 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
     trialDaysLeft: 0,
     trialEndsAt: ranch.trialEndsAt?.toISOString() ?? null,
     currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
     hasAccess: false,
   };
   res.json(billingStatus);

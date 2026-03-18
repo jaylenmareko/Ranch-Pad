@@ -544,9 +544,14 @@ export default function Settings() {
             <div className="space-y-4">
               {/* Status badge */}
               <div className="flex items-center gap-3">
-                {billing.status === "active" && (
+                {billing.status === "active" && !billing.cancelAtPeriodEnd && (
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Active
+                  </span>
+                )}
+                {billing.status === "active" && billing.cancelAtPeriodEnd && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    Canceling
                   </span>
                 )}
                 {billing.status === "trialing" && (
@@ -577,9 +582,14 @@ export default function Settings() {
                   {billing.trialDaysLeft} day{billing.trialDaysLeft !== 1 ? "s" : ""} left in your free trial.
                 </p>
               )}
-              {billing.status === "active" && billing.currentPeriodEnd && (
+              {billing.status === "active" && billing.currentPeriodEnd && !billing.cancelAtPeriodEnd && (
                 <p className="text-sm font-medium text-muted-foreground">
                   Next billing date: {new Date(billing.currentPeriodEnd).toLocaleDateString()}
+                </p>
+              )}
+              {billing.status === "active" && billing.currentPeriodEnd && billing.cancelAtPeriodEnd && (
+                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                  Access ends on {new Date(billing.currentPeriodEnd).toLocaleDateString()} — you can resubscribe any time.
                 </p>
               )}
               {billing.status === "canceled" && billing.currentPeriodEnd && (

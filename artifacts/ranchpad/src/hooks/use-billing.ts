@@ -3,5 +3,6 @@ export interface BillingStatus {
   trialDaysLeft: number | null;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
   hasAccess: boolean;
 }
