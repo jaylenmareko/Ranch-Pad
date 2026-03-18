@@ -51,7 +51,7 @@ export default function AnimalDetail() {
         </Link>
         <div className="flex items-center gap-3">
           <Link href={`/animals/${animal.id}/edit`}>
-            <Button variant="outline" size="sm" className="bg-card"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
+            <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
           </Link>
           <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
             if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
@@ -533,12 +533,30 @@ function FamachaTab({ animalId }: { animalId: number }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {scores?.sort((a: FamachaScore, b: FamachaScore) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map((s: FamachaScore) => (
           <Card key={s.id} className="text-center shadow-sm group relative">
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="text-3xl font-black mb-1" style={{ color: s.score >= 4 ? 'var(--color-destructive)' : s.score === 3 ? '#eab308' : 'var(--color-primary)' }}>
                 {s.score}
               </div>
               <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
-              <div className="absolute top-0.5 right-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all flex gap-0.5">
+              {/* Mobile: always-visible action row */}
+              <div className="flex justify-center gap-1 mt-2 sm:hidden">
+                <button
+                  onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
+                  className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-primary rounded-lg hover:bg-muted"
+                  aria-label="Edit FAMACHA score"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
+                  className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted"
+                  aria-label="Delete FAMACHA score"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              {/* Desktop: hover-reveal corner buttons */}
+              <div className="absolute top-0.5 right-0.5 hidden sm:flex opacity-0 group-hover:opacity-100 transition-all gap-0.5">
                 <button
                   onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
                   className="p-1.5 rounded-full hover:bg-muted"

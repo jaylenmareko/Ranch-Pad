@@ -124,13 +124,13 @@ export default function Dashboard() {
         </Link>
 
         <Link href="/animals">
-          <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${dueSoonCount > 0 ? "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800" : "bg-card border-border"}`}>
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${dueSoonCount > 0 ? "bg-purple-100 dark:bg-purple-900/50" : "bg-muted"}`}>
-              <Calendar className={`w-5 h-5 ${dueSoonCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-muted-foreground"}`} />
+          <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${dueSoonCount > 0 ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" : "bg-card border-border"}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${dueSoonCount > 0 ? "bg-blue-100 dark:bg-blue-900/50" : "bg-muted"}`}>
+              <Calendar className={`w-5 h-5 ${dueSoonCount > 0 ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`} />
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Due Soon</p>
-              <p className={`text-3xl font-black font-display leading-none mt-0.5 ${dueSoonCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-foreground"}`}>{upcomingLoading ? "—" : dueSoonCount}</p>
+              <p className={`text-3xl font-black font-display leading-none mt-0.5 ${dueSoonCount > 0 ? "text-blue-600 dark:text-blue-400" : "text-foreground"}`}>{upcomingLoading ? "—" : dueSoonCount}</p>
             </div>
           </div>
         </Link>
@@ -345,9 +345,9 @@ export default function Dashboard() {
           </Card>
 
           {/* Upcoming Panel */}
-          <Card className="flex flex-col border-violet-200 dark:border-violet-900 shadow-lg shadow-violet-500/10 bg-violet-50 dark:bg-violet-900/20">
-            <CardHeader className="border-b border-violet-100 dark:border-violet-900 pb-4">
-              <CardTitle className="text-xl flex items-center gap-2 text-violet-600 dark:text-violet-400">
+          <Card className="flex flex-col border-blue-200 dark:border-blue-900 shadow-lg shadow-blue-500/10 bg-blue-50 dark:bg-blue-900/20">
+            <CardHeader className="border-b border-blue-100 dark:border-blue-900 pb-4">
+              <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
                 <Stethoscope className="w-5 h-5" />
                 Upcoming
               </CardTitle>
@@ -376,9 +376,9 @@ export default function Dashboard() {
                         {upcoming.medications.map(med => {
                           const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
                           return (
-                            <Link key={med.id} href={`/animals/${med.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-violet-100/50 dark:hover:bg-violet-900/30 rounded-lg p-1.5 -mx-1.5 transition-colors">
+                            <Link key={med.id} href={`/animals/${med.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-blue-100/50 dark:hover:bg-blue-900/30 rounded-lg p-1.5 -mx-1.5 transition-colors">
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-violet-700 dark:group-hover:text-violet-300">{med.animalName}</p>
+                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-blue-700 dark:group-hover:text-blue-300">{med.animalName}</p>
                                 <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
                               </div>
                               <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${
@@ -403,12 +403,12 @@ export default function Dashboard() {
                         {upcoming.pregnancies.map(preg => {
                           const daysUntil = differenceInDays(parseISO(preg.expectedDueDate), new Date());
                           return (
-                            <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-violet-100/50 dark:hover:bg-violet-900/30 rounded-lg p-1.5 -mx-1.5 transition-colors">
+                            <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-blue-100/50 dark:hover:bg-blue-900/30 rounded-lg p-1.5 -mx-1.5 transition-colors">
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-violet-700 dark:group-hover:text-violet-300">{preg.animalName}</p>
+                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-blue-700 dark:group-hover:text-blue-300">{preg.animalName}</p>
                                 <p className="text-xs text-muted-foreground">{preg.species}</p>
                               </div>
-                              <span className="text-xs font-bold shrink-0 px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400">
+                              <span className="text-xs font-bold shrink-0 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400">
                                 {daysUntil === 0 ? "Today" : `${daysUntil}d`}
                               </span>
                             </Link>
