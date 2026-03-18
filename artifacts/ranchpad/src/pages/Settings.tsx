@@ -582,6 +582,11 @@ export default function Settings() {
                   Next billing date: {new Date(billing.currentPeriodEnd).toLocaleDateString()}
                 </p>
               )}
+              {billing.status === "canceled" && billing.currentPeriodEnd && (
+                <p className="text-sm font-medium text-muted-foreground">
+                  Access expired on {new Date(billing.currentPeriodEnd).toLocaleDateString()}
+                </p>
+              )}
 
               {/* CTA button */}
               {(billing.status === "active" || billing.status === "past_due") ? (
