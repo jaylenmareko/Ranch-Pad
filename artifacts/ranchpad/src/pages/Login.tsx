@@ -118,7 +118,7 @@ export default function Login() {
           </div>
           <h1 className="text-4xl font-display font-black mb-3 drop-shadow-lg">RanchPad</h1>
           <p className="text-lg font-medium text-white/80 max-w-xs mb-8">
-            Manage your livestock and get AI alerts before disease hits your animals.
+            Manage your livestock. Get daily alerts based on your local weather and herd history before disease hits your livestock.
           </p>
           <div className="flex gap-3 w-full max-w-sm">
             <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
@@ -139,7 +139,7 @@ export default function Login() {
           </div>
           <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
           <p className="text-xl font-medium text-white/80 max-w-md mb-10">
-            Manage your livestock and get AI alerts before disease hits your animals.
+            Manage your livestock. Get daily alerts based on your local weather and herd history before disease hits your livestock.
           </p>
           <div className="flex gap-3 w-full max-w-sm">
             <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
