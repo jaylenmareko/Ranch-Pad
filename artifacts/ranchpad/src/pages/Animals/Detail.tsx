@@ -53,7 +53,7 @@ export default function AnimalDetail() {
           <Link href={`/animals/${animal.id}/edit`}>
             <Button variant="outline" size="sm" className="bg-card"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
           </Link>
-          <Button variant="destructive" size="sm" onClick={() => {
+          <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
             if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
               deleteMutation.mutate({ animalId });
             }
@@ -117,21 +117,24 @@ export default function AnimalDetail() {
           ...(showFamacha ? [{ id: "famacha", label: "FAMACHA", icon: AlertTriangle }] : []),
         ];
         return (
-          <div className="flex overflow-x-auto hide-scrollbar border-b border-border/60 pb-px gap-2 sm:gap-6">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
-                className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                }`}
-              >
-                {tab.icon && <tab.icon className="w-4 h-4" />}
-                {tab.label}
-              </button>
-            ))}
+          <div className="relative">
+            <div className="flex overflow-x-auto hide-scrollbar border-b border-border/60 pb-px gap-2 sm:gap-6">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
+                  className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  }`}
+                >
+                  {tab.icon && <tab.icon className="w-4 h-4" />}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-background to-transparent pointer-events-none sm:hidden" />
           </div>
         );
       })()}
@@ -255,11 +258,11 @@ function HealthTab({ animalId }: { animalId: number }) {
                   </div>
                   <p className="text-foreground">{ev.description}</p>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); }} className="p-2 text-muted-foreground hover:text-primary rounded-full hover:bg-muted">
+                <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                  <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit event">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="p-2 text-muted-foreground hover:text-destructive rounded-full hover:bg-muted">
+                  <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete event">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -387,11 +390,11 @@ function MedsTab({ animalId }: { animalId: number }) {
                     {med.nextDueDate && <span className="text-accent">Due: {formatDate(med.nextDueDate)}</span>}
                   </div>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); }} className="p-2 text-muted-foreground hover:text-primary rounded-full hover:bg-muted">
+                <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                  <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit medication">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="p-2 text-muted-foreground hover:text-destructive rounded-full hover:bg-muted">
+                  <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete medication">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -535,18 +538,20 @@ function FamachaTab({ animalId }: { animalId: number }) {
                 {s.score}
               </div>
               <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
-              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all flex gap-0.5">
+              <div className="absolute top-0.5 right-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all flex gap-0.5">
                 <button
                   onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
-                  className="p-1 rounded-full hover:bg-muted"
+                  className="p-1.5 rounded-full hover:bg-muted"
                   title="Edit score"
+                  aria-label="Edit FAMACHA score"
                 >
                   <Edit2 className="w-3 h-3 text-muted-foreground" />
                 </button>
                 <button
                   onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
-                  className="p-1 rounded-full hover:bg-muted"
+                  className="p-1.5 rounded-full hover:bg-muted"
                   title="Delete score"
+                  aria-label="Delete FAMACHA score"
                 >
                   <Trash2 className="w-3 h-3 text-destructive/70" />
                 </button>

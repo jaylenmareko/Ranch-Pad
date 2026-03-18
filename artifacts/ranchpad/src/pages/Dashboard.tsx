@@ -311,7 +311,7 @@ export default function Dashboard() {
                       <div className="mt-0.5">
                         <div className={`w-3 h-3 rounded-full ${
                           alert.severity === 'high' ? 'bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]' :
-                          alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
+                          alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                         }`} />
                       </div>
                       <div className="flex-1">
@@ -324,8 +324,9 @@ export default function Dashboard() {
                       </div>
                       <button
                         onClick={() => dismissMutation.mutate({ alertId: alert.id })}
-                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all shrink-0 self-start"
+                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all shrink-0 self-start flex items-center justify-center"
                         title="Dismiss alert"
+                        aria-label="Dismiss alert"
                       >
                         <X className="w-4 h-4" />
                       </button>

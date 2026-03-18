@@ -147,3 +147,12 @@ input[type="search"]::-webkit-search-cancel-button {
   @apply hidden;
 }
 
+/* Hide scrollbar but keep scroll functionality */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
