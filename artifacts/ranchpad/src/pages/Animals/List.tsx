@@ -127,7 +127,7 @@ function AnimalCard({ animal }: { animal: Animal }) {
 function SpeciesFolder({
   species,
   animals,
-  defaultOpen = true,
+  defaultOpen = false,
 }: {
   species: string;
   animals: Animal[];
