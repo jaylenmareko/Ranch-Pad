@@ -137,7 +137,7 @@ export default function AnimalDetail() {
       })()}
 
       {/* Tab Content */}
-      <div className="animate-in fade-in duration-300 min-h-[400px]">
+      <div className="min-h-[400px]">
         {activeTab === "health" && <HealthTab animalId={animalId} />}
         {activeTab === "meds" && <MedsTab animalId={animalId} />}
         {activeTab === "famacha" && ["Sheep", "Goat"].includes(animal.species) && <FamachaTab animalId={animalId} />}
