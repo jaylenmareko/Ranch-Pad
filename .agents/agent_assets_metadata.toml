@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "URuYs0jkO-DE7lOjvQqae"
+uri = "file://.local/ranchpad-qr.png"
+type = "image"
+title = "RanchPad — Scan to open on your phone"
