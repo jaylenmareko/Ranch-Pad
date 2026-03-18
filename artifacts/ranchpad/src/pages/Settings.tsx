@@ -40,6 +40,11 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+
   useEffect(() => {
     if (ranch) {
       setName(ranch.name ?? "");
@@ -93,6 +98,33 @@ export default function Settings() {
       toast({ title: "Save failed", description: message, variant: "destructive" });
     } finally {
       setIsSavingName(false);
+    }
+  }
+
+  async function handleChangeEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setEmailError(null);
+    setIsChangingEmail(true);
+    try {
+      const res = await fetch("/api/auth/me/email", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newEmail: newEmail.trim(), currentPassword: emailPassword }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setEmailError(err.message ?? "Could not update email");
+        return;
+      }
+      const updated: UserProfile = await res.json();
+      setUserProfile(updated);
+      setNewEmail("");
+      setEmailPassword("");
+      toast({ title: "Email updated", description: `Your email is now ${updated.email}.` });
+    } catch {
+      setEmailError("Something went wrong. Try again.");
+    } finally {
+      setIsChangingEmail(false);
     }
   }
 
@@ -193,40 +225,75 @@ export default function Settings() {
           {isLoadingProfile ? (
             <p className="text-sm text-muted-foreground animate-pulse font-medium">Loading account info...</p>
           ) : (
-            <form onSubmit={handleSaveName} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Display Name</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your name"
-                    required
-                    className="flex-1"
-                  />
-                  <Button
-                    type="submit"
-                    variant="secondary"
-                    isLoading={isSavingName}
-                    disabled={isSavingName || displayName.trim() === (userProfile?.name ?? "")}
-                    className="shrink-0"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
-                  </Button>
+            <>
+              <form onSubmit={handleSaveName} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Display Name</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Your name"
+                      required
+                      className="flex-1"
+                    />
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      isLoading={isSavingName}
+                      disabled={isSavingName || displayName.trim() === (userProfile?.name ?? "")}
+                      className="shrink-0"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  value={userProfile?.email ?? ""}
-                  readOnly
-                  disabled
-                  className="bg-muted/50 text-muted-foreground cursor-not-allowed"
-                />
-                <p className="text-xs text-muted-foreground font-medium">Email cannot be changed at this time.</p>
-              </div>
-            </form>
+                <div className="space-y-1 pt-2 border-t border-border">
+                  <Label>Current Email</Label>
+                  <p className="text-sm font-medium text-foreground">{userProfile?.email ?? "—"}</p>
+                </div>
+              </form>
+
+              <form onSubmit={handleChangeEmail} className="space-y-3 pt-5 border-t border-border mt-5">
+                <p className="text-sm font-semibold text-foreground">Change Email</p>
+                <div className="space-y-2">
+                  <Label>New Email Address</Label>
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={e => { setNewEmail(e.target.value); setEmailError(null); }}
+                    placeholder="new@example.com"
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirm with Current Password</Label>
+                  <Input
+                    type="password"
+                    value={emailPassword}
+                    onChange={e => { setEmailPassword(e.target.value); setEmailError(null); }}
+                    placeholder="Enter your current password"
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+                {emailError && (
+                  <p className="text-xs text-destructive font-medium">{emailError}</p>
+                )}
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  isLoading={isChangingEmail}
+                  disabled={isChangingEmail || !newEmail.trim() || !emailPassword}
+                  className="w-full gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  Update Email
+                </Button>
+              </form>
+            </>
           )}
         </CardContent>
       </Card>
