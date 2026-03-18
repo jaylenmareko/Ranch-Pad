@@ -334,7 +334,7 @@ export default function AnimalList() {
             className="h-10 px-4 rounded-xl font-semibold text-sm"
           >
             <Download className="w-4 h-4 mr-2" />
-            Template
+            Download Template
           </Button>
           <Button
             variant="outline"
