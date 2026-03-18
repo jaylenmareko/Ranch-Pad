@@ -19,6 +19,8 @@ export default function Login() {
   const [name, setName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
 
   // Address geocoding
   const [address, setAddress] = useState("");
@@ -72,6 +74,11 @@ export default function Login() {
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    if (signupPassword !== confirmPassword) {
+      setPasswordMismatch(true);
+      return;
+    }
+    setPasswordMismatch(false);
     if (geocodedLat === null || geocodedLon === null) {
       toast({ title: "Location required", description: "Enter your ranch address and click Find before signing up.", variant: "destructive" });
       return;
@@ -187,7 +194,7 @@ export default function Login() {
       </Dialog>
 
       {/* ── Signup Modal ── */}
-      <Dialog open={showSignup} onOpenChange={setShowSignup} title="Create your ranch">
+      <Dialog open={showSignup} onOpenChange={(open) => { setShowSignup(open); if (!open) { setConfirmPassword(""); setPasswordMismatch(false); } }} title="Create your ranch">
         <form onSubmit={handleSignup} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="signup-name">Full Name</Label>
@@ -216,9 +223,23 @@ export default function Login() {
               id="signup-password"
               type="password"
               value={signupPassword}
-              onChange={e => setSignupPassword(e.target.value)}
+              onChange={e => { setSignupPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }}
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+            <Input
+              id="signup-confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={e => { setConfirmPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }}
+              required
+              className={passwordMismatch ? "border-destructive focus-visible:ring-destructive" : ""}
+            />
+            {passwordMismatch && (
+              <p className="text-sm text-destructive font-medium">Passwords don't match.</p>
+            )}
           </div>
 
           <div className="space-y-4 pt-4 border-t border-border/50">
