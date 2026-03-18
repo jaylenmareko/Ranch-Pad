@@ -66,7 +66,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <PawPrint className="w-6 h-6 text-primary" />
             <span className="font-display font-bold text-xl text-primary">RanchPad</span>
           </Link>
-          <button onClick={logout} className="p-2 text-muted-foreground hover:bg-muted rounded-full">
+          <button onClick={logout} className="p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted rounded-full flex items-center justify-center" aria-label="Sign out">
             <LogOut className="w-5 h-5" />
           </button>
         </header>

@@ -32,13 +32,13 @@ export default function AlertsList() {
   const getSeverityIcon = (sev: string) => {
     if (sev === 'high') return <AlertTriangle className="w-5 h-5 text-destructive" />;
     if (sev === 'medium') return <Info className="w-5 h-5 text-yellow-500" />;
-    return <Info className="w-5 h-5 text-blue-500" />;
+    return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
   };
 
   const getSeverityColor = (sev: string) => {
     if (sev === 'high') return "bg-destructive/10 border-destructive/20 text-destructive";
     if (sev === 'medium') return "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400";
-    return "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400";
+    return "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400";
   };
 
   const AlertRow = ({ alert }: { alert: Alert }) => (
