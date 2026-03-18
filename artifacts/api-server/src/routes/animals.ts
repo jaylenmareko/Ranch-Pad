@@ -303,45 +303,59 @@ router.post("/animals/import-csv", requireAuth, upload.single("file"), async (re
     const breed = (row["breed"] ?? "").trim() || null;
     const dateOfBirth = (row["date_of_birth"] ?? "").trim() || null;
 
-    // Insert animal
-    const [newAnimal] = await db
-      .insert(animalsTable)
-      .values({ ranchId, name, species, sex, tagNumber, breed, dateOfBirth })
-      .returning();
-
-    summary.animalsCreated++;
-    if (tagNumber) existingTags.add(tagNumber.toLowerCase());
-
-    // Health event — all three fields required
+    // Health event fields — validate before starting transaction
     const heDesc = (row["health_event_description"] ?? "").trim();
     const heDate = (row["health_event_date"] ?? "").trim();
     const heSev = (row["health_event_severity"] ?? "").trim().toLowerCase();
-
-    if (heDesc && heDate && VALID_SEVERITIES.has(heSev)) {
-      await db.insert(healthEventsTable).values({
-        animalId: newAnimal.id,
-        ranchId,
-        description: heDesc,
-        eventDate: heDate,
-        severity: heSev,
-      });
-      summary.healthEventsCreated++;
+    const hasHealthFields = !!(heDesc && heDate);
+    if (hasHealthFields && !VALID_SEVERITIES.has(heSev)) {
+      summary.skipped.push({ row: rowNum, reason: `Invalid health_event_severity "${heSev}": must be low, medium, or high` });
+      continue;
     }
+    const includeHealth = hasHealthFields && VALID_SEVERITIES.has(heSev);
 
-    // Medication record — medication_name and date_given are required
+    // Medication fields
     const medName = (row["medication_name"] ?? "").trim();
     const dateGiven = (row["date_given"] ?? "").trim();
+    const includeMed = !!(medName && dateGiven);
 
-    if (medName && dateGiven) {
-      await db.insert(medicationRecordsTable).values({
-        animalId: newAnimal.id,
-        ranchId,
-        medicationName: medName,
-        dosage: (row["dosage"] ?? "").trim() || null,
-        dateGiven,
-        nextDueDate: (row["next_due_date"] ?? "").trim() || null,
+    // All inserts for this row in one transaction — any failure rolls back everything
+    try {
+      await db.transaction(async (tx) => {
+        const [newAnimal] = await tx
+          .insert(animalsTable)
+          .values({ ranchId, name, species, sex, tagNumber, breed, dateOfBirth })
+          .returning();
+
+        if (includeHealth) {
+          await tx.insert(healthEventsTable).values({
+            animalId: newAnimal.id,
+            ranchId,
+            description: heDesc,
+            eventDate: heDate,
+            severity: heSev,
+          });
+        }
+
+        if (includeMed) {
+          await tx.insert(medicationRecordsTable).values({
+            animalId: newAnimal.id,
+            ranchId,
+            medicationName: medName,
+            dosage: (row["dosage"] ?? "").trim() || null,
+            dateGiven,
+            nextDueDate: (row["next_due_date"] ?? "").trim() || null,
+          });
+        }
       });
-      summary.medicationRecordsCreated++;
+
+      summary.animalsCreated++;
+      if (includeHealth) summary.healthEventsCreated++;
+      if (includeMed) summary.medicationRecordsCreated++;
+      if (tagNumber) existingTags.add(tagNumber.toLowerCase());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown database error";
+      summary.skipped.push({ row: rowNum, reason: `Database error: ${message}` });
     }
   }
 
