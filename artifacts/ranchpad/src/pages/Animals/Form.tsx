@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -114,12 +114,12 @@ function ParentField({
           className={selectClass}
         >
           <option value="">Unknown / Not recorded</option>
+          <option value="custom">Enter name manually…</option>
           {animals.map(a => (
             <option key={a.id} value={String(a.id)}>
               {a.name}{a.tagNumber ? ` (#${a.tagNumber})` : ""}
             </option>
           ))}
-          <option value="custom">Enter name manually…</option>
         </select>
         {chevron}
       </div>
@@ -168,17 +168,29 @@ export default function AnimalForm() {
   const selectedSpecies = form.watch("species");
   const sexOptions = SEX_OPTIONS[selectedSpecies] ?? SEX_OPTIONS.Other;
 
-  // When species changes, reset sex to first valid option
+  // Guard: skip clearing parents when form.reset() fires during data load
+  const skipParentReset = useRef(false);
+
+  // When species changes, reset sex to first valid option and clear parent selections
+  // (a sire/dam from a different species is no longer a valid option)
   useEffect(() => {
     const currentSex = form.getValues("sex");
     const valid = (SEX_OPTIONS[selectedSpecies] ?? SEX_OPTIONS.Other).map(o => o.value);
     if (!valid.includes(currentSex)) {
       form.setValue("sex", valid[0]);
     }
+    if (!skipParentReset.current) {
+      form.setValue("sireId", null);
+      form.setValue("sireName", "");
+      form.setValue("damId", null);
+      form.setValue("damName", "");
+    }
+    skipParentReset.current = false;
   }, [selectedSpecies, form]);
 
   useEffect(() => {
     if (animal && isEditing) {
+      skipParentReset.current = true;
       form.reset({
         name: animal.name,
         tagNumber: animal.tagNumber || "",
@@ -242,6 +254,8 @@ export default function AnimalForm() {
 
   // Filter herd animals excluding this animal itself (when editing)
   const herdAnimals = (allAnimals ?? []).filter(a => !isEditing || a.id !== animalId);
+  // Parent options: only same-species animals
+  const sameSpeciesAnimals = herdAnimals.filter(a => a.species === selectedSpecies);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -325,7 +339,7 @@ export default function AnimalForm() {
                   label="Sire (Father)"
                   idField="sireId"
                   nameField="sireName"
-                  animals={herdAnimals}
+                  animals={sameSpeciesAnimals}
                   idValue={form.watch("sireId")}
                   nameValue={form.watch("sireName")}
                   onIdChange={v => form.setValue("sireId", v)}
@@ -335,7 +349,7 @@ export default function AnimalForm() {
                   label="Dam (Mother)"
                   idField="damId"
                   nameField="damName"
-                  animals={herdAnimals}
+                  animals={sameSpeciesAnimals}
                   idValue={form.watch("damId")}
                   nameValue={form.watch("damName")}
                   onIdChange={v => form.setValue("damId", v)}
