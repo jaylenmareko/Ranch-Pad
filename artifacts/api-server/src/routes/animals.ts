@@ -1,8 +1,12 @@
 import { Router, type IRouter } from "express";
-import { db, animalsTable, healthEventsTable } from "@workspace/db";
-import { eq, and, or, ilike, inArray } from "drizzle-orm";
+import multer from "multer";
+import { parse as parseCsv } from "csv-parse/sync";
+import { db, animalsTable, healthEventsTable, medicationRecordsTable } from "@workspace/db";
+import { eq, and, or, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import { z } from "zod";
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const router: IRouter = Router();
 
@@ -210,6 +214,138 @@ router.delete("/animals/:animalId", requireAuth, async (req, res): Promise<void>
   }
 
   res.sendStatus(204);
+});
+
+// ─── CSV Import ───────────────────────────────────────────────────────────────
+
+const CSV_HEADERS = [
+  "name", "tag_number", "species", "breed", "sex", "date_of_birth",
+  "health_event_description", "health_event_date", "health_event_severity",
+  "medication_name", "dosage", "date_given", "next_due_date",
+] as const;
+
+const VALID_SEVERITIES = new Set(["low", "medium", "high"]);
+
+interface ImportSkip {
+  row: number;
+  reason: string;
+}
+
+interface ImportSummary {
+  animalsCreated: number;
+  healthEventsCreated: number;
+  medicationRecordsCreated: number;
+  skipped: ImportSkip[];
+}
+
+router.post("/animals/import-csv", requireAuth, upload.single("file"), async (req, res): Promise<void> => {
+  if (!req.file) {
+    res.status(400).json({ error: true, message: "No file uploaded" });
+    return;
+  }
+
+  const ranchId = req.user!.ranchId;
+
+  let rows: Record<string, string>[];
+  try {
+    rows = parseCsv(req.file.buffer.toString("utf-8"), {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    }) as Record<string, string>[];
+  } catch {
+    res.status(400).json({ error: true, message: "Could not parse CSV file. Make sure it is valid CSV with the correct headers." });
+    return;
+  }
+
+  // Pre-load existing tag numbers for this ranch to detect duplicates efficiently
+  const existingAnimals = await db
+    .select({ tagNumber: animalsTable.tagNumber })
+    .from(animalsTable)
+    .where(eq(animalsTable.ranchId, ranchId));
+  const existingTags = new Set(
+    existingAnimals.map(a => a.tagNumber?.trim().toLowerCase()).filter(Boolean)
+  );
+
+  // Track tags we've seen in this import batch to catch intra-file duplicates
+  const seenTagsThisImport = new Set<string>();
+
+  const summary: ImportSummary = { animalsCreated: 0, healthEventsCreated: 0, medicationRecordsCreated: 0, skipped: [] };
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNum = i + 2; // 1-indexed + header row
+
+    const name = (row["name"] ?? "").trim();
+    const species = (row["species"] ?? "").trim();
+
+    if (!name || !species) {
+      summary.skipped.push({ row: rowNum, reason: "Missing required field: name and species are required" });
+      continue;
+    }
+
+    const tagNumber = (row["tag_number"] ?? "").trim() || null;
+
+    if (tagNumber) {
+      const tagLower = tagNumber.toLowerCase();
+      if (existingTags.has(tagLower)) {
+        summary.skipped.push({ row: rowNum, reason: `Duplicate tag number "${tagNumber}" already exists in your herd` });
+        continue;
+      }
+      if (seenTagsThisImport.has(tagLower)) {
+        summary.skipped.push({ row: rowNum, reason: `Duplicate tag number "${tagNumber}" appears more than once in this file` });
+        continue;
+      }
+      seenTagsThisImport.add(tagLower);
+    }
+
+    const sex = (row["sex"] ?? "").trim() || "Unknown";
+    const breed = (row["breed"] ?? "").trim() || null;
+    const dateOfBirth = (row["date_of_birth"] ?? "").trim() || null;
+
+    // Insert animal
+    const [newAnimal] = await db
+      .insert(animalsTable)
+      .values({ ranchId, name, species, sex, tagNumber, breed, dateOfBirth })
+      .returning();
+
+    summary.animalsCreated++;
+    if (tagNumber) existingTags.add(tagNumber.toLowerCase());
+
+    // Health event — all three fields required
+    const heDesc = (row["health_event_description"] ?? "").trim();
+    const heDate = (row["health_event_date"] ?? "").trim();
+    const heSev = (row["health_event_severity"] ?? "").trim().toLowerCase();
+
+    if (heDesc && heDate && VALID_SEVERITIES.has(heSev)) {
+      await db.insert(healthEventsTable).values({
+        animalId: newAnimal.id,
+        ranchId,
+        description: heDesc,
+        eventDate: heDate,
+        severity: heSev,
+      });
+      summary.healthEventsCreated++;
+    }
+
+    // Medication record — medication_name and date_given are required
+    const medName = (row["medication_name"] ?? "").trim();
+    const dateGiven = (row["date_given"] ?? "").trim();
+
+    if (medName && dateGiven) {
+      await db.insert(medicationRecordsTable).values({
+        animalId: newAnimal.id,
+        ranchId,
+        medicationName: medName,
+        dosage: (row["dosage"] ?? "").trim() || null,
+        dateGiven,
+        nextDueDate: (row["next_due_date"] ?? "").trim() || null,
+      });
+      summary.medicationRecordsCreated++;
+    }
+  }
+
+  res.json(summary);
 });
 
 export default router;
