@@ -444,7 +444,6 @@ export default function AnimalList() {
               key={species}
               species={species}
               animals={speciesAnimals}
-              defaultOpen
             />
           ))}
         </div>
