@@ -29,7 +29,7 @@ timeoutMs = 20000
 
 [userenv.shared]
 STRIPE_SECRET_KEY = "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"
-STRIPE_WEBHOOK_SECRET = "whsec_g5kB4zqlrwmcdf0NoqM2A6XJnTTpaFHq"
+STRIPE_WEBHOOK_SECRET = "whsec_ml20HdLlpAgxJ9v3pvVmwitt2myW3eJo"
 STRIPE_PRICE_ID = "price_1TCVeR9ZQ5U4BxKAa40Ivu7l"
 
 [nix]
