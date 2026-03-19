@@ -28,7 +28,9 @@ export default function Settings() {
       if (!res.ok) throw new Error("Failed to fetch billing status");
       return res.json() as Promise<BillingStatus>;
     },
-    staleTime: 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     retry: false,
   });
 

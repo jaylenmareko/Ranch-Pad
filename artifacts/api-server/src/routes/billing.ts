@@ -45,23 +45,46 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
 
   const now = new Date();
 
-  // Active Stripe subscription — always has access
+  // Active Stripe subscription — verify with Stripe and detect cancellations
   if (ranch.subscriptionStatus === "active") {
     let currentPeriodEnd: string | null = null;
     let cancelAtPeriodEnd = false;
+
     if (ranch.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
       try {
         const stripe = getStripe();
         const sub = await stripe.subscriptions.retrieve(ranch.stripeSubscriptionId);
+
         const periodEnd = (sub as unknown as { current_period_end: number }).current_period_end;
         if (typeof periodEnd === "number") {
           currentPeriodEnd = new Date(periodEnd * 1000).toISOString();
         }
+
         cancelAtPeriodEnd = !!(sub as unknown as { cancel_at_period_end: boolean }).cancel_at_period_end;
-      } catch {
-        // Non-fatal
+
+        // If Stripe says the subscription is actually canceled/past_due, sync the DB
+        // (handles the case where webhooks weren't delivered)
+        if (sub.status === "canceled" || sub.status === "past_due") {
+          await db.update(ranchesTable)
+            .set({ subscriptionStatus: sub.status })
+            .where(eq(ranchesTable.id, ranchId));
+
+          const billingStatus: BillingStatus = {
+            status: sub.status,
+            trialDaysLeft: null,
+            trialEndsAt: null,
+            currentPeriodEnd,
+            cancelAtPeriodEnd: false,
+            hasAccess: false,
+          };
+          res.json(billingStatus);
+          return;
+        }
+      } catch (e) {
+        console.error("[billing/status] Stripe retrieve error:", e);
       }
     }
+
     const billingStatus: BillingStatus = {
       status: "active",
       trialDaysLeft: null,
