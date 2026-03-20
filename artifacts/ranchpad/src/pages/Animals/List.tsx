@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
@@ -228,12 +227,26 @@ export default function AnimalList() {
     if (!file) return;
     e.target.value = "";
 
+    setImportError(null);
+    setImportSummary(null);
+
+    // Client-side: check file type
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) {
+      setImportError("Please upload a CSV file. Download our template to get started.");
+      return;
+    }
+
+    // Client-side: check for empty file
+    if (file.size === 0) {
+      setImportError("This file appears to be empty. Please fill in the template and try again.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
     setImporting(true);
-    setImportError(null);
-    setImportSummary(null);
 
     try {
       const res = await fetch("/api/animals/import-csv", { method: "POST", body: formData });
@@ -245,10 +258,23 @@ export default function AnimalList() {
         queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
       }
     } catch {
-      setImportError("Network error — please try again.");
+      setImportError("Something went wrong connecting to the server. Please try again.");
     } finally {
       setImporting(false);
     }
+  }
+
+  function plainEnglishSkipReason(reason: string): string {
+    if (reason.includes("Missing required field")) return "Missing name or species — both are required for every row.";
+    if (reason.includes("Duplicate tag number") && reason.includes("already exists")) {
+      const match = reason.match(/"([^"]+)"/);
+      return `Tag number${match ? ` "${match[1]}"` : ""} is already in your herd — skipped to avoid duplicates.`;
+    }
+    if (reason.includes("Duplicate tag number") && reason.includes("more than once")) {
+      const match = reason.match(/"([^"]+)"/);
+      return `Tag number${match ? ` "${match[1]}"` : ""} appears more than once in this file — only the first was imported.`;
+    }
+    return reason;
   }
 
   const filteredAnimals = React.useMemo(() => {
@@ -290,65 +316,6 @@ export default function AnimalList() {
         className="hidden"
         onChange={handleFileChange}
       />
-
-      {/* Import result dialog */}
-      <Dialog
-        open={importSummary !== null || importError !== null}
-        onOpenChange={open => { if (!open) { setImportSummary(null); setImportError(null); } }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {importError ? "Import Failed" : "Import Complete"}
-            </DialogTitle>
-            <DialogDescription>
-              {importError
-                ? importError
-                : importSummary && `${importSummary.animalsCreated} animal${importSummary.animalsCreated !== 1 ? "s" : ""} added to your herd.`
-              }
-            </DialogDescription>
-          </DialogHeader>
-          {importSummary && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-3">
-                  <div className="text-2xl font-black text-green-600 dark:text-green-400">{importSummary.animalsCreated}</div>
-                  <div className="text-xs text-muted-foreground font-medium mt-1">Animals</div>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-3">
-                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400">{importSummary.healthEventsCreated}</div>
-                  <div className="text-xs text-muted-foreground font-medium mt-1">Health Events</div>
-                </div>
-                <div className="bg-purple-50 dark:bg-purple-950/30 rounded-xl p-3">
-                  <div className="text-2xl font-black text-purple-600 dark:text-purple-400">{importSummary.medicationRecordsCreated}</div>
-                  <div className="text-xs text-muted-foreground font-medium mt-1">Medications</div>
-                </div>
-              </div>
-              {importSummary.skipped.length > 0 && (
-                <div className="border border-yellow-300 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/20 rounded-xl p-3">
-                  <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400 mb-2">
-                    {importSummary.skipped.length} row{importSummary.skipped.length !== 1 ? "s" : ""} skipped:
-                  </p>
-                  <ul className="space-y-1 max-h-40 overflow-y-auto">
-                    {importSummary.skipped.map((s, i) => (
-                      <li key={i} className="flex gap-2 text-xs text-yellow-700 dark:text-yellow-400">
-                        <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                        <span><span className="font-bold">Row {s.row}:</span> {s.reason}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {importSummary.animalsCreated > 0 && importSummary.skipped.length === 0 && (
-                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-4 h-4" />
-                  All rows imported successfully.
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -399,6 +366,46 @@ export default function AnimalList() {
           </div>
         </TooltipProvider>
       </div>
+
+      {/* Import error — inline, red, impossible to miss */}
+      {importError && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+          </div>
+          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss">
+            <XCircle className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Import success — inline, green */}
+      {importSummary && (
+        <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+                Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
+                {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
+              </p>
+            </div>
+            <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors" aria-label="Dismiss">
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+          {importSummary.skipped.length > 0 && (
+            <ul className="space-y-1 pl-7">
+              {importSummary.skipped.map((s, i) => (
+                <li key={i} className="text-xs text-yellow-700 dark:text-yellow-400">
+                  <span className="font-semibold">Row {s.row}:</span> {plainEnglishSkipReason(s.reason)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Filter bar */}
       <div className="bg-card border border-border p-3 rounded-2xl shadow-sm">
