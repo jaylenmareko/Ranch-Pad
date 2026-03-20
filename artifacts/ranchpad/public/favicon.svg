@@ -1,16 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Background: green rounded square matching app logo -->
   <rect width="32" height="32" rx="7" fill="#2d5a3d"/>
-
-  <!-- Paw print (simplified Lucide PawPrint at ~18px centered in 32px box) -->
-  <!-- Top-left toe -->
-  <ellipse cx="10" cy="9" rx="2.1" ry="2.6" fill="white"/>
-  <!-- Top-right toe -->
-  <ellipse cx="22" cy="9" rx="2.1" ry="2.6" fill="white"/>
-  <!-- Mid-left toe -->
-  <ellipse cx="7" cy="14" rx="2" ry="2.5" fill="white"/>
-  <!-- Mid-right toe -->
-  <ellipse cx="25" cy="14" rx="2" ry="2.5" fill="white"/>
-  <!-- Main pad -->
-  <path d="M 10 18 Q 8 25 16 26 Q 24 25 22 18 Q 20 14 16 14 Q 12 14 10 18 Z" fill="white"/>
+  <g stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M5 15 L5 27 L27 27 L27 15"/>
+    <polyline points="3,15 16,4 29,15"/>
+    <line x1="5" y1="15" x2="27" y2="15"/>
+    <path d="M12 27 L12 21 Q16 17.5 20 21 L20 27"/>
+  </g>
 </svg>

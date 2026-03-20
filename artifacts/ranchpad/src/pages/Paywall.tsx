@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { PawPrint, CheckCircle2, Loader2, LogOut } from "lucide-react";
+import { CheckCircle2, Loader2, LogOut } from "lucide-react";
+import { BarnIcon } from "@/components/BarnIcon";
 import { useAuth } from "@/hooks/use-auth";
 import type { BillingStatus } from "@/hooks/use-billing";
 
@@ -42,7 +43,7 @@ export default function Paywall({ billingStatus }: PaywallProps) {
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-            <PawPrint className="w-7 h-7 text-primary-foreground" />
+            <BarnIcon className="w-7 h-7 text-primary-foreground" />
           </div>
           <span className="font-display font-bold text-3xl text-primary tracking-tight">RanchPad</span>
         </div>

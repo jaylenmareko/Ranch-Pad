@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
-import { PawPrint, Tractor, ArrowRight, Search, CheckCircle2, XCircle } from "lucide-react";
+import { Tractor, ArrowRight, Search, CheckCircle2, XCircle } from "lucide-react";
+import { BarnIcon } from "@/components/BarnIcon";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -114,11 +115,11 @@ export default function Login() {
         {/* Logo + name + description + buttons */}
         <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
           <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-5 shadow-2xl border border-white/20">
-            <PawPrint className="w-10 h-10 text-white" />
+            <BarnIcon className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-display font-black mb-3 drop-shadow-lg">RanchPad</h1>
           <p className="text-lg font-semibold text-white mb-3 max-w-xs">
-            Livestock management web app for farms.
+            Livestock management web app
           </p>
           <ul className="text-sm text-white/80 max-w-xs mb-8 space-y-2 text-left list-none">
             <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
@@ -140,11 +141,11 @@ export default function Login() {
       <div className="hidden md:flex min-h-screen flex-col bg-gradient-to-br from-primary/80 to-foreground/90 text-white">
         <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
           <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 shadow-2xl border border-white/20">
-            <PawPrint className="w-12 h-12 text-white" />
+            <BarnIcon className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
           <p className="text-xl font-semibold text-white mb-4 max-w-md">
-            Livestock management web app for farms.
+            Livestock management web app
           </p>
           <ul className="text-base text-white/80 max-w-md mb-10 space-y-2 text-left list-none">
             <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
