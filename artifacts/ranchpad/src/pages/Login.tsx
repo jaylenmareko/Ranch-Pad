@@ -117,9 +117,14 @@ export default function Login() {
             <PawPrint className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-display font-black mb-3 drop-shadow-lg">RanchPad</h1>
-          <p className="text-lg font-medium text-white/80 max-w-xs mb-8">
-            Manage your livestock. Get daily alerts based on your local weather and herd history before disease hits your livestock.
+          <p className="text-lg font-semibold text-white mb-3 max-w-xs">
+            Livestock management web app for farms.
           </p>
+          <ul className="text-sm text-white/80 max-w-xs mb-8 space-y-2 text-left list-none">
+            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
+            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get early warnings when local conditions raise disease risk.</span></li>
+            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get reminders so you never miss shots or treatments.</span></li>
+          </ul>
           <div className="flex gap-3 w-full max-w-sm">
             <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
               Sign Up
@@ -138,9 +143,14 @@ export default function Login() {
             <PawPrint className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
-          <p className="text-xl font-medium text-white/80 max-w-md mb-10">
-            Manage your livestock. Get daily alerts based on your local weather and herd history before disease hits your livestock.
+          <p className="text-xl font-semibold text-white mb-4 max-w-md">
+            Livestock management web app for farms.
           </p>
+          <ul className="text-base text-white/80 max-w-md mb-10 space-y-2 text-left list-none">
+            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
+            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get early warnings when local conditions raise disease risk.</span></li>
+            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get reminders so you never miss shots or treatments.</span></li>
+          </ul>
           <div className="flex gap-3 w-full max-w-sm">
             <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
               Sign Up
