@@ -3,20 +3,24 @@ export function HoofIcon({ className }: { className?: string }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="currentColor"
-      stroke="none"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
     >
-      {/*
-        Cloven hoof silhouette — two realistic digits (claws).
-        Each claw is wider at the top (coronary band) and tapers
-        to a rounded tip at the bottom (toe), matching real hoof anatomy.
-        The 1-unit gap at x=11.5–12.5 creates the visible cleft.
-      */}
-      {/* Left claw */}
-      <path d="M 10.5 3 C 8 3 5 6.5 5 11.5 C 5 16.5 7 21.5 9.5 22.5 C 10.5 22.9 11.5 22.2 11.5 20 C 11.5 13 11.5 5.5 10.5 3 Z" />
-      {/* Right claw (mirror) */}
-      <path d="M 13.5 3 C 16 3 19 6.5 19 11.5 C 19 16.5 17 21.5 14.5 22.5 C 13.5 22.9 12.5 22.2 12.5 20 C 12.5 13 12.5 5.5 13.5 3 Z" />
+      {/* Cupola on peak */}
+      <rect x="10" y="1" width="4" height="2.5" rx="0.5" />
+      {/* Gable roof */}
+      <polyline points="1,11 12,2.5 23,11" />
+      {/* Barn walls + floor */}
+      <path d="M 3 11 L 3 22 L 21 22 L 21 11" />
+      {/* Eave line */}
+      <line x1="3" y1="11" x2="21" y2="11" />
+      {/* X brace on front face */}
+      <line x1="3" y1="11" x2="21" y2="22" />
+      <line x1="21" y1="11" x2="3" y2="22" />
     </svg>
   );
 }
