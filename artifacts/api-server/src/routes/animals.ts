@@ -254,7 +254,20 @@ router.post("/animals/import-csv", requireAuth, upload.single("file"), async (re
       trim: true,
     }) as Record<string, string>[];
   } catch {
-    res.status(400).json({ error: true, message: "Could not parse CSV file. Make sure it is valid CSV with the correct headers." });
+    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
+    return;
+  }
+
+  if (rows.length === 0) {
+    res.status(400).json({ error: true, errorType: "EMPTY_FILE", message: "This file appears to be empty. Please fill in the template and try again." });
+    return;
+  }
+
+  // Verify the file uses RanchPad's column headers (at least name or species must be present)
+  const fileHeaders = new Set(Object.keys(rows[0]).map(k => k.toLowerCase().trim()));
+  const hasValidHeaders = CSV_HEADERS.some(h => fileHeaders.has(h));
+  if (!hasValidHeaders) {
+    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
     return;
   }
 
