@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Green rounded square background -->
   <rect width="32" height="32" rx="7" fill="#2d5a3d"/>
-  <g stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="M5 15 L5 27 L27 27 L27 15"/>
-    <polyline points="3,15 16,4 29,15"/>
-    <line x1="5" y1="15" x2="27" y2="15"/>
-    <path d="M12 27 L12 21 Q16 17.5 20 21 L20 27"/>
+  <!-- Cow hoof: two filled white lobes for crisp favicon rendering -->
+  <g fill="white" stroke="none">
+    <!-- Left lobe -->
+    <path d="M 16 5 C 14.5 5 10 7 8 11 C 6 15 7.5 22 10.5 24 C 12 25 14 24.5 15 23 L 15.5 16 Z"/>
+    <!-- Right lobe -->
+    <path d="M 16 5 C 17.5 5 22 7 24 11 C 26 15 24.5 22 21.5 24 C 20 25 18 24.5 17 23 L 16.5 16 Z"/>
   </g>
 </svg>

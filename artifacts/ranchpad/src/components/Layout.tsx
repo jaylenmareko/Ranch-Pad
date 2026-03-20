@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { Home, PawPrint, Bell, LogOut, PlusCircle, Settings } from "lucide-react";
-import { BarnIcon } from "@/components/BarnIcon";
+import { HoofIcon } from "@/components/HoofIcon";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -22,7 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card shadow-sm z-10">
         <Link href="/" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-inner">
-            <BarnIcon className="w-6 h-6" />
+            <HoofIcon className="w-6 h-6" />
           </div>
           <span className="font-display font-bold text-2xl tracking-tight text-primary">RanchPad</span>
         </Link>
@@ -64,7 +64,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-20 shadow-sm">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <BarnIcon className="w-6 h-6 text-primary" />
+            <HoofIcon className="w-6 h-6 text-primary" />
             <span className="font-display font-bold text-xl text-primary">RanchPad</span>
           </Link>
           <button onClick={logout} className="p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted rounded-full flex items-center justify-center" aria-label="Sign out">
@@ -123,7 +123,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4 animate-pulse">
-          <BarnIcon className="w-12 h-12 text-primary opacity-50" />
+          <HoofIcon className="w-12 h-12 text-primary opacity-50" />
           <p className="text-muted-foreground font-medium">Loading your ranch...</p>
         </div>
       </div>
