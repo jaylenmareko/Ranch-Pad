@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
-import { Tractor, ArrowRight, Search, CheckCircle2, XCircle } from "lucide-react";
+import { Tractor, ArrowRight, CheckCircle2, XCircle, MapPin } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,39 +26,54 @@ export default function Login() {
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
   const [address, setAddress] = useState("");
-  const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedLat, setGeocodedLat] = useState<number | null>(null);
   const [geocodedLon, setGeocodedLon] = useState<number | null>(null);
   const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { login: setAuthContext } = useAuth();
   const { toast } = useToast();
   const loginMutation = useLogin();
   const signupMutation = useSignup();
 
-  async function handleGeocode() {
-    if (!address.trim()) return;
-    setIsGeocoding(true);
-    setGeocodeLabel(null);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
-        { headers: { "Accept-Language": "en" } }
-      );
-      const results = await res.json();
-      if (!results || results.length === 0) {
-        toast({ title: "Address not found", description: "Try a more specific address.", variant: "destructive" });
-        return;
-      }
-      const { lat, lon, display_name } = results[0];
-      setGeocodedLat(parseFloat(parseFloat(lat).toFixed(6)));
-      setGeocodedLon(parseFloat(parseFloat(lon).toFixed(6)));
-      setGeocodeLabel(display_name);
-    } catch {
-      toast({ title: "Geocode failed", description: "Could not reach the location service.", variant: "destructive" });
-    } finally {
-      setIsGeocoding(false);
+  function handleAddressChange(value: string) {
+    setAddress(value);
+    if (geocodedLat !== null) {
+      setGeocodedLat(null);
+      setGeocodedLon(null);
+      setGeocodeLabel(null);
     }
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (value.trim().length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    suggestTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5`,
+          { headers: { "Accept-Language": "en" } }
+        );
+        const results: Array<{ display_name: string; lat: string; lon: string }> = await res.json();
+        setSuggestions(results ?? []);
+        setShowSuggestions((results ?? []).length > 0);
+      } catch {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 350);
+  }
+
+  function selectSuggestion(s: { display_name: string; lat: string; lon: string }) {
+    setAddress(s.display_name);
+    setGeocodedLat(parseFloat(parseFloat(s.lat).toFixed(6)));
+    setGeocodedLon(parseFloat(parseFloat(s.lon).toFixed(6)));
+    setGeocodeLabel(s.display_name);
+    setSuggestions([]);
+    setShowSuggestions(false);
   }
 
   async function handleForgotPassword(e: React.FormEvent) {
@@ -381,30 +396,30 @@ export default function Login() {
             </div>
             <div className="space-y-2">
               <Label>Ranch Location</Label>
-              <div className="flex gap-2">
+              <div className="relative">
                 <Input
-                  placeholder="e.g. 1234 County Rd, Wichita, KS"
+                  placeholder="Start typing your address…"
                   value={address}
-                  onChange={e => {
-                    setAddress(e.target.value);
-                    if (geocodedLat !== null) {
-                      setGeocodedLat(null);
-                      setGeocodedLon(null);
-                      setGeocodeLabel(null);
-                    }
-                  }}
-                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleGeocode(); } }}
+                  onChange={e => handleAddressChange(e.target.value)}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  autoComplete="off"
                 />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleGeocode}
-                  isLoading={isGeocoding}
-                  disabled={!address.trim()}
-                  className="shrink-0"
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                    {suggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0"
+                        onMouseDown={() => selectSuggestion(s)}
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               {geocodedLat !== null && geocodedLon !== null && (
                 <div className="rounded-xl border bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800 p-3">
@@ -420,7 +435,7 @@ export default function Login() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); }}
+                      onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
                       className="p-0.5 rounded-full hover:bg-muted text-muted-foreground shrink-0"
                     >
                       <XCircle className="w-4 h-4" />
