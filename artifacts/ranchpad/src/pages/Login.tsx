@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Tractor, ArrowRight, Search, CheckCircle2, XCircle } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
-import { KansasSkyBackground } from "@/components/KansasSkyBackground";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -95,49 +94,50 @@ export default function Login() {
     );
   }
 
+  const shadow = "0 1px 3px rgba(0,0,0,0.45)";
+
   const heroContent = (
-    <div className="relative z-10 flex flex-col items-center text-center px-10 py-10 rounded-3xl"
-         style={{ background: "radial-gradient(ellipse at 50% 42%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.10) 55%, rgba(0,0,0,0) 78%)" }}>
-      {/* Barn icon in frosted glass tile */}
-      <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-5 shadow-2xl border border-white/20">
-        <HoofIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+    <div className="flex flex-col items-center text-center px-6 max-w-lg w-full">
+      {/* Barn icon */}
+      <div className="w-16 h-16 md:w-20 md:h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/25">
+        <HoofIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
       </div>
 
       {/* Wordmark */}
       <h1
-        className="text-5xl md:text-6xl font-display font-black text-white mb-3 tracking-tight"
-        style={{ textShadow: "0 2px 24px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.7)" }}
+        className="text-6xl md:text-7xl font-display font-bold text-white mb-3 tracking-wide leading-none"
+        style={{ textShadow: shadow }}
       >
         RanchPad
       </h1>
 
-      {/* Subtitle */}
+      {/* Tagline */}
       <p
-        className="text-lg md:text-xl font-semibold text-white/90 mb-3 max-w-xs md:max-w-md"
-        style={{ textShadow: "0 1px 12px rgba(0,0,0,0.60)" }}
+        className="text-base md:text-lg font-sans font-normal text-white/85 mb-8 tracking-widest uppercase"
+        style={{ textShadow: shadow, letterSpacing: "0.18em" }}
       >
-        Livestock management web app
+        Livestock Management
       </p>
 
       {/* Bullet features */}
-      <ul className="max-w-xs md:max-w-sm mb-8 space-y-4 text-left list-none">
+      <ul className="w-full max-w-xs mb-10 space-y-4 text-left list-none">
         {[
           "Simple herd log for animals, treatments, and health.",
-          "Get early warnings when local conditions raise disease risk.",
-          "Get reminders so you never miss shots or treatments.",
+          "Early warnings when local conditions raise disease risk.",
+          "Reminders so you never miss shots or treatments.",
         ].map((text) => (
           <li key={text} className="flex items-start gap-3">
             <span
-              className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-amber-400/90 flex items-center justify-center shadow-md"
+              className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center"
               aria-hidden="true"
             >
-              <svg viewBox="0 0 8 8" className="w-2.5 h-2.5" fill="white">
-                <path d="M1.5 4l2 2 3-3.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <svg viewBox="0 0 8 8" className="w-2.5 h-2.5">
+                <path d="M1.5 4l2 2 3-3.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
               </svg>
             </span>
             <span
-              className="text-sm md:text-base text-white font-medium leading-snug"
-              style={{ textShadow: "0 1px 10px rgba(0,0,0,0.70)" }}
+              className="text-sm md:text-base text-white/90 font-sans leading-snug"
+              style={{ textShadow: shadow }}
             >
               {text}
             </span>
@@ -146,10 +146,10 @@ export default function Login() {
       </ul>
 
       {/* CTA buttons */}
-      <div className="flex gap-3 w-full max-w-sm">
+      <div className="flex gap-3 w-full max-w-xs">
         <Button
           size="lg"
-          className="flex-1 bg-white text-primary font-bold hover:bg-white/92 shadow-xl"
+          className="flex-1 bg-white text-primary font-semibold hover:bg-white/95 font-sans"
           onClick={() => setShowSignup(true)}
         >
           Sign Up
@@ -157,7 +157,7 @@ export default function Login() {
         <Button
           size="lg"
           variant="outline"
-          className="flex-1 border-white/50 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm shadow-xl"
+          className="flex-1 border-white/60 text-white hover:bg-white/10 hover:text-white font-sans"
           onClick={() => setShowLogin(true)}
         >
           Log In
@@ -169,19 +169,19 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background">
 
-      {/* ══════════════ MOBILE ══════════════ */}
-      <div className="md:hidden relative min-h-screen overflow-hidden flex flex-col text-white">
-        <KansasSkyBackground />
-        {/* Content sits in the sky (upper ~60%) */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center pb-40">
-          {heroContent}
-        </div>
-      </div>
-
-      {/* ══════════════ DESKTOP ══════════════ */}
-      <div className="hidden md:flex relative min-h-screen overflow-hidden flex-col text-white">
-        <KansasSkyBackground />
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center pb-40">
+      {/* ══════════════ HERO ══════════════ */}
+      <div
+        className="relative min-h-screen overflow-hidden flex flex-col text-white"
+        style={{
+          backgroundImage: "url('/ranch-bg.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/32" />
+        {/* Content */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center py-16 px-4">
           {heroContent}
         </div>
       </div>
