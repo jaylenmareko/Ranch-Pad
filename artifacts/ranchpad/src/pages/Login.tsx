@@ -123,8 +123,8 @@ export default function Login() {
       <ul className="w-full max-w-xs mb-10 space-y-4 text-left list-none">
         {[
           "Simple herd log for animals, treatments, and health.",
-          "Early warnings when local conditions raise disease risk.",
-          "Reminders so you never miss shots or treatments.",
+          "Get early warnings when local conditions raise disease risk.",
+          "Get reminders so you never miss shots or treatments.",
         ].map((text) => (
           <li key={text} className="flex items-start gap-3">
             <span
@@ -184,6 +184,11 @@ export default function Login() {
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center py-16 px-4">
           {heroContent}
         </div>
+        {/* Footer */}
+        <footer className="relative z-10 pb-6 flex items-center justify-center gap-6">
+          <a href="/terms"   className="text-xs text-white/50 hover:text-white/80 transition-colors font-sans tracking-wide">Terms</a>
+          <a href="/privacy" className="text-xs text-white/50 hover:text-white/80 transition-colors font-sans tracking-wide">Privacy</a>
+        </footer>
       </div>
 
       {/* ── Login Modal ── */}
