@@ -19,6 +19,7 @@ import { Layout, AuthGuard } from "@/components/Layout";
 import Login from "@/pages/Login";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import AnimalList from "@/pages/Animals/List";
 import AnimalForm from "@/pages/Animals/Form";
@@ -132,6 +133,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/reset-password" component={ResetPassword} />
 
       {/* Protected Routes Wrapper */}
       <Route path="*">

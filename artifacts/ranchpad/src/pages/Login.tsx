@@ -11,6 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 export default function Login() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -54,6 +58,28 @@ export default function Login() {
       toast({ title: "Geocode failed", description: "Could not reach the location service.", variant: "destructive" });
     } finally {
       setIsGeocoding(false);
+    }
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast({ title: "Error", description: data.message || "Something went wrong.", variant: "destructive" });
+        return;
+      }
+      setForgotSent(true);
+    } catch {
+      toast({ title: "Error", description: "Could not send reset email. Please try again.", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
     }
   }
 
@@ -191,6 +217,64 @@ export default function Login() {
         </footer>
       </div>
 
+      {/* ── Forgot Password Modal ── */}
+      <Dialog
+        open={showForgot}
+        onOpenChange={(open) => { setShowForgot(open); if (!open) { setForgotSent(false); setForgotEmail(""); } }}
+        title="Reset your password"
+      >
+        {forgotSent ? (
+          <div className="flex flex-col items-center text-center gap-4 py-4">
+            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-1">Check your email</p>
+              <p className="text-sm text-muted-foreground">
+                If an account exists for <span className="font-medium text-foreground">{forgotEmail}</span>, we've sent a reset link. It expires in 1 hour.
+              </p>
+            </div>
+            <Button
+              className="w-full mt-2"
+              onClick={() => { setShowForgot(false); setShowLogin(true); setForgotSent(false); setForgotEmail(""); }}
+            >
+              Back to Log In
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleForgotPassword} className="space-y-5">
+            <p className="text-sm text-muted-foreground">
+              Enter your email and we'll send you a link to reset your password.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="forgot-email">Email Address</Label>
+              <Input
+                id="forgot-email"
+                type="email"
+                placeholder="john@ranch.com"
+                value={forgotEmail}
+                onChange={e => setForgotEmail(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" size="lg" isLoading={forgotLoading}>
+              Send Reset Link
+              {!forgotLoading && <ArrowRight className="w-5 h-5 ml-2" />}
+            </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              Remember your password?{" "}
+              <button
+                type="button"
+                className="font-bold text-primary hover:underline"
+                onClick={() => { setShowForgot(false); setShowLogin(true); }}
+              >
+                Log in
+              </button>
+            </p>
+          </form>
+        )}
+      </Dialog>
+
       {/* ── Login Modal ── */}
       <Dialog open={showLogin} onOpenChange={setShowLogin} title="Welcome back">
         <form onSubmit={handleLogin} className="space-y-5">
@@ -206,7 +290,16 @@ export default function Login() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="login-password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="login-password">Password</Label>
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => { setShowLogin(false); setShowForgot(true); setForgotSent(false); setForgotEmail(""); }}
+              >
+                Forgot password?
+              </button>
+            </div>
             <Input
               id="login-password"
               type="password"
