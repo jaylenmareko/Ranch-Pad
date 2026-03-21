@@ -120,13 +120,29 @@ export default function Login() {
       </p>
 
       {/* Bullet features */}
-      <ul
-        className="text-sm md:text-base text-white/80 max-w-xs md:max-w-sm mb-8 space-y-2 text-left list-none"
-        style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}
-      >
-        <li className="flex items-start gap-2"><span className="mt-0.5 text-amber-300">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
-        <li className="flex items-start gap-2"><span className="mt-0.5 text-amber-300">•</span><span>Get early warnings when local conditions raise disease risk.</span></li>
-        <li className="flex items-start gap-2"><span className="mt-0.5 text-amber-300">•</span><span>Get reminders so you never miss shots or treatments.</span></li>
+      <ul className="max-w-xs md:max-w-sm mb-8 space-y-4 text-left list-none">
+        {[
+          "Simple herd log for animals, treatments, and health.",
+          "Get early warnings when local conditions raise disease risk.",
+          "Get reminders so you never miss shots or treatments.",
+        ].map((text) => (
+          <li key={text} className="flex items-start gap-3">
+            <span
+              className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-amber-400/90 flex items-center justify-center shadow-md"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 8 8" className="w-2.5 h-2.5" fill="white">
+                <path d="M1.5 4l2 2 3-3.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
+            </span>
+            <span
+              className="text-sm md:text-base text-white font-medium leading-snug"
+              style={{ textShadow: "0 1px 10px rgba(0,0,0,0.70)" }}
+            >
+              {text}
+            </span>
+          </li>
+        ))}
       </ul>
 
       {/* CTA buttons */}
