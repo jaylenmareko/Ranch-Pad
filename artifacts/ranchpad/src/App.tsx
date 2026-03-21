@@ -17,6 +17,8 @@ import { Layout, AuthGuard } from "@/components/Layout";
 
 // Pages
 import Login from "@/pages/Login";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
 import Dashboard from "@/pages/Dashboard";
 import AnimalList from "@/pages/Animals/List";
 import AnimalForm from "@/pages/Animals/Form";
@@ -128,7 +130,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+
       {/* Protected Routes Wrapper */}
       <Route path="*">
         <AuthGuard>
