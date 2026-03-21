@@ -1,10 +1,14 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { Resend } from "resend";
 import { db, usersTable, ranchesTable, ranchUsersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import { signToken } from "../lib/jwt.js";
 import { requireAuth } from "../middlewares/auth.js";
 import { z } from "zod";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const router: IRouter = Router();
 
@@ -284,6 +288,91 @@ router.put("/auth/me/email", requireAuth, async (req, res): Promise<void> => {
     .returning();
 
   res.json({ id: updated.id, name: updated.name, email: updated.email });
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+router.post("/auth/forgot-password", async (req, res): Promise<void> => {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: "Please enter a valid email address" });
+    return;
+  }
+
+  const { email } = parsed.data;
+
+  const [user] = await db
+    .select({ id: usersTable.id, email: usersTable.email, name: usersTable.name })
+    .from(usersTable)
+    .where(eq(usersTable.email, email.toLowerCase()))
+    .limit(1);
+
+  if (user) {
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date(Date.now() + 60 * 60 * 1000);
+
+    await db
+      .update(usersTable)
+      .set({ resetToken: rawToken, resetTokenExpiry: expiry })
+      .where(eq(usersTable.id, user.id));
+
+    const resetUrl = `https://ranchpad.app/reset-password?token=${rawToken}`;
+
+    await resend.emails.send({
+      from: "RanchPad <noreply@ranchpad.app>",
+      to: user.email,
+      subject: "Reset your RanchPad password",
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; color: #1a1a1a;">
+          <h2 style="margin-bottom: 8px;">Reset your password</h2>
+          <p style="color: #555; margin-bottom: 24px;">Hi ${user.name}, we received a request to reset your password. Click the button below — the link expires in 1 hour.</p>
+          <a href="${resetUrl}" style="display: inline-block; background: #3e7354; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px;">Reset Password</a>
+          <p style="color: #999; font-size: 12px; margin-top: 32px;">If you didn't request this, you can ignore this email. Your password won't change.</p>
+        </div>
+      `,
+    });
+  }
+
+  res.json({ success: true });
+});
+
+router.post("/auth/reset-password", async (req, res): Promise<void> => {
+  const parsed = resetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "Invalid request";
+    res.status(400).json({ error: true, message: msg });
+    return;
+  }
+
+  const { token, password } = parsed.data;
+  const now = new Date();
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.resetToken, token), gt(usersTable.resetTokenExpiry!, now)))
+    .limit(1);
+
+  if (!user) {
+    res.status(400).json({ error: true, message: "This reset link is invalid or has expired. Please request a new one." });
+    return;
+  }
+
+  const newPasswordHash = await bcrypt.hash(password, 12);
+
+  await db
+    .update(usersTable)
+    .set({ passwordHash: newPasswordHash, resetToken: null, resetTokenExpiry: null })
+    .where(eq(usersTable.id, user.id));
+
+  res.json({ success: true });
 });
 
 export default router;
