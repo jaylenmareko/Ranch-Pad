@@ -10,6 +10,8 @@ import { ArrowLeft, Users } from "lucide-react";
 import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals, getGetAnimalQueryKey, type Animal } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { addGuestAnimal } from "@/lib/guest-store";
 
 // ─── Species-specific sex options ─────────────────────────────────────────────
 const SEX_OPTIONS: Record<string, Array<{ value: string; label: string }>> = {
@@ -142,11 +144,12 @@ export default function AnimalForm() {
   const animalId = parseInt(params.id || "0", 10);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   const { data: animal, isLoading: loadingAnimal } = useGetAnimal(animalId, {
     query: { queryKey: getGetAnimalQueryKey(animalId), enabled: isEditing }
   });
-  const { data: allAnimals } = useListAnimals();
+  const { data: allAnimals } = useListAnimals(undefined, { query: { enabled: isAuthenticated } });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -229,6 +232,24 @@ export default function AnimalForm() {
   });
 
   const onSubmit = (values: FormValues) => {
+    // Guest mode: save to localStorage
+    if (!isAuthenticated) {
+      addGuestAnimal({
+        name: values.name,
+        tagNumber: values.tagNumber || null,
+        species: values.species,
+        breed: values.breed || null,
+        sex: values.sex,
+        dateOfBirth: values.dateOfBirth || null,
+        expectedDueDate: values.expectedDueDate || null,
+        notes: null,
+      });
+      toast({ title: "Animal added", description: "Saved locally — sign up to keep it forever." });
+      window.dispatchEvent(new CustomEvent("guest-save"));
+      setLocation("/animals");
+      return;
+    }
+
     const payload = {
       ...values,
       tagNumber: values.tagNumber || null,

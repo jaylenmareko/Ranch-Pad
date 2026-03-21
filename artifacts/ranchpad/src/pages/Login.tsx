@@ -10,7 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
+  const [showSignup, setShowSignup] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("signup") === "1";
+  });
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);

@@ -28,10 +28,14 @@ window.fetch = async (...args) => {
 
   const response = await originalFetch(...args);
 
-  // If we hit a 401 on an API route, auto-logout
+  // If we hit a 401 on an API route AND we had a token, auto-logout.
+  // Guests (no token) hitting 401 are expected — don't fire auth-expired.
   if (response.status === 401 && url.includes("/api/") && !url.includes("/api/auth/login")) {
-    localStorage.removeItem("ranchpad_token");
-    window.dispatchEvent(new Event("auth-expired"));
+    const hadToken = !!localStorage.getItem("ranchpad_token");
+    if (hadToken) {
+      localStorage.removeItem("ranchpad_token");
+      window.dispatchEvent(new Event("auth-expired"));
+    }
   }
 
   return response;

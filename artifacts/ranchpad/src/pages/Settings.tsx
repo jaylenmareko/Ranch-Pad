@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut, KeyRound, CreditCard, Loader2 } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut, KeyRound, CreditCard, Loader2, Cog } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -18,8 +19,8 @@ interface UserProfile {
 export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { logout } = useAuth();
-  const { data: ranch, isLoading } = useGetRanch();
+  const { logout, isAuthenticated } = useAuth();
+  const { data: ranch, isLoading } = useGetRanch({ query: { enabled: isAuthenticated } });
 
   const { data: billing, isLoading: isBillingLoading } = useQuery<BillingStatus>({
     queryKey: ["/api/billing/status"],
@@ -28,6 +29,7 @@ export default function Settings() {
       if (!res.ok) throw new Error("Failed to fetch billing status");
       return res.json() as Promise<BillingStatus>;
     },
+    enabled: isAuthenticated,
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
@@ -106,6 +108,7 @@ export default function Settings() {
   }, [ranch]);
 
   useEffect(() => {
+    if (!isAuthenticated) { setIsLoadingProfile(false); return; }
     setIsLoadingProfile(true);
     fetch("/api/auth/me")
       .then(async (res) => {
@@ -123,7 +126,33 @@ export default function Settings() {
         toast({ title: "Could not load account info", variant: "destructive" });
       })
       .finally(() => setIsLoadingProfile(false));
-  }, []);
+  }, [isAuthenticated]);
+
+  // Guest users see a simple sign-up prompt instead of settings
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl sm:text-4xl font-black text-foreground">Settings</h1>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
+            <Cog className="w-10 h-10 text-primary/50" />
+          </div>
+          <h2 className="font-bold text-xl text-foreground mb-2">Ranch &amp; account settings</h2>
+          <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
+            Create a free account to set up your ranch profile, configure your location for weather alerts, and manage your subscription.
+          </p>
+          <div className="flex gap-3">
+            <Link href="/login?signup=1" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
+              Create Free Account
+            </Link>
+            <Link href="/login" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-medium border border-border text-foreground hover:bg-muted transition-colors">
+              Log In
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSaveName(e: React.FormEvent) {
     e.preventDefault();

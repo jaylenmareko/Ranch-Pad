@@ -13,7 +13,9 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
 
 // Components
-import { Layout, AuthGuard } from "@/components/Layout";
+import { Layout } from "@/components/Layout";
+import { GuestFloatingCard } from "@/components/GuestFloatingCard";
+import { GuestSignupPrompt } from "@/components/GuestSignupPrompt";
 
 // Pages
 import Login from "@/pages/Login";
@@ -39,8 +41,6 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
   const verifiedRef = useRef(false);
 
-  // After Stripe checkout redirect, verify the session immediately so the
-  // subscription activates without relying on webhooks alone.
   useEffect(() => {
     if (!isAuthenticated || verifiedRef.current) return;
 
@@ -51,7 +51,6 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     if (!isBillingSuccess || !sessionId) return;
     verifiedRef.current = true;
 
-    // Clean the URL immediately
     const clean = window.location.pathname;
     window.history.replaceState(null, "", clean);
 
@@ -62,12 +61,9 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     })
       .then((res) => res.json())
       .then(() => {
-        // Invalidate so billing status re-fetches and paywall drops
         qc.invalidateQueries({ queryKey: ["/api/billing/status"] });
       })
-      .catch((err) => {
-        console.error("[billing] verify-session failed:", err);
-        // Invalidate anyway — the status endpoint will re-check
+      .catch(() => {
         qc.invalidateQueries({ queryKey: ["/api/billing/status"] });
       });
   }, [isAuthenticated, qc]);
@@ -84,10 +80,8 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     retry: 1,
   });
 
-  // While loading billing status, show nothing (AuthGuard already shows loader)
   if (isLoading) return null;
 
-  // Fetch error — block access to avoid bypassing paywall on transient failures
   if (isError) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12 gap-4">
@@ -95,34 +89,42 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
           Unable to verify your subscription status. Please check your connection and try again.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={() => window.location.reload()}
-            className="text-sm font-semibold text-primary underline underline-offset-2"
-          >
-            Retry
-          </button>
-          <button
-            onClick={logout}
-            className="text-sm font-semibold text-muted-foreground underline underline-offset-2"
-          >
-            Sign out
-          </button>
+          <button onClick={() => window.location.reload()} className="text-sm font-semibold text-primary underline underline-offset-2">Retry</button>
+          <button onClick={logout} className="text-sm font-semibold text-muted-foreground underline underline-offset-2">Sign out</button>
         </div>
       </div>
     );
   }
 
-  // No billing data returned — conservative: block access
-  if (!billing) {
-    return <Paywall billingStatus={null} />;
-  }
-
-  // No access → show full-screen paywall
-  if (!billing.hasAccess) {
-    return <Paywall billingStatus={billing} />;
-  }
+  if (!billing) return <Paywall billingStatus={null} />;
+  if (!billing.hasAccess) return <Paywall billingStatus={billing} />;
 
   return <>{children}</>;
+}
+
+// ─── App Routes (guest + auth aware) ──────────────────────────────────────────
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+
+  const routes = (
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/animals" component={AnimalList} />
+      <Route path="/animals/new" component={AnimalForm} />
+      <Route path="/animals/:id/edit" component={AnimalForm} />
+      <Route path="/animals/:id" component={AnimalDetail} />
+      <Route path="/alerts" component={AlertsList} />
+      <Route path="/settings" component={Settings} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+
+  if (isAuthenticated) {
+    return <SubscriptionGuard>{routes}</SubscriptionGuard>;
+  }
+
+  return routes;
 }
 
 // ─── Router ────────────────────────────────────────────────────────────────────
@@ -135,24 +137,11 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/reset-password" component={ResetPassword} />
 
-      {/* Protected Routes Wrapper */}
+      {/* All other routes — guests and auth users both see the Layout */}
       <Route path="*">
-        <AuthGuard>
-          <SubscriptionGuard>
-            <Layout>
-              <Switch>
-                <Route path="/" component={Dashboard} />
-                <Route path="/animals" component={AnimalList} />
-                <Route path="/animals/new" component={AnimalForm} />
-                <Route path="/animals/:id/edit" component={AnimalForm} />
-                <Route path="/animals/:id" component={AnimalDetail} />
-                <Route path="/alerts" component={AlertsList} />
-                <Route path="/settings" component={Settings} />
-                <Route component={NotFound} />
-              </Switch>
-            </Layout>
-          </SubscriptionGuard>
-        </AuthGuard>
+        <Layout>
+          <AppContent />
+        </Layout>
       </Route>
     </Switch>
   );
@@ -165,6 +154,8 @@ function App() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
             <Router />
+            <GuestFloatingCard />
+            <GuestSignupPrompt />
             <Toaster />
           </AuthProvider>
         </WouterRouter>

@@ -1,14 +1,16 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { getGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
 
@@ -123,6 +125,106 @@ function AnimalCard({ animal }: { animal: Animal }) {
   );
 }
 
+// ─── Guest Animal Card ─────────────────────────────────────────────────────────
+
+function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
+  return (
+    <Card className="h-full border-dashed border-border/70">
+      <CardContent className="p-4 flex flex-col h-full">
+        <div className="flex items-start gap-2.5 mb-3">
+          <span className="text-lg leading-none">{SPECIES_ICONS[animal.species] ?? "🐾"}</span>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base text-foreground leading-tight truncate">{animal.name}</h3>
+            {animal.tagNumber && (
+              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                #{animal.tagNumber}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="mt-auto space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
+            {animal.breed && (
+              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
+            )}
+          </div>
+          {animal.dateOfBirth && (
+            <p className="text-xs text-muted-foreground font-medium">
+              {new Date(animal.dateOfBirth).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Guest Animal List ─────────────────────────────────────────────────────────
+
+function GuestAnimalList() {
+  const [guestAnimals, setGuestAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
+
+  useEffect(() => {
+    const refresh = () => setGuestAnimals(getGuestAnimals());
+    window.addEventListener("guest-save", refresh);
+    return () => window.removeEventListener("guest-save", refresh);
+  }, []);
+
+  const bySpecies = guestAnimals.reduce<Record<string, GuestAnimal[]>>((acc, a) => {
+    (acc[a.species] = acc[a.species] || []).push(a);
+    return acc;
+  }, {});
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-3xl sm:text-4xl font-black text-foreground">My Herd</h1>
+        <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform whitespace-nowrap">
+          <Plus className="w-5 h-5 mr-2" /> Add Animal
+        </Link>
+      </div>
+
+      {guestAnimals.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
+            <PawPrint className="w-10 h-10 text-primary/50" />
+          </div>
+          <h2 className="font-bold text-xl text-foreground mb-2">No animals yet</h2>
+          <p className="text-muted-foreground text-sm max-w-xs mb-6 leading-relaxed">
+            Add your first animal to get started — no account needed. Your herd is saved on this device.
+          </p>
+          <Link href="/animals/new" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
+            <Plus className="w-4 h-4 mr-2" /> Add Your First Animal
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {Object.entries(bySpecies).map(([species, animals]) => (
+            <div key={species} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+              <div className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 border-b border-border/50">
+                <span className="text-2xl leading-none">{speciesIcon(species)}</span>
+                <span className="font-black text-lg text-foreground font-display flex-1">{species}</span>
+                <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+                  {animals.length} {animals.length === 1 ? "animal" : "animals"}
+                </span>
+              </div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {animals.map(a => <GuestAnimalCard key={a.id} animal={a} />)}
+              </div>
+            </div>
+          ))}
+          <p className="text-xs text-muted-foreground text-center pt-2">
+            Saved on this device only.{" "}
+            <Link href="/login?signup=1" className="underline text-primary font-semibold">Sign up</Link>{" "}
+            to keep your herd safe on any device.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const FOLDER_STORAGE_KEY = "ranchpad:folderOpen";
 
 function getFolderOpen(species: string): boolean {
@@ -219,8 +321,15 @@ export default function AnimalList() {
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
-  const { data: animals, isLoading } = useListAnimals({ search: search.length > 2 ? search : undefined });
+  const { data: animals, isLoading } = useListAnimals(
+    { search: search.length > 2 ? search : undefined },
+    { query: { enabled: isAuthenticated } },
+  );
+
+  // Guest users see their locally-stored animals
+  if (!isAuthenticated) return <GuestAnimalList />;
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
