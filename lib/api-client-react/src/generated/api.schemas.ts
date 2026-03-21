@@ -22,6 +22,10 @@ export interface SignupBody {
   ranchCity?: string;
   ranchState?: string;
   /** @nullable */
+  lat?: number | null;
+  /** @nullable */
+  lon?: number | null;
+  /** @nullable */
   joinRanchName?: string | null;
 }
 
