@@ -15,6 +15,8 @@ const signupSchema = z.object({
   ranchName: z.string().optional(),
   ranchCity: z.string().optional(),
   ranchState: z.string().optional(),
+  lat: z.number().nullable().optional(),
+  lon: z.number().nullable().optional(),
   joinRanchName: z.string().optional().nullable(),
 });
 
@@ -30,7 +32,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const { email, password, name, ranchName, ranchCity, ranchState, joinRanchName } = parsed.data;
+  const { email, password, name, ranchName, ranchCity, ranchState, lat, lon, joinRanchName } = parsed.data;
 
   // Check duplicate email before any writes
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
@@ -72,6 +74,8 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
           name: newRanchName,
           locationCity: ranchCity || null,
           locationState: ranchState || null,
+          lat: lat ?? null,
+          lon: lon ?? null,
           trialEndsAt,
         })
         .returning();

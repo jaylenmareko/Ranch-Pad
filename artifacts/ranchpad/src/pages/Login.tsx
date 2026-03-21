@@ -85,20 +85,10 @@ export default function Login() {
       return;
     }
     signupMutation.mutate(
-      { data: { email: signupEmail, password: signupPassword, name } },
+      { data: { email: signupEmail, password: signupPassword, name, lat: geocodedLat, lon: geocodedLon } },
       {
         onSuccess: (data) => {
-          // Login first, then update location in the background
           setAuthContext(data.token);
-          if (geocodedLat !== null && geocodedLon !== null) {
-            setTimeout(() => {
-              fetch("/api/ranch", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${data.token}` },
-                body: JSON.stringify({ lat: geocodedLat, lon: geocodedLon }),
-              }).catch(() => {});
-            }, 500);
-          }
         },
         onError: (error: Error) => {
           toast({ title: "Signup Failed", description: error.message || "Could not create account.", variant: "destructive" });
