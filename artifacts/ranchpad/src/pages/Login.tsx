@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Tractor, ArrowRight, Search, CheckCircle2, XCircle } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
+import { KansasSkyBackground } from "@/components/KansasSkyBackground";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -12,18 +13,15 @@ export default function Login() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
-  // Login form
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  // Signup form
   const [name, setName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
-  // Address geocoding
   const [address, setAddress] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedLat, setGeocodedLat] = useState<number | null>(null);
@@ -97,59 +95,78 @@ export default function Login() {
     );
   }
 
+  const heroContent = (
+    <div className="relative z-10 flex flex-col items-center text-center px-10 py-10 rounded-3xl"
+         style={{ background: "radial-gradient(ellipse at 50% 42%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.10) 55%, rgba(0,0,0,0) 78%)" }}>
+      {/* Barn icon in frosted glass tile */}
+      <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-5 shadow-2xl border border-white/20">
+        <HoofIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
+      </div>
+
+      {/* Wordmark */}
+      <h1
+        className="text-5xl md:text-6xl font-display font-black text-white mb-3 tracking-tight"
+        style={{ textShadow: "0 2px 24px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.7)" }}
+      >
+        RanchPad
+      </h1>
+
+      {/* Subtitle */}
+      <p
+        className="text-lg md:text-xl font-semibold text-white/90 mb-3 max-w-xs md:max-w-md"
+        style={{ textShadow: "0 1px 12px rgba(0,0,0,0.60)" }}
+      >
+        Livestock management web app
+      </p>
+
+      {/* Bullet features */}
+      <ul
+        className="text-sm md:text-base text-white/80 max-w-xs md:max-w-sm mb-8 space-y-2 text-left list-none"
+        style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}
+      >
+        <li className="flex items-start gap-2"><span className="mt-0.5 text-amber-300">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
+        <li className="flex items-start gap-2"><span className="mt-0.5 text-amber-300">•</span><span>Get early warnings when local conditions raise disease risk.</span></li>
+        <li className="flex items-start gap-2"><span className="mt-0.5 text-amber-300">•</span><span>Get reminders so you never miss shots or treatments.</span></li>
+      </ul>
+
+      {/* CTA buttons */}
+      <div className="flex gap-3 w-full max-w-sm">
+        <Button
+          size="lg"
+          className="flex-1 bg-white text-primary font-bold hover:bg-white/92 shadow-xl"
+          onClick={() => setShowSignup(true)}
+        >
+          Sign Up
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          className="flex-1 border-white/50 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm shadow-xl"
+          onClick={() => setShowLogin(true)}
+        >
+          Log In
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
 
-      {/* ══════════════ MOBILE LAYOUT (hidden on desktop) ══════════════ */}
-      <div className="md:hidden min-h-screen flex flex-col bg-gradient-to-br from-primary/80 to-foreground/90 text-white">
-        {/* Logo + name + description + buttons */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-5 shadow-2xl border border-white/20">
-            <HoofIcon className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-4xl font-display font-black mb-3 drop-shadow-lg">RanchPad</h1>
-          <p className="text-lg font-semibold text-white mb-3 max-w-xs">
-            Livestock management web app
-          </p>
-          <ul className="text-sm text-white/80 max-w-xs mb-8 space-y-2 text-left list-none">
-            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
-            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get early warnings when local conditions raise disease risk.</span></li>
-            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get reminders so you never miss shots or treatments.</span></li>
-          </ul>
-          <div className="flex gap-3 w-full max-w-sm">
-            <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
-              Sign Up
-            </Button>
-            <Button size="lg" variant="outline" className="flex-1 border-white/50 text-white hover:bg-white/10 hover:text-white" onClick={() => setShowLogin(true)}>
-              Log In
-            </Button>
-          </div>
+      {/* ══════════════ MOBILE ══════════════ */}
+      <div className="md:hidden relative min-h-screen overflow-hidden flex flex-col text-white">
+        <KansasSkyBackground />
+        {/* Content sits in the sky (upper ~60%) */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center pb-40">
+          {heroContent}
         </div>
       </div>
 
-      {/* ══════════════ DESKTOP LAYOUT (hidden on mobile) ══════════════ */}
-      <div className="hidden md:flex min-h-screen flex-col bg-gradient-to-br from-primary/80 to-foreground/90 text-white">
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-          <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 shadow-2xl border border-white/20">
-            <HoofIcon className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-5xl font-display font-black mb-4 drop-shadow-lg">RanchPad</h1>
-          <p className="text-xl font-semibold text-white mb-4 max-w-md">
-            Livestock management web app
-          </p>
-          <ul className="text-base text-white/80 max-w-md mb-10 space-y-2 text-left list-none">
-            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Simple herd log for animals, treatments, and health.</span></li>
-            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get early warnings when local conditions raise disease risk.</span></li>
-            <li className="flex items-start gap-2"><span className="mt-0.5">•</span><span>Get reminders so you never miss shots or treatments.</span></li>
-          </ul>
-          <div className="flex gap-3 w-full max-w-sm">
-            <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowSignup(true)}>
-              Sign Up
-            </Button>
-            <Button size="lg" variant="outline" className="flex-1 border-white/50 text-white hover:bg-white/10 hover:text-white" onClick={() => setShowLogin(true)}>
-              Log In
-            </Button>
-          </div>
+      {/* ══════════════ DESKTOP ══════════════ */}
+      <div className="hidden md:flex relative min-h-screen overflow-hidden flex-col text-white">
+        <KansasSkyBackground />
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center pb-40">
+          {heroContent}
         </div>
       </div>
 
