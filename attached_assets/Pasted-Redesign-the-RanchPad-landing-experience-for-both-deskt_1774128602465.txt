@@ -1,0 +1,21 @@
+Redesign the RanchPad landing experience for both desktop and mobile. Here's exactly how everything should work:
+Desktop Layout:
+
+Keep the existing left sidebar as-is with Dashboard, Animals, Alerts, and Settings navigation links
+The main center space should display the current landing page content — pasture background photo, RanchPad logo, tagline, bullet points — but replace the Sign Up / Log In buttons with two CTAs: Import CSV and Add Animal. These should be the primary actions, styled as bold prominent buttons
+Guests can click any sidebar link and see those pages freely in their empty state with a gentle message like "No animals yet — add one to get started." Nothing is locked or hidden
+When a guest first lands, show a small floating card in the bottom-right corner with the text "Sign up to save your herd" and Sign Up + Log In buttons. It has an X to dismiss. It only appears once per session and does not reappear unless the guest triggers a save action after dismissing
+
+Mobile Layout:
+
+The sidebar is hidden on mobile. Replace it with a hamburger icon in the top-left corner with a small "Menu" label directly beneath it so users know to tap it
+Tapping the hamburger slides out a nav menu from the left containing: Dashboard, Animals, Alerts, Settings. At the bottom of the slide-out, guests see Sign Up and Log In buttons. Logged in users see Sign Out
+The center pasture content stacks vertically — logo, tagline, bullet points, then Import CSV and Add Animal as full-width stacked buttons
+The same bottom-right floating guest popup appears on mobile as well, sized appropriately for smaller screens
+
+Guest Session Behavior (both desktop and mobile):
+
+Store all guest data in localStorage so nothing disappears while they browse
+After a guest adds their first animal OR completes a CSV import, show a signup prompt: "Save your herd — create a free account to keep your data" with Sign Up and Log In buttons
+If dismissed, guest can continue using the app freely. Any subsequent save action re-triggers the prompt
+After signup or login, migrate all localStorage data into their account seamlessly — they never lose what they entered

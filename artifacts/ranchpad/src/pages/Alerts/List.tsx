@@ -7,10 +7,12 @@ import { AlertTriangle, CloudLightning, Info, CheckCircle2, RefreshCw, PawPrint 
 import { useListAlerts, useDismissAlert, useGenerateAlerts, type Alert } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AlertsList() {
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const { data: alerts, isLoading } = useListAlerts();
+  const { data: alerts, isLoading } = useListAlerts({ query: { enabled: isAuthenticated } });
   
   const generateMutation = useGenerateAlerts({
     mutation: {
@@ -40,6 +42,32 @@ export default function AlertsList() {
     if (sev === 'medium') return "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400";
     return "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400";
   };
+
+  // Guest users see an empty state with a sign-up prompt
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl sm:text-4xl font-black text-foreground">Alerts</h1>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
+            <AlertTriangle className="w-10 h-10 text-primary/50" />
+          </div>
+          <h2 className="font-bold text-xl text-foreground mb-2">Weather &amp; health alerts</h2>
+          <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
+            Sign up to get automatic alerts when local weather conditions increase disease risk for your herd, or when medications are coming due.
+          </p>
+          <div className="flex gap-3">
+            <Link href="/login?signup=1" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
+              Create Free Account
+            </Link>
+            <Link href="/login" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-medium border border-border text-foreground hover:bg-muted transition-colors">
+              Log In
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const AlertRow = ({ alert }: { alert: Alert }) => (
     <div className={`p-4 md:p-5 flex flex-col md:flex-row gap-4 md:items-center rounded-2xl border transition-all ${getSeverityColor(alert.severity)}`}>

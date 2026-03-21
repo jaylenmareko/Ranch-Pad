@@ -2,12 +2,14 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetRanch, getGetRanchQueryKey } from "@workspace/api-client-react";
+import { getGuestAnimals, clearGuestAnimals } from "@/lib/guest-store";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isGuest: boolean;
   isLoading: boolean;
   token: string | null;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -36,7 +38,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
-  const login = (newToken: string) => {
+  const login = async (newToken: string) => {
+    // Migrate any guest animals into the new account
+    const guestAnimals = getGuestAnimals();
+    if (guestAnimals.length > 0) {
+      try {
+        for (const animal of guestAnimals) {
+          await fetch("/api/animals", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${newToken}`,
+            },
+            body: JSON.stringify({
+              name: animal.name,
+              tagNumber: animal.tagNumber,
+              species: animal.species,
+              breed: animal.breed,
+              sex: animal.sex,
+              dateOfBirth: animal.dateOfBirth,
+              expectedDueDate: animal.expectedDueDate,
+              damId: null,
+              sireId: null,
+              notes: animal.notes,
+            }),
+          });
+        }
+      } finally {
+        clearGuestAnimals();
+      }
+    }
+
     localStorage.setItem("ranchpad_token", newToken);
     queryClient.removeQueries({ queryKey: getGetRanchQueryKey() });
     setToken(newToken);
@@ -51,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     isAuthenticated: !!token,
+    isGuest: !token,
     isLoading: !!token && isPending,
     token,
     login,
