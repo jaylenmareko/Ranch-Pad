@@ -1,15 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X, Pill, Baby, Calendar, RefreshCw, Stethoscope, Users, CheckCircle2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X, Pill, Baby, Calendar, RefreshCw, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
 
+type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
+
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading } = useListAlerts();
   const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
@@ -71,19 +79,128 @@ export default function Dashboard() {
   const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
   const dueSoonCount = upcoming?.dueSoonCount ?? 0;
 
+  function plainEnglishSkipReason(reason: string): string {
+    if (reason.includes("Missing required field")) return "Missing name or species — both are required for every row.";
+    if (reason.includes("Duplicate tag number") && reason.includes("already exists")) {
+      const match = reason.match(/"([^"]+)"/);
+      return `Tag number${match ? ` "${match[1]}"` : ""} is already in your herd — skipped to avoid duplicates.`;
+    }
+    if (reason.includes("Duplicate tag number") && reason.includes("more than once")) {
+      const match = reason.match(/"([^"]+)"/);
+      return `Tag number${match ? ` "${match[1]}"` : ""} appears more than once in this file — only the first was imported.`;
+    }
+    return reason;
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    setImportSummary(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty. Please fill in the template and try again."); return; }
+    const formData = new FormData();
+    formData.append("file", file);
+    setImporting(true);
+    try {
+      const res = await fetch("/api/animals/import-csv", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.message ?? "Import failed. Please check your file and try again.");
+      } else {
+        setImportSummary(data as ImportSummary);
+        queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+      }
+    } catch {
+      setImportError("Something went wrong connecting to the server. Please try again.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
+      {/* Hidden file input for CSV import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-black text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-1 font-medium">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
         </div>
-        <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform w-full sm:w-auto">
-          <PlusCircle className="w-5 h-5 mr-2" />
-          Add Animal
-        </Link>
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={importing}
+                  className="h-12 min-w-[44px] px-4 rounded-xl font-semibold flex-1 sm:flex-none"
+                >
+                  {importing ? (
+                    <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
+                  ) : (
+                    <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Import CSV</span></>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Import animals from CSV</TooltipContent>
+            </Tooltip>
+            <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Add Animal
+            </Link>
+          </div>
+        </TooltipProvider>
       </div>
+
+      {/* Import error */}
+      {importError && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+          <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss">
+            <XCircle className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Import success */}
+      {importSummary && (
+        <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+                Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
+                {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
+              </p>
+            </div>
+            <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors" aria-label="Dismiss">
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+          {importSummary.skipped.length > 0 && (
+            <ul className="space-y-1 pl-7">
+              {importSummary.skipped.map((s, i) => (
+                <li key={i} className="text-xs text-yellow-700 dark:text-yellow-400">
+                  <span className="font-semibold">Row {s.row}:</span> {plainEnglishSkipReason(s.reason)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Stats Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
