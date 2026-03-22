@@ -91,11 +91,11 @@ function GuestDashboard() {
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-auto min-h-12 min-w-[44px] px-4 py-2 rounded-xl font-semibold flex-1 sm:flex-none text-left whitespace-normal">
                   {importing
                     ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
-                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Already have a list of your animals? Upload your csv file here</>
+                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
                   }
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Already have a list of your animals? Upload your csv file here</TooltipContent>
+              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
             </Tooltip>
             <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
               <PlusCircle className="w-5 h-5 mr-2" />
@@ -404,11 +404,11 @@ function AuthDashboard() {
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-auto min-h-12 min-w-[44px] px-4 py-2 rounded-xl font-semibold flex-1 sm:flex-none text-left whitespace-normal">
                   {importing
                     ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
-                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Already have a list of your animals? Upload your csv file here</>
+                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
                   }
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Already have a list of your animals? Upload your csv file here</TooltipContent>
+              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
             </Tooltip>
             <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
               <PlusCircle className="w-5 h-5 mr-2" />

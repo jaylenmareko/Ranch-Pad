@@ -230,14 +230,14 @@ function GuestAnimalList() {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file">
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file here">
                   {importing
                     ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
-                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file</>
+                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
                   }
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Upload your herd from a csv file</TooltipContent>
+              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
             </Tooltip>
             <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 mr-2" /> Add Animal
@@ -537,16 +537,16 @@ export default function AnimalList() {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={importing}
                   className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
-                  aria-label="Upload your herd from a csv file"
+                  aria-label="Upload your herd from a csv file here"
                 >
                   {importing ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
                   ) : (
-                    <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file</>
+                    <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Upload your herd from a csv file</TooltipContent>
+              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
             </Tooltip>
             <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 mr-2" />
