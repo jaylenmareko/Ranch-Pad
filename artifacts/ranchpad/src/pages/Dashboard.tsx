@@ -88,10 +88,10 @@ function GuestDashboard() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-12 min-w-[44px] px-4 rounded-xl font-semibold flex-1 sm:flex-none">
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-auto min-h-12 min-w-[44px] px-4 py-2 rounded-xl font-semibold flex-1 sm:flex-none text-left whitespace-normal">
                   {importing
-                    ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
-                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Already have a list of your animals? Upload your csv file here</span></>
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
+                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Already have a list of your animals? Upload your csv file here</>
                   }
                 </Button>
               </TooltipTrigger>
@@ -401,10 +401,10 @@ function AuthDashboard() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-12 min-w-[44px] px-4 rounded-xl font-semibold flex-1 sm:flex-none">
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-auto min-h-12 min-w-[44px] px-4 py-2 rounded-xl font-semibold flex-1 sm:flex-none text-left whitespace-normal">
                   {importing
-                    ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
-                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Already have a list of your animals? Upload your csv file here</span></>
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
+                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Already have a list of your animals? Upload your csv file here</>
                   }
                 </Button>
               </TooltipTrigger>

@@ -230,10 +230,10 @@ function GuestAnimalList() {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file">
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file">
                   {importing
-                    ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
-                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Upload your herd from a csv file</span></>
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
+                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file</>
                   }
                 </Button>
               </TooltipTrigger>
@@ -536,13 +536,13 @@ export default function AnimalList() {
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={importing}
-                  className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm"
+                  className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
                   aria-label="Upload your herd from a csv file"
                 >
                   {importing ? (
-                    <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
                   ) : (
-                    <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Upload your herd from a csv file</span></>
+                    <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file</>
                   )}
                 </Button>
               </TooltipTrigger>
