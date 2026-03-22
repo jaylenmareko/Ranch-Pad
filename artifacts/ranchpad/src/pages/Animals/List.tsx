@@ -272,7 +272,7 @@ function GuestAnimalList() {
 
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-foreground">Herd Directory</h1>
+          <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
           <p className="text-muted-foreground font-medium mt-1">{guestAnimals.length} animals</p>
         </div>
         <TooltipProvider delayDuration={300}>
@@ -569,7 +569,7 @@ export default function AnimalList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-foreground">Herd Directory</h1>
+          <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
           <p className="text-muted-foreground font-medium mt-1">
             {isLoading ? "Loading…" : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
           </p>
