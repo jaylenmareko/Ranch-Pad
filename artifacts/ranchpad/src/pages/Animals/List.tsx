@@ -272,7 +272,7 @@ function GuestAnimalList() {
           </div>
           <h2 className="font-bold text-xl text-foreground mb-2">No animals yet</h2>
           <p className="text-muted-foreground text-sm max-w-xs mb-6 leading-relaxed">
-            Add your first animal to get started — no account needed. Your herd is saved on this device.
+            Add your first animal to get started — no account needed. Sign up anytime to sync your herd across devices.
           </p>
           <Link href="/animals/new" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
             <Plus className="w-4 h-4 mr-2" /> Add Your First Animal
@@ -295,9 +295,9 @@ function GuestAnimalList() {
             </div>
           ))}
           <p className="text-xs text-muted-foreground text-center pt-2">
-            Saved on this device only.{" "}
+            You're using RanchPad as a guest.{" "}
             <button onClick={openSignup} className="underline text-primary font-semibold">Sign up</button>{" "}
-            to keep your herd safe on any device.
+            to sync your herd across devices.
           </p>
         </div>
       )}

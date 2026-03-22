@@ -111,9 +111,9 @@ function GuestDashboard() {
           <Lock className="w-4 h-4 text-primary" />
         </div>
         <p className="flex-1 text-sm font-medium text-foreground">
-          Your herd is saved on this device only.{" "}
-          <button onClick={openSignup} className="font-bold text-primary hover:underline">Create a free account</button>
-          {" "}to keep your data safe and access it anywhere.
+          You're using RanchPad as a guest.{" "}
+          <button onClick={openSignup} className="font-bold text-primary hover:underline">Sign up</button>
+          {" "}to sync your data across devices.
         </p>
       </div>
 

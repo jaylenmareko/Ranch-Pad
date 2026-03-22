@@ -38,7 +38,7 @@ export function GuestFloatingCard() {
       </div>
 
       <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-        Your animals are saved locally. Create a free account to keep your data safe and access it anywhere.
+        You're using RanchPad as a guest. Sign up to sync your data across devices.
       </p>
 
       <div className="flex gap-2">
