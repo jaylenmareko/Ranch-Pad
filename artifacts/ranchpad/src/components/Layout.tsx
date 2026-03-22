@@ -143,19 +143,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Main Content ────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col max-w-[100vw] overflow-x-hidden">
         {/* Mobile top bar */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-card border-b border-border sticky top-0 z-20">
+        <header className="md:hidden flex items-center gap-2 px-3 h-12 bg-card border-b border-border sticky top-0 z-20">
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
             aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />
-            <span className="text-[9px] font-semibold leading-none tracking-wide uppercase">Menu</span>
           </button>
 
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity ml-1">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
             <HoofIcon className="w-5 h-5 text-primary" />
-            <span className="font-display font-bold text-lg text-foreground">RanchPad</span>
+            <span className="font-display font-bold text-base text-foreground">RanchPad</span>
           </Link>
         </header>
 
