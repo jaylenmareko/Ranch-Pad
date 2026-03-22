@@ -166,6 +166,44 @@ function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
 
 interface GuestImportSummary { animalsCreated: number; skipped: { row: number; reason: string }[] }
 
+function GuestSpeciesFolder({ species, animals }: { species: string; animals: GuestAnimal[] }) {
+  const [open, setOpen] = useState(() => getFolderOpen(species));
+
+  function toggle() {
+    setOpen(o => {
+      const next = !o;
+      setFolderOpen(species, next);
+      return next;
+    });
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+      <button
+        onClick={toggle}
+        className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
+      >
+        <span className="text-2xl leading-none">{speciesIcon(species)}</span>
+        <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+            {animals.length} {animals.length === 1 ? "animal" : "animals"}
+          </span>
+          {open
+            ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            : <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          }
+        </div>
+      </button>
+      {open && (
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {animals.map(a => <GuestAnimalCard key={a.id} animal={a} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GuestAnimalList() {
   const { openSignup } = useAuthModal();
   const [guestAnimals, setGuestAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
@@ -296,18 +334,7 @@ function GuestAnimalList() {
       ) : (
         <div className="space-y-4">
           {Object.entries(bySpecies).map(([species, animals]) => (
-            <div key={species} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-              <div className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 border-b border-border/50">
-                <span className="text-2xl leading-none">{speciesIcon(species)}</span>
-                <span className="font-black text-lg text-foreground font-display flex-1">{species}</span>
-                <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
-                  {animals.length} {animals.length === 1 ? "animal" : "animals"}
-                </span>
-              </div>
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {animals.map(a => <GuestAnimalCard key={a.id} animal={a} />)}
-              </div>
-            </div>
+            <GuestSpeciesFolder key={species} species={species} animals={animals} />
           ))}
           <p className="text-xs text-muted-foreground text-center pt-2">
             You're using RanchPad as a guest.{" "}
