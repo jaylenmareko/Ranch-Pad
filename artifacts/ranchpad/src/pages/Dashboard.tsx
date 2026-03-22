@@ -200,90 +200,58 @@ function GuestDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: herd mini-stats + weather teaser */}
-        <div className="space-y-6 lg:col-span-2">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card className="bg-gradient-to-br from-card to-card/50 border-none shadow-md shadow-black/5">
-              <CardContent className="p-5">
-                <p className="text-sm font-semibold text-muted-foreground mb-1">Total Herd</p>
-                <p className="text-4xl font-black font-display text-primary">{animals.length}</p>
-              </CardContent>
-            </Card>
-            {(() => {
-              const speciesCards = Object.entries(speciesCounts).slice(0, 3).map(([species, count]) => (
-                <Card key={species} className="border-none shadow-md shadow-black/5">
-                  <CardContent className="p-5">
-                    <p className="text-sm font-semibold text-muted-foreground mb-1">{species}s</p>
-                    <p className="text-3xl font-bold font-display text-foreground">{count}</p>
-                  </CardContent>
-                </Card>
-              ));
-              const fallbacks = [
-                <Card key="female" className="border-none shadow-md shadow-black/5"><CardContent className="p-5"><p className="text-sm font-semibold text-muted-foreground mb-1">Female</p><p className="text-3xl font-bold font-display text-foreground">{femaleCount}</p></CardContent></Card>,
-                <Card key="male" className="border-none shadow-md shadow-black/5"><CardContent className="p-5"><p className="text-sm font-semibold text-muted-foreground mb-1">Male</p><p className="text-3xl font-bold font-display text-foreground">{maleCount}</p></CardContent></Card>,
-              ];
-              return [...speciesCards, ...fallbacks.slice(0, 3 - speciesCards.length)];
-            })()}
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Alerts teaser */}
+        <Card className="flex flex-col shadow-sm">
+          <CardHeader className="border-b border-border pb-4">
+            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+              <AlertTriangle className="w-5 h-5 text-amber-500" /> Recent Alerts
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-8 flex flex-col items-center text-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+              <Lock className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Health alerts require an account</p>
+            <p className="text-xs text-muted-foreground max-w-xs">Get automatic alerts when weather raises disease risk or medications are due.</p>
+            <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
+          </CardContent>
+        </Card>
 
-          {/* Weather teaser */}
-          <Card className="overflow-hidden shadow-lg shadow-blue-500/10 relative border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20">
-            <CardHeader className="pb-4 border-b border-blue-100 dark:border-blue-900">
-              <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                <CloudRain className="w-5 h-5" /> Ranch Weather
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="py-10 flex flex-col items-center text-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mb-1">
-                <Lock className="w-6 h-6 text-blue-500" />
-              </div>
-              <p className="font-bold text-foreground">Weather alerts for your ranch</p>
-              <p className="text-sm text-muted-foreground max-w-xs">Sign up to see local conditions and get automatic disease-risk alerts based on weather.</p>
-              <button onClick={openSignup} className="mt-2 inline-flex items-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow shadow-primary/20 hover:bg-primary/90 transition-colors">
-                Create Free Account
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right: alerts + upcoming teasers */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10 bg-red-50 dark:bg-red-900/20">
-            <CardHeader className="border-b border-red-100 dark:border-red-900 pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <AlertTriangle className="w-5 h-5" /> Action Needed
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="py-8 flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-red-500" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">Health alerts require an account</p>
-              <p className="text-xs text-muted-foreground">Get automatic alerts when weather raises disease risk or medications are due.</p>
-              <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
-            </CardContent>
-          </Card>
-
-          <Card className="flex flex-col border-blue-200 dark:border-blue-900 shadow-lg shadow-blue-500/10 bg-blue-50 dark:bg-blue-900/20">
-            <CardHeader className="border-b border-blue-100 dark:border-blue-900 pb-4">
-              <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                <Stethoscope className="w-5 h-5" /> Upcoming
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="py-8 flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-blue-500" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">Track medications & births</p>
-              <p className="text-xs text-muted-foreground">Sign up to get reminders for upcoming treatments and expected calving dates.</p>
-              <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Weather teaser */}
+        <Card className="flex flex-col shadow-sm">
+          <CardHeader className="pb-4 border-b border-border">
+            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+              <CloudRain className="w-5 h-5 text-blue-500" /> Ranch Weather
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-8 flex flex-col items-center text-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+              <Lock className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Weather alerts for your ranch</p>
+            <p className="text-xs text-muted-foreground max-w-xs">Sign up to see local conditions and get automatic disease-risk alerts based on weather.</p>
+            <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Upcoming teaser — full width */}
+      <Card className="shadow-sm">
+        <CardHeader className="border-b border-border pb-4">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <Stethoscope className="w-5 h-5 text-primary" /> Upcoming Treatments
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8 flex flex-col items-center text-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            <Lock className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">Track medications & births</p>
+          <p className="text-xs text-muted-foreground max-w-xs">Sign up to get reminders for upcoming treatments and expected calving dates.</p>
+          <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
+        </CardContent>
+      </Card>
 
       <ImportModeDialog
         open={modeDialogOpen}
