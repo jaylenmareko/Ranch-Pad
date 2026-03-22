@@ -8,6 +8,7 @@ import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { useNavigation } from "@/contexts/navigation-context";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import type { BillingStatus } from "@/hooks/use-billing";
 
@@ -21,6 +22,7 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { logout, isAuthenticated } = useAuth();
+  const { resetNavigation } = useNavigation();
   const { openLogin, openSignup } = useAuthModal();
   const { data: ranch, isLoading } = useGetRanch({ query: { enabled: isAuthenticated } });
 
@@ -664,7 +666,7 @@ export default function Settings() {
         <Button
           variant="destructive"
           className="w-full gap-2"
-          onClick={logout}
+          onClick={() => { resetNavigation(); logout(); }}
         >
           <LogOut className="w-4 h-4" />
           Log Out

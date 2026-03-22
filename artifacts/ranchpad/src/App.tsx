@@ -59,6 +59,7 @@ function LoginRedirect() {
 
 function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, logout } = useAuth();
+  const { resetNavigation } = useNavigation();
   const qc = useQueryClient();
   const verifiedRef = useRef(false);
 
@@ -107,7 +108,7 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
         </p>
         <div className="flex gap-3">
           <button onClick={() => window.location.reload()} className="text-sm font-semibold text-primary underline underline-offset-2">Retry</button>
-          <button onClick={logout} className="text-sm font-semibold text-muted-foreground underline underline-offset-2">Sign out</button>
+          <button onClick={() => { resetNavigation(); logout(); }} className="text-sm font-semibold text-muted-foreground underline underline-offset-2">Sign out</button>
         </div>
       </div>
     );

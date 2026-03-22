@@ -19,7 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { logout, isAuthenticated } = useAuth();
   const { openLogin, openSignup } = useAuthModal();
-  const { hasNavigated, markNavigated } = useNavigation();
+  const { hasNavigated, markNavigated, resetNavigation } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isLanding = !hasNavigated && location === "/";
@@ -61,7 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="px-3 py-4 border-t border-border">
           {isAuthenticated ? (
             <button
-              onClick={logout}
+              onClick={() => { resetNavigation(); logout(); }}
               className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
             >
               <LogOut className="w-4 h-4" />
@@ -119,7 +119,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="px-3 py-4 border-t border-border">
             {isAuthenticated ? (
               <button
-                onClick={() => { setMenuOpen(false); logout(); }}
+                onClick={() => { setMenuOpen(false); resetNavigation(); logout(); }}
                 className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
               >
                 <LogOut className="w-4 h-4" />

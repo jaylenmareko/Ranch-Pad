@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CheckCircle2, Loader2, LogOut } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
 import { useAuth } from "@/hooks/use-auth";
+import { useNavigation } from "@/contexts/navigation-context";
 import type { BillingStatus } from "@/hooks/use-billing";
 
 interface PaywallProps {
@@ -10,6 +11,7 @@ interface PaywallProps {
 
 export default function Paywall({ billingStatus }: PaywallProps) {
   const { logout } = useAuth();
+  const { resetNavigation } = useNavigation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,7 +119,7 @@ export default function Paywall({ billingStatus }: PaywallProps) {
         {/* Sign out */}
         <div className="mt-6 text-center">
           <button
-            onClick={logout}
+            onClick={() => { resetNavigation(); logout(); }}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <LogOut className="w-4 h-4" />
