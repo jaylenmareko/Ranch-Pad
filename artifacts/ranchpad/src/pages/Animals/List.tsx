@@ -10,7 +10,7 @@ import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { getGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
+import { getGuestAnimals, importCsvToGuestStore, type GuestAnimal } from "@/lib/guest-store";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
 
@@ -162,8 +162,14 @@ function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
 
 // ─── Guest Animal List ─────────────────────────────────────────────────────────
 
+interface GuestImportSummary { animalsCreated: number; skipped: { row: number; reason: string }[] }
+
 function GuestAnimalList() {
   const [guestAnimals, setGuestAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSummary, setImportSummary] = useState<GuestImportSummary | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const refresh = () => setGuestAnimals(getGuestAnimals());
@@ -171,19 +177,91 @@ function GuestAnimalList() {
     return () => window.removeEventListener("guest-save", refresh);
   }, []);
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    setImportSummary(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty."); return; }
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const result = importCsvToGuestStore(text);
+      setImportSummary(result);
+      if (result.animalsCreated > 0) {
+        window.dispatchEvent(new CustomEvent("guest-save"));
+      }
+    } catch {
+      setImportError("Something went wrong reading your file. Please try again.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const bySpecies = guestAnimals.reduce<Record<string, GuestAnimal[]>>((acc, a) => {
     (acc[a.species] = acc[a.species] || []).push(a);
     return acc;
   }, {});
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl sm:text-4xl font-black text-foreground">My Herd</h1>
-        <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform whitespace-nowrap">
-          <Plus className="w-5 h-5 mr-2" /> Add Animal
-        </Link>
+    <div className="space-y-5">
+      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-foreground">Herd Directory</h1>
+          <p className="text-muted-foreground font-medium mt-1">{guestAnimals.length} animals</p>
+        </div>
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={downloadTemplate} className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Download CSV template">
+                  <Download className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Download Template</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Download CSV template</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Import CSV">
+                  {importing
+                    ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
+                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Import CSV</span></>
+                  }
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Import animals from CSV</TooltipContent>
+            </Tooltip>
+            <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
+              <Plus className="w-4 h-4 mr-2" /> Add Animal
+            </Link>
+          </div>
+        </TooltipProvider>
       </div>
+
+      {importError && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+          <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss"><XCircle className="w-4 h-4" /></button>
+        </div>
+      )}
+
+      {importSummary && (
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+          <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
+          <p className="flex-1 text-sm font-semibold text-green-700 dark:text-green-300">
+            Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
+            {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} skipped`}
+          </p>
+          <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors" aria-label="Dismiss"><XCircle className="w-4 h-4" /></button>
+        </div>
+      )}
 
       {guestAnimals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
