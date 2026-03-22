@@ -91,11 +91,11 @@ function GuestDashboard() {
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-12 min-w-[44px] px-4 rounded-xl font-semibold flex-1 sm:flex-none">
                   {importing
                     ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
-                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Import CSV</span></>
+                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Already have a list of your animals? Upload your csv file here</span></>
                   }
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Import animals from CSV</TooltipContent>
+              <TooltipContent>Already have a list of your animals? Upload your csv file here</TooltipContent>
             </Tooltip>
             <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
               <PlusCircle className="w-5 h-5 mr-2" />
@@ -404,11 +404,11 @@ function AuthDashboard() {
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-12 min-w-[44px] px-4 rounded-xl font-semibold flex-1 sm:flex-none">
                   {importing
                     ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
-                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Import CSV</span></>
+                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Already have a list of your animals? Upload your csv file here</span></>
                   }
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Import animals from CSV</TooltipContent>
+              <TooltipContent>Already have a list of your animals? Upload your csv file here</TooltipContent>
             </Tooltip>
             <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
               <PlusCircle className="w-5 h-5 mr-2" />
