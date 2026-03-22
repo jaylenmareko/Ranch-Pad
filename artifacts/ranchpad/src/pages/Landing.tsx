@@ -1,13 +1,7 @@
-import React, { useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle2, Upload, Plus, Loader2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
 import { useNavigation } from "@/contexts/navigation-context";
-import { useAuth } from "@/hooks/use-auth";
-import { importCsvToGuestStore, clearGuestAnimals, getGuestAnimals } from "@/lib/guest-store";
-import { ImportModeDialog } from "@/components/ImportModeDialog";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 
 const BULLETS = [
   "Simple herd log for animals, treatments, and health.",
@@ -18,153 +12,56 @@ const BULLETS = [
 export default function Landing() {
   const { markNavigated } = useNavigation();
   const [, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  const qc = useQueryClient();
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importing, setImporting] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [modeDialogOpen, setModeDialogOpen] = useState(false);
-
-  // ── CSV import ────────────────────────────────────────────────────────────
-
-  async function doImport(file: File, replace: boolean) {
-    setImporting(true);
-    setModeDialogOpen(false);
-    setPendingFile(null);
-    try {
-      if (isAuthenticated) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const url = replace ? "/api/animals/import-csv?replace=true" : "/api/animals/import-csv";
-        const res = await fetch(url, { method: "POST", body: formData });
-        if (!res.ok) throw new Error("Import failed");
-        const data = await res.json();
-        await qc.invalidateQueries({ queryKey: ["/api/animals"] });
-        toast({ title: `Imported ${data.animalsCreated ?? 0} animals` });
-      } else {
-        const text = await file.text();
-        if (replace) clearGuestAnimals();
-        const result = importCsvToGuestStore(text);
-        toast({ title: `Imported ${result.animalsCreated} animals` });
-      }
-      markNavigated();
-      navigate("/animals");
-    } catch {
-      toast({ title: "Import failed. Please check your file.", variant: "destructive" });
-    } finally {
-      setImporting(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      toast({ title: "Please select a .csv file", variant: "destructive" });
-      return;
-    }
-    const existingAnimals = isAuthenticated ? null : getGuestAnimals();
-    const hasAnimals = isAuthenticated ? false : (existingAnimals && existingAnimals.length > 0);
-    if (hasAnimals) {
-      setPendingFile(file);
-      setModeDialogOpen(true);
-    } else {
-      doImport(file, false);
-    }
-  }
-
-  function handleAddAnimal() {
-    markNavigated();
-    navigate("/animals/new");
-  }
-
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <>
-      <div
-        className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center relative"
-        style={{
-          backgroundImage: "url('/pasture-bg.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/25" />
+    <div
+      className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center relative"
+      style={{
+        backgroundImage: "url('/pasture-bg.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="absolute inset-0 bg-black/25" />
 
-        <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
-              <HoofIcon className="w-7 h-7 text-white" />
-            </div>
-            <span className="font-display font-bold text-4xl text-white drop-shadow tracking-tight">
-              RanchPad
-            </span>
+      <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
+            <HoofIcon className="w-7 h-7 text-white" />
           </div>
+          <span className="font-display font-bold text-4xl text-white drop-shadow tracking-tight">
+            RanchPad
+          </span>
+        </div>
 
-          {/* Tagline */}
-          <p className="text-base font-semibold text-white/90 mb-8 drop-shadow tracking-wide uppercase">
-            Livestock Management
-          </p>
+        {/* Tagline */}
+        <p className="text-base font-semibold text-white/90 mb-8 drop-shadow tracking-wide uppercase">
+          Livestock Management
+        </p>
 
-          {/* Bullets */}
-          <ul className="flex flex-col gap-3 mb-10 text-left w-full">
-            {BULLETS.map((point) => (
-              <li key={point} className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5 drop-shadow" />
-                <span className="text-white/90 font-medium text-sm leading-relaxed drop-shadow">
-                  {point}
-                </span>
-              </li>
-            ))}
-          </ul>
+        {/* Bullets */}
+        <ul className="flex flex-col gap-3 mb-10 text-left w-full">
+          {BULLETS.map((point) => (
+            <li key={point} className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5 drop-shadow" />
+              <span className="text-white/90 font-medium text-sm leading-relaxed drop-shadow">
+                {point}
+              </span>
+            </li>
+          ))}
+        </ul>
 
-          {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
-              className="flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl font-semibold text-sm bg-white/15 backdrop-blur-sm border border-white/40 text-white hover:bg-white/25 transition-colors shadow-md disabled:opacity-60"
-            >
-              {importing ? (
-                <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4 shrink-0" />
-              )}
-              Upload your herd from a csv file here
-            </button>
-
-            <button
-              onClick={handleAddAnimal}
-              className="flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl font-semibold text-sm bg-white text-green-800 hover:bg-white/90 transition-colors shadow-md"
-            >
-              <Plus className="w-4 h-4 shrink-0" />
-              Add Animal
-            </button>
-          </div>
+        {/* Action button */}
+        <div className="flex justify-center w-full">
+          <button
+            onClick={() => { markNavigated(); navigate("/"); }}
+            className="inline-flex items-center justify-center h-12 px-10 rounded-xl font-bold text-base bg-white text-green-800 hover:bg-white/90 transition-colors shadow-md"
+          >
+            Build Your Ranch
+          </button>
         </div>
       </div>
-
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv"
-        className="hidden"
-        onChange={handleFile}
-      />
-
-      <ImportModeDialog
-        open={modeDialogOpen}
-        onOpenChange={setModeDialogOpen}
-        onAdd={() => pendingFile && doImport(pendingFile, false)}
-        onReplace={() => pendingFile && doImport(pendingFile, true)}
-      />
-    </>
+    </div>
   );
 }
