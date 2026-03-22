@@ -22,7 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { hasNavigated, markNavigated, resetNavigation } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const isLanding = !hasNavigated && location === "/";
+  const isLanding = !hasNavigated && !isAuthenticated && location === "/";
 
   const isActive = (href: string) =>
     href === "/" ? location === "/" : location.startsWith(href);
