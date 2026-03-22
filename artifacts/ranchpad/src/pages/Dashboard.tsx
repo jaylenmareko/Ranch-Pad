@@ -3,7 +3,6 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PlusCircle, AlertTriangle, CloudRain, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,32 +92,32 @@ function GuestDashboard() {
     <div className="space-y-8">
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1 font-medium">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
+      {/* Action Banner */}
+      <div className="rounded-2xl bg-primary px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg shadow-primary/20">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-black text-white tracking-tight">Dashboard</h1>
+          <p className="text-white/70 text-sm font-medium mt-0.5">Start by adding your animals below</p>
         </div>
-        <TooltipProvider delayDuration={300}>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-auto min-h-12 min-w-[44px] px-4 py-2 rounded-xl font-semibold flex-1 sm:flex-none text-left whitespace-normal">
-                  {importing
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
-                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
-                  }
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
-            </Tooltip>
-            <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
-              <PlusCircle className="w-5 h-5 mr-2" />
-              Add Animal
-            </Link>
-          </div>
-        </TooltipProvider>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl font-semibold text-sm bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors whitespace-normal text-left disabled:opacity-60"
+          >
+            {importing
+              ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
+              : <><Upload className="w-4 h-4 shrink-0" />Already have a list? Upload your CSV file here</>
+            }
+          </button>
+          <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl font-bold text-sm bg-white text-primary hover:bg-white/90 transition-colors shadow-md whitespace-nowrap shrink-0">
+            <PlusCircle className="w-4 h-4" />
+            Add Animal
+          </Link>
+        </div>
       </div>
+
+      {/* Date */}
+      <p className="text-muted-foreground font-medium">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
 
       {/* Sign-up nudge */}
       <div className="flex items-center gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20">
@@ -421,32 +420,32 @@ function AuthDashboard() {
     <div className="space-y-8">
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
 
-      {/* Header Area */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1 font-medium">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
+      {/* Action Banner */}
+      <div className="rounded-2xl bg-primary px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg shadow-primary/20">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-black text-white tracking-tight">Dashboard</h1>
+          <p className="text-white/70 text-sm font-medium mt-0.5">Manage your herd</p>
         </div>
-        <TooltipProvider delayDuration={300}>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-auto min-h-12 min-w-[44px] px-4 py-2 rounded-xl font-semibold flex-1 sm:flex-none text-left whitespace-normal">
-                  {importing
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
-                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
-                  }
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
-            </Tooltip>
-            <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
-              <PlusCircle className="w-5 h-5 mr-2" />
-              Add Animal
-            </Link>
-          </div>
-        </TooltipProvider>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl font-semibold text-sm bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors whitespace-normal text-left disabled:opacity-60"
+          >
+            {importing
+              ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
+              : <><Upload className="w-4 h-4 shrink-0" />Already have a list? Upload your CSV file here</>
+            }
+          </button>
+          <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl font-bold text-sm bg-white text-primary hover:bg-white/90 transition-colors shadow-md whitespace-nowrap shrink-0">
+            <PlusCircle className="w-4 h-4" />
+            Add Animal
+          </Link>
+        </div>
       </div>
+
+      {/* Date */}
+      <p className="text-muted-foreground font-medium">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
 
       {/* Import error */}
       {importError && (
