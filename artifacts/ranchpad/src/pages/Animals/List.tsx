@@ -181,11 +181,15 @@ function GuestSpeciesFolder({ species, animals }: { species: string; animals: Gu
     <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <button
         onClick={toggle}
-        className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
+        className="relative w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
       >
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
-        {!open && <span className="text-xs font-semibold text-muted-foreground mx-auto">Click Here</span>}
+        {!open && (
+          <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
+            Click Here
+          </span>
+        )}
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             {animals.length} {animals.length === 1 ? "animal" : "animals"}
@@ -404,11 +408,15 @@ function SpeciesFolder({
       {/* Folder header */}
       <button
         onClick={toggle}
-        className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
+        className="relative w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
       >
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
-        {!open && <span className="text-xs font-semibold text-muted-foreground mx-auto">Click Here</span>}
+        {!open && (
+          <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
+            Click Here
+          </span>
+        )}
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             {animals.length} {animals.length === 1 ? "animal" : "animals"}
