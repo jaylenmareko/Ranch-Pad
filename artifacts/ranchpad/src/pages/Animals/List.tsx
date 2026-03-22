@@ -185,11 +185,11 @@ function GuestSpeciesFolder({ species, animals }: { species: string; animals: Gu
       >
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
+        {!open && <span className="text-xs font-semibold text-muted-foreground mx-auto">Click Here</span>}
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             {animals.length} {animals.length === 1 ? "animal" : "animals"}
           </span>
-          {!open && <span className="text-xs font-semibold text-muted-foreground">Click Here</span>}
           {open
             ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
             : <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -408,6 +408,7 @@ function SpeciesFolder({
       >
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
+        {!open && <span className="text-xs font-semibold text-muted-foreground mx-auto">Click Here</span>}
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             {animals.length} {animals.length === 1 ? "animal" : "animals"}
@@ -422,7 +423,6 @@ function SpeciesFolder({
               {medCount} watch
             </span>
           )}
-          {!open && <span className="text-xs font-semibold text-muted-foreground">Click Here</span>}
           {open
             ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
             : <ChevronRight className="w-4 h-4 text-muted-foreground" />
