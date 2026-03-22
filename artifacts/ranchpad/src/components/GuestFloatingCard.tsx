@@ -1,15 +1,16 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { X, Sprout } from "lucide-react";
 import { isGuestPromptDismissed, dismissGuestPrompt } from "@/lib/guest-store";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 
 export function GuestFloatingCard() {
   const { isAuthenticated } = useAuth();
+  const { openLogin, openSignup } = useAuthModal();
   const [location] = useLocation();
   const [dismissed, setDismissed] = useState(() => isGuestPromptDismissed());
 
-  // Don't show on auth pages
   if (isAuthenticated || dismissed || location.startsWith("/login")) return null;
 
   const handleDismiss = () => {
@@ -41,18 +42,18 @@ export function GuestFloatingCard() {
       </p>
 
       <div className="flex gap-2">
-        <Link
-          href="/login?signup=1"
-          className="flex-1 inline-flex items-center justify-center h-9 px-3 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        <button
+          onClick={openSignup}
+          className="flex-1 inline-flex items-center justify-center h-9 px-3 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           Sign Up
-        </Link>
-        <Link
-          href="/login"
-          className="flex-1 inline-flex items-center justify-center h-9 px-3 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted transition-colors"
+        </button>
+        <button
+          onClick={openLogin}
+          className="flex-1 inline-flex items-center justify-center h-9 px-3 rounded-lg text-sm font-semibold border border-border text-foreground hover:bg-muted transition-colors"
         >
           Log In
-        </Link>
+        </button>
       </div>
     </div>
   );

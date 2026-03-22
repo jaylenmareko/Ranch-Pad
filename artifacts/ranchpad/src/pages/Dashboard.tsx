@@ -9,6 +9,7 @@ import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGener
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 import { getGuestAnimals, importCsvToGuestStore, type GuestAnimal } from "@/lib/guest-store";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
@@ -16,6 +17,7 @@ type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: s
 // ─── Guest Dashboard ──────────────────────────────────────────────────────────
 
 function GuestDashboard() {
+  const { openSignup } = useAuthModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -110,7 +112,7 @@ function GuestDashboard() {
         </div>
         <p className="flex-1 text-sm font-medium text-foreground">
           Your herd is saved on this device only.{" "}
-          <Link href="/login?signup=1" className="font-bold text-primary hover:underline">Create a free account</Link>
+          <button onClick={openSignup} className="font-bold text-primary hover:underline">Create a free account</button>
           {" "}to keep your data safe and access it anywhere.
         </p>
       </div>
@@ -223,9 +225,9 @@ function GuestDashboard() {
               </div>
               <p className="font-bold text-foreground">Weather alerts for your ranch</p>
               <p className="text-sm text-muted-foreground max-w-xs">Sign up to see local conditions and get automatic disease-risk alerts based on weather.</p>
-              <Link href="/login?signup=1" className="mt-2 inline-flex items-center px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow shadow-primary/20 hover:-translate-y-0.5 transition-transform">
+              <button onClick={openSignup} className="mt-2 inline-flex items-center px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow shadow-primary/20 hover:bg-primary/90 transition-colors">
                 Create Free Account
-              </Link>
+              </button>
             </CardContent>
           </Card>
         </div>
@@ -246,7 +248,7 @@ function GuestDashboard() {
               </div>
               <p className="text-sm font-semibold text-foreground">Health alerts require an account</p>
               <p className="text-xs text-muted-foreground">Get automatic alerts when weather raises disease risk or medications are due.</p>
-              <Link href="/login?signup=1" className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</Link>
+              <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
             </CardContent>
           </Card>
 
@@ -262,7 +264,7 @@ function GuestDashboard() {
               </div>
               <p className="text-sm font-semibold text-foreground">Track medications & births</p>
               <p className="text-xs text-muted-foreground">Sign up to get reminders for upcoming treatments and expected calving dates.</p>
-              <Link href="/login?signup=1" className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</Link>
+              <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
             </CardContent>
           </Card>
         </div>

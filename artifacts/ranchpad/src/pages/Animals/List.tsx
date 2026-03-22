@@ -10,6 +10,7 @@ import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 import { getGuestAnimals, importCsvToGuestStore, type GuestAnimal } from "@/lib/guest-store";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
@@ -165,6 +166,7 @@ function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
 interface GuestImportSummary { animalsCreated: number; skipped: { row: number; reason: string }[] }
 
 function GuestAnimalList() {
+  const { openSignup } = useAuthModal();
   const [guestAnimals, setGuestAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -294,7 +296,7 @@ function GuestAnimalList() {
           ))}
           <p className="text-xs text-muted-foreground text-center pt-2">
             Saved on this device only.{" "}
-            <Link href="/login?signup=1" className="underline text-primary font-semibold">Sign up</Link>{" "}
+            <button onClick={openSignup} className="underline text-primary font-semibold">Sign up</button>{" "}
             to keep your herd safe on any device.
           </p>
         </div>

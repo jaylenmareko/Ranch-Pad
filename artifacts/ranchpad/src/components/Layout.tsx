@@ -5,6 +5,7 @@ import { HoofIcon } from "@/components/HoofIcon";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Dashboard" },
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { logout, isAuthenticated } = useAuth();
+  const { openLogin, openSignup } = useAuthModal();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (href: string) =>
@@ -62,12 +64,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </button>
           ) : (
             <div className="flex flex-col gap-2">
-              <Link href="/login?signup=1" className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              <button
+                onClick={openSignup}
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
                 <UserPlus className="w-3.5 h-3.5" /> Sign Up Free
-              </Link>
-              <Link href="/login" className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors">
+              </button>
+              <button
+                onClick={openLogin}
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors"
+              >
                 <LogIn className="w-3.5 h-3.5" /> Log In
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -114,12 +122,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </button>
             ) : (
               <div className="flex flex-col gap-2">
-                <Link href="/login?signup=1" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                <button
+                  onClick={() => { setMenuOpen(false); openSignup(); }}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
                   <UserPlus className="w-3.5 h-3.5" /> Sign Up Free
-                </Link>
-                <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors">
+                </button>
+                <button
+                  onClick={() => { setMenuOpen(false); openLogin(); }}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors"
+                >
                   <LogIn className="w-3.5 h-3.5" /> Log In
-                </Link>
+                </button>
               </div>
             )}
           </div>

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "wouter";
 import { SimpleDialog } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 
 export function GuestSignupPrompt() {
   const { isAuthenticated } = useAuth();
+  const { openSignup, openLogin } = useAuthModal();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -25,20 +26,18 @@ export function GuestSignupPrompt() {
         </p>
 
         <div className="flex flex-col gap-2.5 w-full max-w-xs">
-          <Link
-            href="/login?signup=1"
-            onClick={() => setOpen(false)}
-            className="w-full inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform"
+          <button
+            onClick={() => { setOpen(false); openSignup(); }}
+            className="w-full inline-flex items-center justify-center h-9 px-6 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             Create Free Account
-          </Link>
-          <Link
-            href="/login"
-            onClick={() => setOpen(false)}
-            className="w-full inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold border border-border text-foreground hover:bg-muted transition-colors"
+          </button>
+          <button
+            onClick={() => { setOpen(false); openLogin(); }}
+            className="w-full inline-flex items-center justify-center h-9 px-6 rounded-lg font-semibold border border-border text-foreground hover:bg-muted transition-colors"
           >
             Log In
-          </Link>
+          </button>
           <button
             onClick={() => setOpen(false)}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"

@@ -8,6 +8,7 @@ import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 import type { BillingStatus } from "@/hooks/use-billing";
 
 interface UserProfile {
@@ -20,6 +21,7 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { logout, isAuthenticated } = useAuth();
+  const { openLogin, openSignup } = useAuthModal();
   const { data: ranch, isLoading } = useGetRanch({ query: { enabled: isAuthenticated } });
 
   const { data: billing, isLoading: isBillingLoading } = useQuery<BillingStatus>({
@@ -142,12 +144,12 @@ export default function Settings() {
             Create a free account to set up your ranch profile, configure your location for weather alerts, and manage your subscription.
           </p>
           <div className="flex gap-3">
-            <Link href="/login?signup=1" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
+            <button onClick={openSignup} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Create Free Account
-            </Link>
-            <Link href="/login" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-medium border border-border text-foreground hover:bg-muted transition-colors">
+            </button>
+            <button onClick={openLogin} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-medium border border-border text-foreground hover:bg-muted transition-colors">
               Log In
-            </Link>
+            </button>
           </div>
         </div>
       </div>

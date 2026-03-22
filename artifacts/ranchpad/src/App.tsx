@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,7 @@ import "@/lib/fetch-interceptor";
 // Providers
 import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
+import { AuthModalProvider, useAuthModal } from "@/contexts/auth-modal-context";
 
 // Components
 import { Layout } from "@/components/Layout";
@@ -18,7 +19,6 @@ import { GuestFloatingCard } from "@/components/GuestFloatingCard";
 import { GuestSignupPrompt } from "@/components/GuestSignupPrompt";
 
 // Pages
-import Login from "@/pages/Login";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import ResetPassword from "@/pages/ResetPassword";
@@ -33,6 +33,25 @@ import Paywall from "@/pages/Paywall";
 import type { BillingStatus } from "@/hooks/use-billing";
 
 const queryClient = new QueryClient();
+
+// ─── /login redirect — opens modal, stays on current page ─────────────────────
+
+function LoginRedirect() {
+  const { openLogin, openSignup } = useAuthModal();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("signup") === "1") {
+      openSignup();
+    } else {
+      openLogin();
+    }
+    setLocation("/");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+}
 
 // ─── Subscription Guard ────────────────────────────────────────────────────────
 
@@ -60,12 +79,8 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ sessionId }),
     })
       .then((res) => res.json())
-      .then(() => {
-        qc.invalidateQueries({ queryKey: ["/api/billing/status"] });
-      })
-      .catch(() => {
-        qc.invalidateQueries({ queryKey: ["/api/billing/status"] });
-      });
+      .then(() => { qc.invalidateQueries({ queryKey: ["/api/billing/status"] }); })
+      .catch(() => { qc.invalidateQueries({ queryKey: ["/api/billing/status"] }); });
   }, [isAuthenticated, qc]);
 
   const { data: billing, isLoading, isError } = useQuery<BillingStatus>({
@@ -102,7 +117,7 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// ─── App Routes (guest + auth aware) ──────────────────────────────────────────
+// ─── App Routes ────────────────────────────────────────────────────────────────
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -132,12 +147,11 @@ function AppContent() {
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
+      <Route path="/login" component={LoginRedirect} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/reset-password" component={ResetPassword} />
 
-      {/* All other routes — guests and auth users both see the Layout */}
       <Route path="*">
         <Layout>
           <AppContent />
@@ -153,10 +167,12 @@ function App() {
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
-            <Router />
-            <GuestFloatingCard />
-            <GuestSignupPrompt />
-            <Toaster />
+            <AuthModalProvider>
+              <Router />
+              <GuestFloatingCard />
+              <GuestSignupPrompt />
+              <Toaster />
+            </AuthModalProvider>
           </AuthProvider>
         </WouterRouter>
       </TooltipProvider>

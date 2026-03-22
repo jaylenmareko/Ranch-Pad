@@ -23,7 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleAuthExpired = () => {
       setToken(null);
-      setLocation("/login");
+      // Dispatch event for AuthModalProvider to open login popup
+      window.dispatchEvent(new Event("open-login-modal"));
     };
 
     window.addEventListener("auth-expired", handleAuthExpired);
@@ -39,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const login = async (newToken: string) => {
-    // Migrate any guest animals into the new account
     const guestAnimals = getGuestAnimals();
     if (guestAnimals.length > 0) {
       try {
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem("ranchpad_token");
     setToken(null);
-    setLocation("/login");
+    setLocation("/");
   };
 
   const value: AuthContextType = {
