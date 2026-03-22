@@ -49,7 +49,7 @@ export default function AlertsList() {
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl sm:text-4xl font-black text-foreground">Alerts</h1>
+        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alerts</h1>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
             <AlertTriangle className="w-10 h-10 text-primary/50" />
@@ -106,7 +106,7 @@ export default function AlertsList() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-foreground">Action Center</h1>
+          <h1 className="text-xl font-black text-foreground whitespace-nowrap">Action Center</h1>
           <p className="text-muted-foreground font-medium mt-1">AI-powered insights and urgent tasks.</p>
         </div>
         <Button 

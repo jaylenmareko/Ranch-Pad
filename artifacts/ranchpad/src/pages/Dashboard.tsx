@@ -95,7 +95,7 @@ function GuestDashboard() {
       {/* Action Banner */}
       <div className="rounded-2xl bg-primary px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg shadow-primary/20">
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-black text-white tracking-tight">Dashboard</h1>
+          <h1 className="text-xl font-black text-white tracking-tight whitespace-nowrap">Dashboard</h1>
           <p className="text-white/70 text-sm font-medium mt-0.5">Start by adding your animals below</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -423,7 +423,7 @@ function AuthDashboard() {
       {/* Action Banner */}
       <div className="rounded-2xl bg-primary px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg shadow-primary/20">
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-black text-white tracking-tight">Dashboard</h1>
+          <h1 className="text-xl font-black text-white tracking-tight whitespace-nowrap">Dashboard</h1>
           <p className="text-white/70 text-sm font-medium mt-0.5">Manage your herd</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
