@@ -4,9 +4,11 @@ import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { HoofIcon } from "@/components/HoofIcon";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
+  const { openLogin } = useAuthModal();
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
 
   const [password, setPassword] = useState("");
@@ -72,7 +74,7 @@ export default function ResetPassword() {
               <h1 className="font-display font-bold text-2xl text-foreground mb-2">Password updated</h1>
               <p className="text-sm text-muted-foreground">Your password has been changed. You can now log in with your new password.</p>
             </div>
-            <Button className="w-full mt-2" onClick={() => navigate("/login")}>
+            <Button className="w-full mt-2" onClick={() => { navigate("/"); openLogin(); }}>
               Go to Log In
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>

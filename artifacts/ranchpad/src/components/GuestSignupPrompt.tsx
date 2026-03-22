@@ -22,7 +22,7 @@ export function GuestSignupPrompt() {
     <SimpleDialog open={open} onOpenChange={setOpen} title="Save your herd">
       <div className="flex flex-col items-center text-center gap-5 py-2">
         <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-          Create a free account to keep your data safe, access it on any device, and unlock weather alerts and health reminders.
+          You're using RanchPad as a guest. Sign up to sync your herd across devices and unlock alerts and health reminders.
         </p>
 
         <div className="flex flex-col gap-2.5 w-full max-w-xs">

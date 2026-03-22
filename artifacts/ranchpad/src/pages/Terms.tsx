@@ -8,7 +8,7 @@ export default function Terms() {
       <div className="max-w-2xl mx-auto px-6 py-12">
         {/* Back + Logo */}
         <div className="flex items-center gap-3 mb-12">
-          <Link href="/login" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-sans">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-sans">
             <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
