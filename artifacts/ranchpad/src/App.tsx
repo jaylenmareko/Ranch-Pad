@@ -127,7 +127,7 @@ function AppContent() {
   const { hasNavigated } = useNavigation();
   const [location] = useLocation();
 
-  if (!hasNavigated && location === "/") {
+  if (!hasNavigated && !isAuthenticated && location === "/") {
     return <Landing />;
   }
 
