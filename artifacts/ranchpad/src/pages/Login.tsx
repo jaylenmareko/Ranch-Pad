@@ -1,20 +1,20 @@
 import React, { useState, useRef } from "react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SimpleDialog as Dialog } from "@/components/ui/dialog";
-import { Tractor, ArrowRight, CheckCircle2, XCircle, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
+type View = "login" | "signup" | "forgot";
 
 export default function Login() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(() => {
+  const [view, setView] = useState<View>(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("signup") === "1";
+    return params.get("signup") === "1" ? "signup" : "login";
   });
-  const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -122,15 +122,13 @@ export default function Login() {
     }
     setPasswordMismatch(false);
     if (geocodedLat === null || geocodedLon === null) {
-      toast({ title: "Location required", description: "Enter your ranch address and click Find before signing up.", variant: "destructive" });
+      toast({ title: "Location required", description: "Enter your ranch address and select a suggestion before signing up.", variant: "destructive" });
       return;
     }
     signupMutation.mutate(
       { data: { email: signupEmail, password: signupPassword, name, lat: geocodedLat, lon: geocodedLon } },
       {
-        onSuccess: (data) => {
-          setAuthContext(data.token);
-        },
+        onSuccess: (data) => setAuthContext(data.token),
         onError: (error: Error) => {
           toast({ title: "Signup Failed", description: error.message || "Could not create account.", variant: "destructive" });
         },
@@ -138,333 +136,260 @@ export default function Login() {
     );
   }
 
-  const shadow = "0 1px 3px rgba(0,0,0,0.45)";
-
-  const heroContent = (
-    <div className="flex flex-col items-center text-center px-6 max-w-lg w-full">
-      {/* Barn icon */}
-      <div className="w-16 h-16 md:w-20 md:h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/25">
-        <HoofIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
-      </div>
-
-      {/* Wordmark */}
-      <h1
-        className="text-6xl md:text-7xl font-display font-bold text-white mb-3 tracking-wide leading-none"
-        style={{ textShadow: shadow }}
-      >
-        RanchPad
-      </h1>
-
-      {/* Tagline */}
-      <p
-        className="text-base md:text-lg font-sans font-normal text-white/85 mb-8 tracking-widest uppercase"
-        style={{ textShadow: shadow, letterSpacing: "0.18em" }}
-      >
-        Livestock Management
-      </p>
-
-      {/* Bullet features */}
-      <ul className="w-full max-w-xs mb-10 space-y-4 text-left list-none">
-        {[
-          "Simple herd log for animals, treatments, and health.",
-          "Get early warnings when local conditions raise disease risk.",
-          "Get reminders so you never miss shots or treatments.",
-        ].map((text) => (
-          <li key={text} className="flex items-start gap-3">
-            <span
-              className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center"
-              aria-hidden="true"
-            >
-              <svg viewBox="0 0 8 8" className="w-2.5 h-2.5">
-                <path d="M1.5 4l2 2 3-3.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </span>
-            <span
-              className="text-sm md:text-base text-white/90 font-sans leading-snug"
-              style={{ textShadow: shadow }}
-            >
-              {text}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {/* CTA buttons */}
-      <div className="flex gap-3 w-full max-w-xs">
-        <Button
-          size="lg"
-          className="flex-1 bg-white text-primary font-semibold hover:bg-white/95 font-sans"
-          onClick={() => setShowSignup(true)}
-        >
-          Sign Up
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          className="flex-1 border-white/60 text-white hover:bg-white/10 hover:text-white font-sans"
-          onClick={() => setShowLogin(true)}
-        >
-          Log In
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
 
-      {/* ══════════════ HERO ══════════════ */}
-      <div
-        className="relative min-h-screen overflow-hidden flex flex-col text-white"
-        style={{
-          backgroundImage: "url('/ranch-bg.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/32" />
-        {/* Content */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center py-16 px-4">
-          {heroContent}
+      {/* Brand mark */}
+      <div className="flex items-center gap-2.5 mb-8">
+        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+          <HoofIcon className="w-4.5 h-4.5" />
         </div>
-        {/* Footer */}
-        <footer className="relative z-10 pb-6 flex items-center justify-center gap-6">
-          <a href="/terms"   className="text-xs text-white/50 hover:text-white/80 transition-colors font-sans tracking-wide">Terms</a>
-          <a href="/privacy" className="text-xs text-white/50 hover:text-white/80 transition-colors font-sans tracking-wide">Privacy</a>
-        </footer>
+        <span className="font-display font-bold text-xl tracking-tight text-foreground">RanchPad</span>
       </div>
 
-      {/* ── Forgot Password Modal ── */}
-      <Dialog
-        open={showForgot}
-        onOpenChange={(open) => { setShowForgot(open); if (!open) { setForgotSent(false); setForgotEmail(""); } }}
-        title="Reset your password"
-      >
-        {forgotSent ? (
-          <div className="flex flex-col items-center text-center gap-4 py-4">
-            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <p className="font-semibold text-foreground mb-1">Check your email</p>
-              <p className="text-sm text-muted-foreground">
-                If an account exists for <span className="font-medium text-foreground">{forgotEmail}</span>, we've sent a reset link. It expires in 1 hour.
-              </p>
-            </div>
-            <Button
-              className="w-full mt-2"
-              onClick={() => { setShowForgot(false); setShowLogin(true); setForgotSent(false); setForgotEmail(""); }}
-            >
-              Back to Log In
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleForgotPassword} className="space-y-5">
-            <p className="text-sm text-muted-foreground">
-              Enter your email and we'll send you a link to reset your password.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="forgot-email">Email Address</Label>
-              <Input
-                id="forgot-email"
-                type="email"
-                placeholder="john@ranch.com"
-                value={forgotEmail}
-                onChange={e => setForgotEmail(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" size="lg" isLoading={forgotLoading}>
-              Send Reset Link
-              {!forgotLoading && <ArrowRight className="w-5 h-5 ml-2" />}
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              Remember your password?{" "}
+      {/* Auth card */}
+      <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-sm p-7">
+
+        {/* ── Login ── */}
+        {view === "login" && (
+          <>
+            <h1 className="text-lg font-semibold text-foreground mb-1">Welcome back</h1>
+            <p className="text-sm text-muted-foreground mb-6">Sign in to your RanchPad account.</p>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="login-email">Email</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={loginEmail}
+                  onChange={e => setLoginEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="login-password">Password</Label>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                    onClick={() => setView("forgot")}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <Input
+                  id="login-password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
+                Sign In
+                {!loginMutation.isPending && <ArrowRight className="w-4 h-4 ml-1.5" />}
+              </Button>
+            </form>
+            <p className="text-center text-sm text-muted-foreground mt-5">
+              Don't have an account?{" "}
               <button
                 type="button"
-                className="font-bold text-primary hover:underline"
-                onClick={() => { setShowForgot(false); setShowLogin(true); }}
+                className="font-semibold text-primary hover:underline"
+                onClick={() => setView("signup")}
+              >
+                Sign up free
+              </button>
+            </p>
+          </>
+        )}
+
+        {/* ── Sign Up ── */}
+        {view === "signup" && (
+          <>
+            <h1 className="text-lg font-semibold text-foreground mb-1">Create your ranch</h1>
+            <p className="text-sm text-muted-foreground mb-6">Free 14-day trial. No credit card required.</p>
+            <form onSubmit={handleSignup} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-name">Full Name</Label>
+                <Input
+                  id="signup-name"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-email">Email</Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={signupEmail}
+                  onChange={e => setSignupEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-password">Password</Label>
+                <Input
+                  id="signup-password"
+                  type="password"
+                  value={signupPassword}
+                  onChange={e => { setSignupPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                <Input
+                  id="signup-confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => { setConfirmPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }}
+                  required
+                  className={cn(passwordMismatch && "border-destructive focus-visible:ring-destructive")}
+                />
+                {passwordMismatch && (
+                  <p className="text-xs text-destructive font-medium">Passwords don't match.</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5 pt-2 border-t border-border">
+                <div className="flex items-center gap-1.5 pt-2 mb-1">
+                  <Tractor className="w-4 h-4 text-primary" />
+                  <Label className="text-primary font-semibold text-xs uppercase tracking-wide">Ranch Location</Label>
+                </div>
+                <div className="relative">
+                  <Input
+                    placeholder="Start typing your address…"
+                    value={address}
+                    onChange={e => handleAddressChange(e.target.value)}
+                    onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    autoComplete="off"
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                      {suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0"
+                          onMouseDown={() => selectSuggestion(s)}
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                          <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {geocodedLat !== null && geocodedLon !== null && (
+                  <div className="rounded-lg border bg-green-50/60 border-green-200 p-2.5">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        {geocodeLabel && (
+                          <p className="text-xs text-muted-foreground truncate mb-0.5">{geocodeLabel}</p>
+                        )}
+                        <p className="text-xs font-mono text-foreground">
+                          {geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
+                        className="p-0.5 rounded hover:bg-muted text-muted-foreground shrink-0"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" isLoading={signupMutation.isPending}>
+                Create Ranch
+                {!signupMutation.isPending && <ArrowRight className="w-4 h-4 ml-1.5" />}
+              </Button>
+            </form>
+            <p className="text-center text-sm text-muted-foreground mt-5">
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="font-semibold text-primary hover:underline"
+                onClick={() => setView("login")}
               >
                 Log in
               </button>
             </p>
-          </form>
+          </>
         )}
-      </Dialog>
 
-      {/* ── Login Modal ── */}
-      <Dialog open={showLogin} onOpenChange={setShowLogin} title="Welcome back">
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="login-email">Email Address</Label>
-            <Input
-              id="login-email"
-              type="email"
-              placeholder="john@ranch.com"
-              value={loginEmail}
-              onChange={e => setLoginEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="login-password">Password</Label>
-              <button
-                type="button"
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => { setShowLogin(false); setShowForgot(true); setForgotSent(false); setForgotEmail(""); }}
-              >
-                Forgot password?
-              </button>
-            </div>
-            <Input
-              id="login-password"
-              type="password"
-              value={loginPassword}
-              onChange={e => setLoginPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" size="lg" isLoading={loginMutation.isPending}>
-            Sign In
-            {!loginMutation.isPending && <ArrowRight className="w-5 h-5 ml-2" />}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <button
-              type="button"
-              className="font-bold text-primary hover:underline"
-              onClick={() => { setShowLogin(false); setShowSignup(true); }}
-            >
-              Sign up
-            </button>
-          </p>
-        </form>
-      </Dialog>
-
-      {/* ── Signup Modal ── */}
-      <Dialog open={showSignup} onOpenChange={(open) => { setShowSignup(open); if (!open) { setConfirmPassword(""); setPasswordMismatch(false); } }} title="Create your ranch">
-        <form onSubmit={handleSignup} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="signup-name">Full Name</Label>
-            <Input
-              id="signup-name"
-              placeholder="John Doe"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="signup-email">Email Address</Label>
-            <Input
-              id="signup-email"
-              type="email"
-              placeholder="john@ranch.com"
-              value={signupEmail}
-              onChange={e => setSignupEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="signup-password">Password</Label>
-            <Input
-              id="signup-password"
-              type="password"
-              value={signupPassword}
-              onChange={e => { setSignupPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="signup-confirm-password">Confirm Password</Label>
-            <Input
-              id="signup-confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={e => { setConfirmPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }}
-              required
-              className={passwordMismatch ? "border-destructive focus-visible:ring-destructive" : ""}
-            />
-            {passwordMismatch && (
-              <p className="text-sm text-destructive font-medium">Passwords don't match.</p>
-            )}
-          </div>
-
-          <div className="space-y-4 pt-4 border-t border-border/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Tractor className="w-5 h-5 text-accent" />
-              <Label className="text-accent font-bold">Ranch Details</Label>
-            </div>
-            <div className="space-y-2">
-              <Label>Ranch Location</Label>
-              <div className="relative">
-                <Input
-                  placeholder="Start typing your address…"
-                  value={address}
-                  onChange={e => handleAddressChange(e.target.value)}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                  autoComplete="off"
-                />
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
-                    {suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0"
-                        onMouseDown={() => selectSuggestion(s)}
-                      >
-                        <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                        <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {geocodedLat !== null && geocodedLon !== null && (
-                <div className="rounded-xl border bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800 p-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      {geocodeLabel && (
-                        <p className="text-xs text-muted-foreground truncate mb-0.5">{geocodeLabel}</p>
-                      )}
-                      <p className="text-xs font-bold font-mono text-foreground">
-                        {geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
-                      className="p-0.5 rounded-full hover:bg-muted text-muted-foreground shrink-0"
-                    >
-                      <XCircle className="w-4 h-4" />
-                    </button>
-                  </div>
+        {/* ── Forgot Password ── */}
+        {view === "forgot" && (
+          <>
+            {forgotSent ? (
+              <div className="flex flex-col items-center text-center gap-4 py-2">
+                <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
                 </div>
-              )}
-            </div>
-          </div>
+                <div>
+                  <p className="font-semibold text-foreground mb-1">Check your email</p>
+                  <p className="text-sm text-muted-foreground">
+                    If an account exists for <span className="font-medium text-foreground">{forgotEmail}</span>, we've sent a reset link. It expires in 1 hour.
+                  </p>
+                </div>
+                <Button
+                  className="w-full mt-2"
+                  onClick={() => { setView("login"); setForgotSent(false); setForgotEmail(""); }}
+                >
+                  Back to Log In
+                </Button>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-lg font-semibold text-foreground mb-1">Reset password</h1>
+                <p className="text-sm text-muted-foreground mb-6">Enter your email and we'll send a reset link.</p>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="forgot-email">Email</Label>
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={forgotEmail}
+                      onChange={e => setForgotEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" isLoading={forgotLoading}>
+                    Send Reset Link
+                    {!forgotLoading && <ArrowRight className="w-4 h-4 ml-1.5" />}
+                  </Button>
+                </form>
+                <p className="text-center text-sm text-muted-foreground mt-5">
+                  Remember it?{" "}
+                  <button
+                    type="button"
+                    className="font-semibold text-primary hover:underline"
+                    onClick={() => setView("login")}
+                  >
+                    Log in
+                  </button>
+                </p>
+              </>
+            )}
+          </>
+        )}
+      </div>
 
-          <Button type="submit" className="w-full" size="lg" isLoading={signupMutation.isPending}>
-            Create Ranch
-            {!signupMutation.isPending && <ArrowRight className="w-5 h-5 ml-2" />}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <button
-              type="button"
-              className="font-bold text-primary hover:underline"
-              onClick={() => { setShowSignup(false); setShowLogin(true); }}
-            >
-              Log in
-            </button>
-          </p>
-        </form>
-      </Dialog>
+      <footer className="mt-8 flex items-center gap-6">
+        <a href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</a>
+        <a href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
+      </footer>
     </div>
   );
 }
