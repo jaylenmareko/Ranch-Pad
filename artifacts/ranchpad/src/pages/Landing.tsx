@@ -4,7 +4,8 @@ import { CheckCircle2, Upload, Plus, Loader2 } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
 import { useNavigation } from "@/contexts/navigation-context";
 import { useAuth } from "@/hooks/use-auth";
-import { addGuestAnimal, importCsvToGuestStore } from "@/lib/guest-store";
+import { addGuestAnimal, importCsvToGuestStore, clearGuestAnimals, getGuestAnimals } from "@/lib/guest-store";
+import { ImportModeDialog } from "@/components/ImportModeDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -39,6 +40,8 @@ export default function Landing() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -51,29 +54,23 @@ export default function Landing() {
 
   // ── CSV import ────────────────────────────────────────────────────────────
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      toast({ title: "Please select a .csv file", variant: "destructive" });
-      return;
-    }
-
+  async function doImport(file: File, replace: boolean) {
     setImporting(true);
+    setModeDialogOpen(false);
+    setPendingFile(null);
     try {
       if (isAuthenticated) {
         const formData = new FormData();
         formData.append("file", file);
-        const res = await fetch("/api/animals/import-csv", {
-          method: "POST",
-          body: formData,
-        });
+        const url = replace ? "/api/animals/import-csv?replace=true" : "/api/animals/import-csv";
+        const res = await fetch(url, { method: "POST", body: formData });
         if (!res.ok) throw new Error("Import failed");
         const data = await res.json();
         await qc.invalidateQueries({ queryKey: ["/api/animals"] });
         toast({ title: `Imported ${data.animalsCreated ?? 0} animals` });
       } else {
         const text = await file.text();
+        if (replace) clearGuestAnimals();
         const result = importCsvToGuestStore(text);
         toast({ title: `Imported ${result.animalsCreated} animals` });
       }
@@ -84,6 +81,24 @@ export default function Landing() {
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      toast({ title: "Please select a .csv file", variant: "destructive" });
+      return;
+    }
+    const existingAnimals = isAuthenticated ? null : getGuestAnimals();
+    const hasAnimals = isAuthenticated ? false : (existingAnimals && existingAnimals.length > 0);
+    if (hasAnimals) {
+      setPendingFile(file);
+      setModeDialogOpen(true);
+    } else {
+      doImport(file, false);
     }
   }
 
@@ -210,6 +225,13 @@ export default function Landing() {
         accept=".csv"
         className="hidden"
         onChange={handleFile}
+      />
+
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
 
       {/* Add Animal sheet */}

@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PlusCircle, AlertTriangle, CloudRain, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw } from "lucide-react";
-import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming } from "@workspace/api-client-react";
+import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
-import { getGuestAnimals, importCsvToGuestStore, type GuestAnimal } from "@/lib/guest-store";
+import { getGuestAnimals, importCsvToGuestStore, clearGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
+import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
@@ -23,6 +24,8 @@ function GuestDashboard() {
   const [importError, setImportError] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [animals, setAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
 
   useEffect(() => {
     const refresh = () => setAnimals(getGuestAnimals());
@@ -30,18 +33,13 @@ function GuestDashboard() {
     return () => window.removeEventListener("guest-save", refresh);
   }, []);
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setImportError(null);
-    setImportSummary(null);
-    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
-    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
-    if (file.size === 0) { setImportError("This file appears to be empty."); return; }
+  async function doImport(file: File, replace: boolean) {
     setImporting(true);
+    setModeDialogOpen(false);
+    setPendingFile(null);
     try {
       const text = await file.text();
+      if (replace) clearGuestAnimals();
       const result = importCsvToGuestStore(text);
       setImportSummary(result);
       if (result.animalsCreated > 0) {
@@ -51,6 +49,23 @@ function GuestDashboard() {
       setImportError("Something went wrong reading your file. Please try again.");
     } finally {
       setImporting(false);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    setImportSummary(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty."); return; }
+    if (animals.length > 0) {
+      setPendingFile(file);
+      setModeDialogOpen(true);
+    } else {
+      doImport(file, false);
     }
   }
 
@@ -269,6 +284,13 @@ function GuestDashboard() {
           </Card>
         </div>
       </div>
+
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
     </div>
   );
 }
@@ -289,6 +311,8 @@ function AuthDashboard() {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
 
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading } = useListAlerts();
@@ -359,20 +383,15 @@ function AuthDashboard() {
     return reason;
   }
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setImportError(null);
-    setImportSummary(null);
-    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
-    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
-    if (file.size === 0) { setImportError("This file appears to be empty. Please fill in the template and try again."); return; }
+  async function doImport(file: File, replace: boolean) {
+    setImporting(true);
+    setModeDialogOpen(false);
+    setPendingFile(null);
     const formData = new FormData();
     formData.append("file", file);
-    setImporting(true);
     try {
-      const res = await fetch("/api/animals/import-csv", { method: "POST", body: formData });
+      const url = replace ? "/api/animals/import-csv?replace=true" : "/api/animals/import-csv";
+      const res = await fetch(url, { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
         setImportError(data.message ?? "Import failed. Please check your file and try again.");
@@ -384,6 +403,24 @@ function AuthDashboard() {
       setImportError("Something went wrong connecting to the server. Please try again.");
     } finally {
       setImporting(false);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    setImportSummary(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty. Please fill in the template and try again."); return; }
+    const hasAnimals = animals && (animals as Animal[]).length > 0;
+    if (hasAnimals) {
+      setPendingFile(file);
+      setModeDialogOpen(true);
+    } else {
+      doImport(file, false);
     }
   }
 
@@ -704,6 +741,13 @@ function AuthDashboard() {
           </Card>
         </div>
       </div>
+
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
     </div>
   );
 }

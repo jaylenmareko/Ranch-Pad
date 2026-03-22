@@ -11,7 +11,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
-import { getGuestAnimals, importCsvToGuestStore, type GuestAnimal } from "@/lib/guest-store";
+import { getGuestAnimals, importCsvToGuestStore, clearGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
+import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
 
@@ -171,6 +172,8 @@ function GuestAnimalList() {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<GuestImportSummary | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -179,18 +182,13 @@ function GuestAnimalList() {
     return () => window.removeEventListener("guest-save", refresh);
   }, []);
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setImportError(null);
-    setImportSummary(null);
-    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
-    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
-    if (file.size === 0) { setImportError("This file appears to be empty."); return; }
+  async function doImport(file: File, replace: boolean) {
     setImporting(true);
+    setModeDialogOpen(false);
+    setPendingFile(null);
     try {
       const text = await file.text();
+      if (replace) clearGuestAnimals();
       const result = importCsvToGuestStore(text);
       setImportSummary(result);
       if (result.animalsCreated > 0) {
@@ -200,6 +198,23 @@ function GuestAnimalList() {
       setImportError("Something went wrong reading your file. Please try again.");
     } finally {
       setImporting(false);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    setImportSummary(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty."); return; }
+    if (guestAnimals.length > 0) {
+      setPendingFile(file);
+      setModeDialogOpen(true);
+    } else {
+      doImport(file, false);
     }
   }
 
@@ -301,6 +316,13 @@ function GuestAnimalList() {
           </p>
         </div>
       )}
+
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
     </div>
   );
 }
@@ -399,6 +421,8 @@ export default function AnimalList() {
   const [importing, setImporting] = useState(false);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
@@ -411,34 +435,15 @@ export default function AnimalList() {
   // Guest users see their locally-stored animals
   if (!isAuthenticated) return <GuestAnimalList />;
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-
-    setImportError(null);
-    setImportSummary(null);
-
-    // Client-side: check file type
-    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
-    if (!isCSV) {
-      setImportError("Please upload a CSV file. Download our template to get started.");
-      return;
-    }
-
-    // Client-side: check for empty file
-    if (file.size === 0) {
-      setImportError("This file appears to be empty. Please fill in the template and try again.");
-      return;
-    }
-
+  async function doImport(file: File, replace: boolean) {
+    setImporting(true);
+    setModeDialogOpen(false);
+    setPendingFile(null);
     const formData = new FormData();
     formData.append("file", file);
-
-    setImporting(true);
-
     try {
-      const res = await fetch("/api/animals/import-csv", { method: "POST", body: formData });
+      const url = replace ? "/api/animals/import-csv?replace=true" : "/api/animals/import-csv";
+      const res = await fetch(url, { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
         setImportError(data.message ?? "Import failed. Please check your file and try again.");
@@ -450,6 +455,24 @@ export default function AnimalList() {
       setImportError("Something went wrong connecting to the server. Please try again.");
     } finally {
       setImporting(false);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    setImportSummary(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file. Download our template to get started."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty. Please fill in the template and try again."); return; }
+    const hasAnimals = animals && (animals as Animal[]).length > 0;
+    if (hasAnimals) {
+      setPendingFile(file);
+      setModeDialogOpen(true);
+    } else {
+      doImport(file, false);
     }
   }
 
@@ -674,6 +697,13 @@ export default function AnimalList() {
           ))}
         </div>
       )}
+
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
     </div>
   );
 }

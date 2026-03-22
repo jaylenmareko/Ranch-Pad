@@ -245,6 +245,7 @@ router.post("/animals/import-csv", requireAuth, upload.single("file"), async (re
   }
 
   const ranchId = req.user!.ranchId;
+  const shouldReplace = req.query.replace === "true";
 
   let rows: Record<string, string>[];
   try {
@@ -269,6 +270,11 @@ router.post("/animals/import-csv", requireAuth, upload.single("file"), async (re
   if (!hasValidHeaders) {
     res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
     return;
+  }
+
+  // If replacing, wipe all existing animals for this ranch first
+  if (shouldReplace) {
+    await db.delete(animalsTable).where(eq(animalsTable.ranchId, ranchId));
   }
 
   // Pre-load existing tag numbers for this ranch to detect duplicates efficiently
