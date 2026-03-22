@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
+import { useNavigation } from "@/contexts/navigation-context";
 
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Dashboard" },
@@ -18,7 +19,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { logout, isAuthenticated } = useAuth();
   const { openLogin, openSignup } = useAuthModal();
+  const { hasNavigated, markNavigated } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const isLanding = !hasNavigated && location === "/";
 
   const isActive = (href: string) =>
     href === "/" ? location === "/" : location.startsWith(href);
@@ -40,6 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => markNavigated()}
               className={cn(
                 "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
                 isActive(item.href)
@@ -97,7 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMenuOpen(false)}
+                onClick={() => { markNavigated(); setMenuOpen(false); }}
                 className={cn(
                   "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
                   isActive(item.href)
@@ -158,8 +163,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Link>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-5 md:p-8">
-          <div className="max-w-5xl mx-auto w-full">
+        <div className={cn("flex-1 overflow-y-auto", isLanding ? "flex flex-col" : "p-5 md:p-8")}>
+          <div className={cn("w-full", isLanding ? "flex-1 flex flex-col" : "max-w-5xl mx-auto")}>
             {children}
           </div>
         </div>

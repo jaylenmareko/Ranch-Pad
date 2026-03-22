@@ -12,6 +12,7 @@ import "@/lib/fetch-interceptor";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { AuthModalProvider, useAuthModal } from "@/contexts/auth-modal-context";
+import { NavigationProvider, useNavigation } from "@/contexts/navigation-context";
 
 // Components
 import { Layout } from "@/components/Layout";
@@ -19,6 +20,7 @@ import { GuestFloatingCard } from "@/components/GuestFloatingCard";
 import { GuestSignupPrompt } from "@/components/GuestSignupPrompt";
 
 // Pages
+import Landing from "@/pages/Landing";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import ResetPassword from "@/pages/ResetPassword";
@@ -121,6 +123,12 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
+  const { hasNavigated } = useNavigation();
+  const [location] = useLocation();
+
+  if (!hasNavigated && location === "/") {
+    return <Landing />;
+  }
 
   const routes = (
     <Switch>
@@ -168,10 +176,12 @@ function App() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
             <AuthModalProvider>
-              <Router />
-              <GuestFloatingCard />
-              <GuestSignupPrompt />
-              <Toaster />
+              <NavigationProvider>
+                <Router />
+                <GuestFloatingCard />
+                <GuestSignupPrompt />
+                <Toaster />
+              </NavigationProvider>
             </AuthModalProvider>
           </AuthProvider>
         </WouterRouter>
