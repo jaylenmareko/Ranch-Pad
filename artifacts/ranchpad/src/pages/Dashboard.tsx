@@ -4,25 +4,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { PlusCircle, AlertTriangle, CloudRain, Droplets, Wind, ChevronRight, X, Pill, Baby, Calendar, RefreshCw, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle } from "lucide-react";
-import { HoofIcon } from "@/components/HoofIcon";
+import { PlusCircle, AlertTriangle, CloudRain, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
-import { importCsvToGuestStore } from "@/lib/guest-store";
+import { getGuestAnimals, importCsvToGuestStore, type GuestAnimal } from "@/lib/guest-store";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
-// ─── Guest Hero ───────────────────────────────────────────────────────────────
+// ─── Guest Dashboard ──────────────────────────────────────────────────────────
 
-function GuestHero() {
+function GuestDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  const [animals, setAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
 
-  async function handleGuestFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    const refresh = () => setAnimals(getGuestAnimals());
+    window.addEventListener("guest-save", refresh);
+    return () => window.removeEventListener("guest-save", refresh);
+  }, []);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
@@ -46,115 +52,221 @@ function GuestHero() {
     }
   }
 
-  const shadow = "0 2px 8px rgba(0,0,0,0.55)";
+  function plainEnglishSkipReason(reason: string): string {
+    if (reason.includes("Missing required field")) return "Missing name or species — both are required for every row.";
+    if (reason.includes("Duplicate tag number") && reason.includes("already exists")) {
+      const match = reason.match(/"([^"]+)"/);
+      return `Tag number${match ? ` "${match[1]}"` : ""} is already in your herd — skipped to avoid duplicates.`;
+    }
+    if (reason.includes("Duplicate tag number") && reason.includes("more than once")) {
+      const match = reason.match(/"([^"]+)"/);
+      return `Tag number${match ? ` "${match[1]}"` : ""} appears more than once in this file — only the first was imported.`;
+    }
+    return reason;
+  }
+
+  const speciesCounts = React.useMemo(() =>
+    animals.reduce((acc, a) => { acc[a.species] = (acc[a.species] || 0) + 1; return acc; }, {} as Record<string, number>),
+    [animals]
+  );
+  const femaleCount = animals.filter(a => a.sex === "Female").length;
+  const maleCount = animals.filter(a => a.sex === "Male").length;
 
   return (
-    <div
-      className="relative -m-4 md:-m-8 flex flex-col text-white overflow-hidden"
-      style={{
-        backgroundImage: "url('/ranch-bg.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        minHeight: "calc(100dvh - 56px)",
-      }}
-    >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv,text/csv"
-        className="hidden"
-        onChange={handleGuestFileChange}
-      />
+    <div className="space-y-8">
+      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/32" />
-
-      {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center py-16 px-6">
-        {/* Logo */}
-        <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center mb-6 shadow-lg">
-          <HoofIcon className="w-8 h-8 text-white" />
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-black text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 font-medium">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
         </div>
-
-        {/* Title */}
-        <h1
-          className="font-display font-black text-5xl md:text-7xl text-white mb-3 text-center tracking-tight"
-          style={{ textShadow: shadow }}
-        >
-          RanchPad
-        </h1>
-
-        {/* Tagline */}
-        <p
-          className="text-base md:text-lg font-sans font-normal text-white/85 mb-8 tracking-widest uppercase"
-          style={{ textShadow: shadow, letterSpacing: "0.18em" }}
-        >
-          Livestock Management
-        </p>
-
-        {/* Bullet features */}
-        <ul className="w-full max-w-xs mb-10 space-y-4 text-left list-none">
-          {[
-            "Simple herd log for animals, treatments, and health.",
-            "Get early warnings when local conditions raise disease risk.",
-            "Get reminders so you never miss shots or treatments.",
-          ].map((text) => (
-            <li key={text} className="flex items-start gap-3">
-              <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center" aria-hidden="true">
-                <svg viewBox="0 0 8 8" className="w-2.5 h-2.5">
-                  <path d="M1.5 4l2 2 3-3.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                </svg>
-              </span>
-              <span className="text-sm md:text-base text-white/90 font-sans leading-snug" style={{ textShadow: shadow }}>
-                {text}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="flex-1 inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-white/15 backdrop-blur-sm border border-white/50 text-white hover:bg-white/25 transition-colors disabled:opacity-60"
-          >
-            {importing
-              ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importing…</>
-              : <><Upload className="w-4 h-4 mr-2" />Import CSV</>
-            }
-          </button>
-          <Link
-            href="/animals/new"
-            className="flex-1 inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/30 hover:-translate-y-0.5 transition-transform"
-          >
-            <PlusCircle className="w-4 h-4 mr-2" />
-            Add Animal
-          </Link>
-        </div>
-
-        {/* Import feedback */}
-        {importError && (
-          <div className="mt-4 w-full max-w-xs flex items-center gap-2 p-3 rounded-xl bg-red-500/80 backdrop-blur-sm text-white text-sm font-semibold">
-            <XCircle className="w-4 h-4 shrink-0" />
-            <span className="flex-1">{importError}</span>
-            <button onClick={() => setImportError(null)}><X className="w-4 h-4" /></button>
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-12 min-w-[44px] px-4 rounded-xl font-semibold flex-1 sm:flex-none">
+                  {importing
+                    ? <><Loader2 className="w-4 h-4 sm:mr-2 animate-spin" /><span className="hidden sm:inline">Importing…</span></>
+                    : <><Upload className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Import CSV</span></>
+                  }
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Import animals from CSV</TooltipContent>
+            </Tooltip>
+            <Link href="/animals/new" className="inline-flex items-center justify-center h-12 px-6 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform flex-1 sm:flex-none whitespace-nowrap">
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Add Animal
+            </Link>
           </div>
-        )}
-        {importSummary && (
-          <div className="mt-4 w-full max-w-xs flex items-center gap-2 p-3 rounded-xl bg-green-500/80 backdrop-blur-sm text-white text-sm font-semibold">
-            <CheckCircle className="w-4 h-4 shrink-0" />
-            <span className="flex-1">{importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} imported</span>
-            <button onClick={() => setImportSummary(null)}><X className="w-4 h-4" /></button>
-          </div>
-        )}
+        </TooltipProvider>
       </div>
 
-      {/* Footer */}
-      <footer className="relative z-10 pb-6 flex items-center justify-center gap-6">
-        <a href="/terms" className="text-xs text-white/50 hover:text-white/80 transition-colors font-sans tracking-wide">Terms</a>
-        <a href="/privacy" className="text-xs text-white/50 hover:text-white/80 transition-colors font-sans tracking-wide">Privacy</a>
-      </footer>
+      {/* Sign-up nudge */}
+      <div className="flex items-center gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/20">
+        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Lock className="w-4 h-4 text-primary" />
+        </div>
+        <p className="flex-1 text-sm font-medium text-foreground">
+          Your herd is saved on this device only.{" "}
+          <Link href="/login?signup=1" className="font-bold text-primary hover:underline">Create a free account</Link>
+          {" "}to keep your data safe and access it anywhere.
+        </p>
+      </div>
+
+      {/* Import error */}
+      {importError && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+          <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors"><XCircle className="w-4 h-4" /></button>
+        </div>
+      )}
+
+      {/* Import success */}
+      {importSummary && (
+        <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+                Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
+                {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
+              </p>
+            </div>
+            <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors"><XCircle className="w-4 h-4" /></button>
+          </div>
+          {importSummary.skipped.length > 0 && (
+            <ul className="space-y-1 pl-7">
+              {importSummary.skipped.map((s, i) => (
+                <li key={i} className="text-xs text-yellow-700 dark:text-yellow-400">
+                  <span className="font-semibold">Row {s.row}:</span> {plainEnglishSkipReason(s.reason)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Link href="/animals">
+          <div className="group cursor-pointer bg-card rounded-2xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Users className="w-5 h-5 text-primary" /></div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Animals</p>
+              <p className="text-3xl font-black font-display text-primary leading-none mt-0.5">{animals.length}</p>
+            </div>
+          </div>
+        </Link>
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-5 flex items-center gap-4 opacity-60">
+          <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center shrink-0"><AlertTriangle className="w-5 h-5 text-muted-foreground" /></div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Active Alerts</p>
+            <p className="text-3xl font-black font-display text-muted-foreground leading-none mt-0.5">—</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-5 flex items-center gap-4 opacity-60">
+          <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center shrink-0"><Pill className="w-5 h-5 text-muted-foreground" /></div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Overdue Meds</p>
+            <p className="text-3xl font-black font-display text-muted-foreground leading-none mt-0.5">—</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-5 flex items-center gap-4 opacity-60">
+          <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center shrink-0"><Calendar className="w-5 h-5 text-muted-foreground" /></div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Due Soon</p>
+            <p className="text-3xl font-black font-display text-muted-foreground leading-none mt-0.5">—</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: herd mini-stats + weather teaser */}
+        <div className="space-y-6 lg:col-span-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-br from-card to-card/50 border-none shadow-md shadow-black/5">
+              <CardContent className="p-5">
+                <p className="text-sm font-semibold text-muted-foreground mb-1">Total Herd</p>
+                <p className="text-4xl font-black font-display text-primary">{animals.length}</p>
+              </CardContent>
+            </Card>
+            {(() => {
+              const speciesCards = Object.entries(speciesCounts).slice(0, 3).map(([species, count]) => (
+                <Card key={species} className="border-none shadow-md shadow-black/5">
+                  <CardContent className="p-5">
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">{species}s</p>
+                    <p className="text-3xl font-bold font-display text-foreground">{count}</p>
+                  </CardContent>
+                </Card>
+              ));
+              const fallbacks = [
+                <Card key="female" className="border-none shadow-md shadow-black/5"><CardContent className="p-5"><p className="text-sm font-semibold text-muted-foreground mb-1">Female</p><p className="text-3xl font-bold font-display text-foreground">{femaleCount}</p></CardContent></Card>,
+                <Card key="male" className="border-none shadow-md shadow-black/5"><CardContent className="p-5"><p className="text-sm font-semibold text-muted-foreground mb-1">Male</p><p className="text-3xl font-bold font-display text-foreground">{maleCount}</p></CardContent></Card>,
+              ];
+              return [...speciesCards, ...fallbacks.slice(0, 3 - speciesCards.length)];
+            })()}
+          </div>
+
+          {/* Weather teaser */}
+          <Card className="overflow-hidden shadow-lg shadow-blue-500/10 relative border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20">
+            <CardHeader className="pb-4 border-b border-blue-100 dark:border-blue-900">
+              <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                <CloudRain className="w-5 h-5" /> Ranch Weather
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-10 flex flex-col items-center text-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mb-1">
+                <Lock className="w-6 h-6 text-blue-500" />
+              </div>
+              <p className="font-bold text-foreground">Weather alerts for your ranch</p>
+              <p className="text-sm text-muted-foreground max-w-xs">Sign up to see local conditions and get automatic disease-risk alerts based on weather.</p>
+              <Link href="/login?signup=1" className="mt-2 inline-flex items-center px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow shadow-primary/20 hover:-translate-y-0.5 transition-transform">
+                Create Free Account
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right: alerts + upcoming teasers */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="flex flex-col border-red-200 dark:border-red-900 shadow-lg shadow-red-500/10 bg-red-50 dark:bg-red-900/20">
+            <CardHeader className="border-b border-red-100 dark:border-red-900 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertTriangle className="w-5 h-5" /> Action Needed
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="py-8 flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-red-500" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Health alerts require an account</p>
+              <p className="text-xs text-muted-foreground">Get automatic alerts when weather raises disease risk or medications are due.</p>
+              <Link href="/login?signup=1" className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</Link>
+            </CardContent>
+          </Card>
+
+          <Card className="flex flex-col border-blue-200 dark:border-blue-900 shadow-lg shadow-blue-500/10 bg-blue-50 dark:bg-blue-900/20">
+            <CardHeader className="border-b border-blue-100 dark:border-blue-900 pb-4">
+              <CardTitle className="text-xl flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                <Stethoscope className="w-5 h-5" /> Upcoming
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-8 flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-blue-500" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Track medications & births</p>
+              <p className="text-xs text-muted-foreground">Sign up to get reminders for upcoming treatments and expected calving dates.</p>
+              <Link href="/login?signup=1" className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -164,8 +276,7 @@ function GuestHero() {
 export default function Dashboard() {
   const { isAuthenticated } = useAuth();
 
-  // Show guest hero for unauthenticated users
-  if (!isAuthenticated) return <GuestHero />;
+  if (!isAuthenticated) return <GuestDashboard />;
 
   return <AuthDashboard />;
 }
