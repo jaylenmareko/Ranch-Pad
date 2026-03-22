@@ -10,22 +10,22 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed";
-    
+    const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed";
+
     const variants = {
-      default: "bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 active:translate-y-0 active:shadow-sm",
-      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-      outline: "border-2 border-border bg-transparent hover:bg-muted text-foreground",
+      default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+      outline: "border border-border bg-card hover:bg-muted text-foreground",
       ghost: "bg-transparent hover:bg-muted text-foreground",
       destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
-      accent: "bg-accent text-accent-foreground shadow-md shadow-accent/20 hover:-translate-y-0.5 hover:shadow-lg",
+      accent: "bg-primary/10 text-primary hover:bg-primary/15 border border-primary/20",
     };
 
     const sizes = {
-      default: "h-12 px-6 py-3",
-      sm: "h-9 px-4 text-sm",
-      lg: "h-14 px-8 text-lg rounded-2xl",
-      icon: "h-12 w-12",
+      default: "h-9 px-4 text-sm",
+      sm: "h-8 px-3 text-xs",
+      lg: "h-11 px-6 text-base",
+      icon: "h-9 w-9",
     };
 
     return (
@@ -35,7 +35,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         {...props}
       >
-        {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {children}
       </button>
     );
@@ -47,24 +47,23 @@ export function buttonVariants(options?: { variant?: ButtonProps["variant"]; siz
   const variant = options?.variant ?? "default";
   const size = options?.size ?? "default";
 
-  const baseStyles = "inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants: Record<string, string> = {
-    default: "bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 active:translate-y-0 active:shadow-sm",
-    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    outline: "border-2 border-border bg-transparent hover:bg-muted text-foreground",
+    default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+    outline: "border border-border bg-card hover:bg-muted text-foreground",
     ghost: "bg-transparent hover:bg-muted text-foreground",
     destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
-    accent: "bg-accent text-accent-foreground shadow-md shadow-accent/20 hover:-translate-y-0.5 hover:shadow-lg",
+    accent: "bg-primary/10 text-primary hover:bg-primary/15 border border-primary/20",
   };
 
   const sizes: Record<string, string> = {
-    default: "h-12 px-6 py-3",
-    sm: "h-9 px-4 text-sm",
-    lg: "h-14 px-8 text-lg rounded-2xl",
-    icon: "h-12 w-12",
+    default: "h-9 px-4 text-sm",
+    sm: "h-8 px-3 text-xs",
+    lg: "h-11 px-6 text-base",
+    icon: "h-9 w-9",
   };
 
-  const cls = [baseStyles, variants[variant] ?? variants.default, sizes[size] ?? sizes.default, options?.className].filter(Boolean).join(" ");
-  return cls;
+  return [baseStyles, variants[variant] ?? variants.default, sizes[size] ?? sizes.default, options?.className].filter(Boolean).join(" ");
 }

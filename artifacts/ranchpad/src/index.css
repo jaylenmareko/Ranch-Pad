@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,700&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -44,73 +44,73 @@
 }
 
 :root {
-  /* Warm Earth Tones / Rugged Outdoorsy Palette */
-  --background: 40 33% 98%;      /* Warm off-white #faf8f5 */
-  --foreground: 30 20% 15%;      /* Deep charcoal/brown #2d2a26 */
-  
-  --card: 0 0% 100%;             /* Pure white */
-  --card-foreground: 30 20% 15%;
-  --card-border: 35 20% 90%;
-  
-  --popover: 0 0% 100%;
-  --popover-foreground: 30 20% 15%;
-  --popover-border: 35 20% 90%;
+  /* Clean neutral palette — modern SaaS / AI product */
+  --background: 220 16% 95%;     /* Soft cool gray #EEF0F5 */
+  --foreground: 220 20% 10%;     /* Near-black with cool tone */
 
-  --primary: 140 30% 35%;        /* Forest Green #3e7354 */
+  --card: 0 0% 100%;             /* Pure white cards */
+  --card-foreground: 220 20% 10%;
+  --card-border: 220 13% 91%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 20% 10%;
+  --popover-border: 220 13% 91%;
+
+  --primary: 145 38% 32%;        /* Forest Green */
   --primary-foreground: 0 0% 100%;
-  
-  --secondary: 35 40% 90%;       /* Light Tan #f0e6d2 */
-  --secondary-foreground: 30 20% 25%;
-  
-  --muted: 40 20% 92%;           /* Warm light gray */
-  --muted-foreground: 30 10% 45%;/* Medium brown-gray */
-  
-  --accent: 15 60% 50%;          /* Rust / Terracotta #c65d3b */
-  --accent-foreground: 0 0% 100%;
-  
+
+  --secondary: 220 12% 92%;      /* Light neutral gray */
+  --secondary-foreground: 220 15% 25%;
+
+  --muted: 220 12% 92%;
+  --muted-foreground: 220 10% 50%;
+
+  --accent: 220 12% 92%;
+  --accent-foreground: 220 20% 10%;
+
   --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 35 20% 88%;
-  --input: 35 20% 85%;
-  --ring: 140 30% 35%;
+  --border: 220 13% 90%;
+  --input: 220 13% 90%;
+  --ring: 145 38% 32%;
 
-  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-sans: 'Inter', system-ui, sans-serif;
   --app-font-display: 'Fraunces', serif;
-  
-  --radius: 0.75rem; /* 12px */
+
+  --radius: 0.625rem; /* 10px */
 }
 
 .dark {
-  --background: 30 20% 10%;
-  --foreground: 40 33% 96%;
-  
-  --card: 30 18% 14%;
-  --card-foreground: 40 33% 96%;
-  --card-border: 30 15% 22%;
-  
-  --popover: 30 18% 14%;
-  --popover-foreground: 40 33% 96%;
-  --popover-border: 30 15% 22%;
+  --background: 222 25% 10%;
+  --foreground: 220 15% 94%;
 
-  --primary: 140 25% 45%;
+  --card: 222 22% 14%;
+  --card-foreground: 220 15% 94%;
+  --card-border: 222 18% 22%;
+
+  --popover: 222 22% 14%;
+  --popover-foreground: 220 15% 94%;
+  --popover-border: 222 18% 22%;
+
+  --primary: 145 32% 45%;
   --primary-foreground: 0 0% 100%;
-  
-  --secondary: 30 15% 22%;
-  --secondary-foreground: 40 33% 96%;
-  
-  --muted: 30 15% 18%;
-  --muted-foreground: 40 10% 65%;
-  
-  --accent: 15 55% 55%;
-  --accent-foreground: 0 0% 100%;
-  
+
+  --secondary: 222 18% 20%;
+  --secondary-foreground: 220 15% 94%;
+
+  --muted: 222 18% 18%;
+  --muted-foreground: 220 10% 60%;
+
+  --accent: 222 18% 20%;
+  --accent-foreground: 220 15% 94%;
+
   --destructive: 0 65% 55%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 30 15% 22%;
-  --input: 30 15% 25%;
-  --ring: 140 25% 45%;
+  --border: 222 18% 22%;
+  --input: 222 18% 24%;
+  --ring: 145 32% 45%;
 }
 
 @layer base {
@@ -119,27 +119,33 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground selection:bg-primary/20 selection:text-primary;
+    @apply font-sans antialiased bg-background text-foreground;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    selection-background-color: hsl(var(--primary) / 0.15);
+    selection-color: hsl(var(--primary));
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight text-foreground;
+    @apply font-sans font-semibold tracking-tight text-foreground;
+    line-height: 1.25;
   }
 }
 
-/* Custom Scrollbar for a more premium feel */
+/* Smooth scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full border-2 border-solid border-transparent bg-clip-padding;
+  @apply rounded-full;
+  background: hsl(var(--muted-foreground) / 0.25);
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
+  background: hsl(var(--muted-foreground) / 0.4);
 }
 
 /* Form inputs remove clear button */
@@ -147,7 +153,7 @@ input[type="search"]::-webkit-search-cancel-button {
   @apply hidden;
 }
 
-/* Hide scrollbar but keep scroll functionality */
+/* Hide scrollbar utility */
 .hide-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -155,4 +161,3 @@ input[type="search"]::-webkit-search-cancel-button {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
