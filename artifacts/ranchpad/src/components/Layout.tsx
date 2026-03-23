@@ -28,10 +28,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     href === "/" ? location === "/" : location.startsWith(href);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <div className="h-screen overflow-hidden bg-background flex flex-col md:flex-row">
 
       {/* ── Desktop Sidebar ─────────────────────────────────────────────── */}
-      <aside className="hidden md:flex w-56 flex-col border-r border-border bg-card z-10">
+      <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-card z-10 h-full">
         <Link href="/" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
             <HoofIcon className="w-4 h-4" />
@@ -146,7 +146,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </Sheet>
 
       {/* ── Main Content ────────────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col max-w-[100vw] overflow-x-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
         <header className="md:hidden flex items-center gap-2 px-3 h-12 bg-card border-b border-border sticky top-0 z-20">
           <button
