@@ -1,4 +1,4 @@
-import { Home, PawPrint, Bell, Settings, LogOut, AlertTriangle, CloudRain, Plus, Upload, Users, Calendar, Pill } from "lucide-react";
+import { Home, Warehouse, Bell, Settings, LogOut, AlertTriangle, CloudRain, Plus, Upload, Users, Calendar, Pill } from "lucide-react";
 
 const BG = "#1C3F3A";
 const SURFACE = "#1E4440";
@@ -22,7 +22,7 @@ function Sidebar() {
     <div style={{ width: 200, background: SURFACE, borderRight: `1px solid ${BORDER}`, display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ padding: "20px 16px 16px", display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 28, height: 28, background: GREEN, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ color: WHITE, fontSize: 14 }}>🐾</span>
+          <Warehouse size={16} color={WHITE} />
         </div>
         <span style={{ color: WHITE, fontWeight: 800, fontSize: 16, fontFamily: "system-ui" }}>RanchPad</span>
       </div>
