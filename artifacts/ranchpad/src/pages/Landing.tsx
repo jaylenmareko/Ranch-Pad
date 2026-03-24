@@ -17,7 +17,7 @@ export default function Landing() {
     <div
       className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center relative"
       style={{
-        backgroundImage: "url('/cattle-bg.png')",
+        backgroundImage: "url('/pasture-bg.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
