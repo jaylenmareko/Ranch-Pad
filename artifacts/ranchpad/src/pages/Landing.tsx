@@ -23,9 +23,9 @@ export default function Landing() {
       }}
     >
       {/* Base darkening overlay */}
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/20" />
       {/* Radial scrim — extra darkness centred on the text block */}
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 65% at 50% 48%, rgba(0,0,0,0.45) 0%, transparent 100%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 65% at 50% 48%, rgba(0,0,0,0.28) 0%, transparent 100%)" }} />
 
       <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
         {/* Logo */}
