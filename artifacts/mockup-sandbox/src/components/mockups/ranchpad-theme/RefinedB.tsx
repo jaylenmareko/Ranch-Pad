@@ -72,7 +72,7 @@ function StatCard({ icon: Icon, label, value, sub, accentColor }: { icon: any; l
         <div>
           <p style={{ color: DIM, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{label}</p>
           <p style={{ color: WHITE, fontSize: 36, fontWeight: 900, margin: "4px 0 0", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</p>
-          {sub && <p style={{ color: DIM, fontSize: 10, margin: "4px 0 0" }}>{sub}</p>}
+          {sub && <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 500, margin: "5px 0 0" }}>{sub}</p>}
         </div>
         <div style={{ width: 36, height: 36, borderRadius: 8, background: `${accentColor}18`, border: `1px solid ${accentColor}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon size={16} color={accentColor} />
@@ -129,9 +129,9 @@ export function RefinedB() {
                   { text: "Expected calving: Bessie (#A14) in 6 days", sev: GREEN, time: "2d ago" },
                 ].map(({ text, sev, time }) => (
                   <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 16px", borderBottom: `1px solid rgba(43,85,80,0.5)` }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: sev, flexShrink: 0, marginTop: 4 }} />
-                    <span style={{ color: "rgba(255,255,255,0.78)", fontSize: 12, flex: 1, lineHeight: 1.45 }}>{text}</span>
-                    <span style={{ color: DIM, fontSize: 10, flexShrink: 0, marginTop: 2 }}>{time}</span>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: sev, flexShrink: 0, marginTop: 5 }} />
+                    <span style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 500, flex: 1, lineHeight: 1.45 }}>{text}</span>
+                    <span style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, flexShrink: 0, marginTop: 2 }}>{time}</span>
                   </div>
                 ))}
               </div>
@@ -149,20 +149,20 @@ export function RefinedB() {
                   <div style={{ paddingTop: 6 }}>
                     <p style={{ color: WHITE, fontWeight: 600, fontSize: 14, margin: 0 }}>Partly Cloudy</p>
                     <div style={{ display: "flex", gap: 12, marginTop: 5 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: DIM, fontSize: 11 }}>
-                        <Thermometer size={11} /> 78% humidity
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 500 }}>
+                        <Thermometer size={12} /> 78% humidity
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: DIM, fontSize: 11 }}>
-                        <Wind size={11} /> 12 mph NW
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 500 }}>
+                        <Wind size={12} /> 12 mph NW
                       </div>
                     </div>
                   </div>
                 </div>
-                <div style={{ background: `rgba(214,75,58,0.12)`, border: `1px solid rgba(214,75,58,0.3)`, borderRadius: 7, padding: "9px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <AlertTriangle size={13} color={RED} />
+                <div style={{ background: `rgba(214,75,58,0.18)`, border: `1px solid rgba(214,75,58,0.45)`, borderRadius: 7, padding: "10px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <AlertTriangle size={15} color={RED} style={{ flexShrink: 0, marginTop: 2 }} />
                   <div>
-                    <p style={{ color: RED, fontSize: 11.5, fontWeight: 700, margin: 0 }}>High disease risk</p>
-                    <p style={{ color: "rgba(214,75,58,0.7)", fontSize: 10, margin: "1px 0 0" }}>Monitor herd closely — humidity above threshold</p>
+                    <p style={{ color: WHITE, fontSize: 14, fontWeight: 700, margin: 0 }}>High disease risk</p>
+                    <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 500, margin: "3px 0 0" }}>Monitor herd closely — humidity above threshold</p>
                   </div>
                 </div>
               </div>
@@ -196,7 +196,7 @@ export function RefinedB() {
                       color: WHITE, fontSize: 9, fontWeight: 800, borderRadius: 5, padding: "2px 6px", textTransform: "uppercase", letterSpacing: "0.05em"
                     }}>{r.due}</span>
                   </div>
-                  <p style={{ color: DIM, fontSize: 11, margin: "4px 0 0" }}>{r.treatment}</p>
+                  <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 13, fontWeight: 500, margin: "4px 0 0" }}>{r.treatment}</p>
                 </div>
               ))}
             </div>
