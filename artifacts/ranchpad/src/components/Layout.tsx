@@ -62,7 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {isAuthenticated ? (
             <button
               onClick={() => { resetNavigation(); logout(); }}
-              className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/15 hover:text-destructive-foreground transition-colors"
+              className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Sign Out
@@ -120,7 +120,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {isAuthenticated ? (
               <button
                 onClick={() => { setMenuOpen(false); resetNavigation(); logout(); }}
-                className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/15 hover:text-destructive-foreground transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out

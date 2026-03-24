@@ -95,21 +95,21 @@ function GuestDashboard() {
       {/* Action Banner */}
       <div className="rounded-2xl bg-primary px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg shadow-primary/20">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-black text-primary-foreground tracking-tight whitespace-nowrap">Dashboard</h1>
-          <p className="text-primary-foreground/70 text-sm font-medium mt-0.5">Start by adding your animals below</p>
+          <h1 className="text-xl font-black text-white tracking-tight whitespace-nowrap">Dashboard</h1>
+          <p className="text-white/70 text-sm font-medium mt-0.5">Start by adding your animals below</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="inline-flex items-center justify-center gap-2 h-11 px-4 font-semibold text-sm bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 transition-colors whitespace-normal text-left disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl font-semibold text-sm bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors whitespace-normal text-left disabled:opacity-60"
           >
             {importing
               ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
               : <><Upload className="w-4 h-4 shrink-0" />Already have a list? Upload your CSV file here</>
             }
           </button>
-          <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-11 px-6 font-bold text-sm bg-primary-foreground text-primary hover:opacity-90 transition-opacity whitespace-nowrap shrink-0">
+          <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl font-bold text-sm bg-white text-primary hover:bg-white/90 transition-colors shadow-md whitespace-nowrap shrink-0">
             <PlusCircle className="w-4 h-4" />
             Add Animal
           </Link>
@@ -133,30 +133,30 @@ function GuestDashboard() {
 
       {/* Import error */}
       {importError && (
-        <div className="flex items-start gap-3 p-4 border border-destructive/40 bg-destructive/10">
-          <XCircle className="w-5 h-5 shrink-0 text-destructive-foreground mt-0.5" />
-          <p className="flex-1 text-sm font-semibold text-foreground">{importError}</p>
-          <button onClick={() => setImportError(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"><XCircle className="w-4 h-4" /></button>
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+          <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors"><XCircle className="w-4 h-4" /></button>
         </div>
       )}
 
       {/* Import success */}
       {importSummary && (
-        <div className="p-4 border border-border bg-secondary space-y-3">
+        <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 shrink-0 text-primary-foreground" />
-              <p className="text-sm font-semibold text-foreground">
+              <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
                 Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
                 {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
               </p>
             </div>
-            <button onClick={() => setImportSummary(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"><XCircle className="w-4 h-4" /></button>
+            <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors"><XCircle className="w-4 h-4" /></button>
           </div>
           {importSummary.skipped.length > 0 && (
             <ul className="space-y-1 pl-7">
               {importSummary.skipped.map((s, i) => (
-                <li key={i} className="text-xs text-muted-foreground">
+                <li key={i} className="text-xs text-yellow-700 dark:text-yellow-400">
                   <span className="font-semibold">Row {s.row}:</span> {plainEnglishSkipReason(s.reason)}
                 </li>
               ))}
@@ -423,21 +423,21 @@ function AuthDashboard() {
       {/* Action Banner */}
       <div className="rounded-2xl bg-primary px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg shadow-primary/20">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-black text-primary-foreground tracking-tight whitespace-nowrap">Dashboard</h1>
-          <p className="text-primary-foreground/70 text-sm font-medium mt-0.5">Manage your herd</p>
+          <h1 className="text-xl font-black text-white tracking-tight whitespace-nowrap">Dashboard</h1>
+          <p className="text-white/70 text-sm font-medium mt-0.5">Manage your herd</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="inline-flex items-center justify-center gap-2 h-11 px-4 font-semibold text-sm bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 transition-colors whitespace-normal text-left disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl font-semibold text-sm bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors whitespace-normal text-left disabled:opacity-60"
           >
             {importing
               ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
               : <><Upload className="w-4 h-4 shrink-0" />Already have a list? Upload your CSV file here</>
             }
           </button>
-          <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-11 px-6 font-bold text-sm bg-primary-foreground text-primary hover:opacity-90 transition-opacity whitespace-nowrap shrink-0">
+          <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl font-bold text-sm bg-white text-primary hover:bg-white/90 transition-colors shadow-md whitespace-nowrap shrink-0">
             <PlusCircle className="w-4 h-4" />
             Add Animal
           </Link>
@@ -449,30 +449,30 @@ function AuthDashboard() {
 
       {/* Import error */}
       {importError && (
-        <div className="flex items-start gap-3 p-4 border border-destructive/40 bg-destructive/10">
-          <XCircle className="w-5 h-5 shrink-0 text-destructive-foreground mt-0.5" />
-          <p className="flex-1 text-sm font-semibold text-foreground">{importError}</p>
-          <button onClick={() => setImportError(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"><XCircle className="w-4 h-4" /></button>
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+          <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors"><XCircle className="w-4 h-4" /></button>
         </div>
       )}
 
       {/* Import success */}
       {importSummary && (
-        <div className="p-4 border border-border bg-secondary space-y-3">
+        <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 shrink-0 text-primary-foreground" />
-              <p className="text-sm font-semibold text-foreground">
+              <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
                 Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
                 {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
               </p>
             </div>
-            <button onClick={() => setImportSummary(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"><XCircle className="w-4 h-4" /></button>
+            <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors"><XCircle className="w-4 h-4" /></button>
           </div>
           {importSummary.skipped.length > 0 && (
             <ul className="space-y-1 pl-7">
               {importSummary.skipped.map((s, i) => (
-                <li key={i} className="text-xs text-muted-foreground">
+                <li key={i} className="text-xs text-yellow-700 dark:text-yellow-400">
                   <span className="font-semibold">Row {s.row}:</span> {plainEnglishSkipReason(s.reason)}
                 </li>
               ))}

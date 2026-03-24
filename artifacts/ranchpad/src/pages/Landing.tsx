@@ -56,7 +56,7 @@ export default function Landing() {
         <div className="flex justify-center w-full">
           <button
             onClick={() => { markNavigated(); navigate("/"); }}
-            className="inline-flex items-center justify-center h-12 px-10 font-bold text-base bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            className="inline-flex items-center justify-center h-12 px-10 rounded-xl font-bold text-base bg-white text-green-800 hover:bg-white/90 transition-colors shadow-md"
           >
             Build Your Ranch
           </button>
