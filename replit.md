@@ -13,8 +13,10 @@ A full-stack livestock management app for modern ranches. Features include anima
 
 ### Frontend (`artifacts/ranchpad`)
 - React 19 + Vite + TypeScript
-- Tailwind CSS v4 with warm earth/ranch color palette (forest green, cream, terracotta)
-- Fonts: DM Sans (body) + Rokkitt (display)
+- Tailwind CSS v4 with **Refined B dark teal theme**: BG `#162E2A`, Sidebar `#112622`, Card `#1C3C37`, Border `#2B5550`, Green `#42A96E`, Red `#D64B3A`; all driven by CSS variables in `index.css`
+- Fonts: Inter (body, `--app-font-sans`) + Fraunces (brand/display, `--app-font-display`)
+- Brand logo: Warehouse icon in green pill badge + "RanchPad" in Fraunces
+- Sidebar active state: green left-bar indicator + `bg-primary/10 text-primary`
 - Routing: `wouter` with base path from `import.meta.env.BASE_URL`
 - State: `@tanstack/react-query` via generated hooks
 - Auth: JWT token stored in `localStorage` as `ranchpad_token`

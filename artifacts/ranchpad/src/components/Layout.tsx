@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, PawPrint, Bell, LogOut, Settings, Menu, LogIn, UserPlus } from "lucide-react";
-import { HoofIcon } from "@/components/HoofIcon";
+import { Home, PawPrint, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +13,31 @@ const NAV_ITEMS = [
   { href: "/alerts", icon: Bell, label: "Alerts" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
+
+function NavLink({
+  href, icon: Icon, label, active, onClick,
+}: {
+  href: string; icon: React.ElementType; label: string; active: boolean; onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(
+        "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
+        active
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+      )}
+    >
+      {active && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-primary" />
+      )}
+      <Icon className={cn("w-4 h-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
+      {label}
+    </Link>
+  );
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -31,30 +55,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="h-screen overflow-hidden bg-background flex flex-col md:flex-row">
 
       {/* ── Desktop Sidebar ─────────────────────────────────────────────── */}
-      <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-card z-10 h-full">
+      <aside
+        className="hidden md:flex w-56 shrink-0 flex-col border-r border-border z-10 h-full"
+        style={{ background: "hsl(var(--sidebar))" }}
+      >
+        {/* Brand */}
         <Link href="/" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-            <HoofIcon className="w-4 h-4" />
+            <Warehouse className="w-4 h-4" />
           </div>
           <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
         </Link>
 
         <nav className="flex-1 px-3 pb-4 flex flex-col gap-0.5">
           {NAV_ITEMS.map((item) => (
-            <Link
+            <NavLink
               key={item.href}
               href={item.href}
-              onClick={() => markNavigated()}
-              className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
-                isActive(item.href)
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <item.icon className={cn("w-4 h-4 shrink-0", isActive(item.href) ? "text-primary" : "text-muted-foreground")} />
-              {item.label}
-            </Link>
+              icon={item.icon}
+              label={item.label}
+              active={isActive(item.href)}
+              onClick={markNavigated}
+            />
           ))}
         </nav>
 
@@ -62,7 +84,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {isAuthenticated ? (
             <button
               onClick={() => { resetNavigation(); logout(); }}
-              className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
+              className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Sign Out
@@ -71,13 +93,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex flex-col gap-2">
               <button
                 onClick={openSignup}
-                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30"
               >
                 <UserPlus className="w-3.5 h-3.5" /> Sign Up Free
               </button>
               <button
                 onClick={openLogin}
-                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors"
+                className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-white/5 transition-colors"
               >
                 <LogIn className="w-3.5 h-3.5" /> Log In
               </button>
@@ -88,31 +110,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Mobile Slide-Out Menu ───────────────────────────────────────── */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="left" className="w-64 p-0 flex flex-col bg-card">
+        <SheetContent
+          side="left"
+          className="w-64 p-0 flex flex-col border-r border-border"
+          style={{ background: "hsl(var(--sidebar))" }}
+        >
           <SheetTitle className="sr-only">Navigation menu</SheetTitle>
           <div className="px-5 py-5 border-b border-border flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-              <HoofIcon className="w-4 h-4" />
+              <Warehouse className="w-4 h-4" />
             </div>
             <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
           </div>
 
           <nav className="flex-1 px-3 py-3 flex flex-col gap-0.5">
             {NAV_ITEMS.map((item) => (
-              <Link
+              <NavLink
                 key={item.href}
                 href={item.href}
+                icon={item.icon}
+                label={item.label}
+                active={isActive(item.href)}
                 onClick={() => { markNavigated(); setMenuOpen(false); }}
-                className={cn(
-                  "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
-                  isActive(item.href)
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <item.icon className={cn("w-4 h-4 shrink-0", isActive(item.href) ? "text-primary" : "text-muted-foreground")} />
-                {item.label}
-              </Link>
+              />
             ))}
           </nav>
 
@@ -120,7 +140,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {isAuthenticated ? (
               <button
                 onClick={() => { setMenuOpen(false); resetNavigation(); logout(); }}
-                className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
@@ -129,13 +149,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => { setMenuOpen(false); openSignup(); }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30"
                 >
                   <UserPlus className="w-3.5 h-3.5" /> Sign Up Free
                 </button>
                 <button
                   onClick={() => { setMenuOpen(false); openLogin(); }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted transition-colors"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-white/5 transition-colors"
                 >
                   <LogIn className="w-3.5 h-3.5" /> Log In
                 </button>
@@ -148,17 +168,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Main Content ────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className="md:hidden flex items-center gap-2 px-3 h-12 bg-card border-b border-border sticky top-0 z-20">
+        <header className="md:hidden flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20" style={{ background: "hsl(var(--sidebar))" }}>
           <button
             onClick={() => setMenuOpen(true)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0"
             aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />
           </button>
 
           <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
-            <HoofIcon className="w-5 h-5 text-primary" />
+            <Warehouse className="w-5 h-5 text-primary" />
             <span className="font-display font-bold text-base text-foreground">RanchPad</span>
           </Link>
         </header>
