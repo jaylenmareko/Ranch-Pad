@@ -5,5 +5,8 @@ export const modules: ModuleMap = {
   "./components/mockups/ranchpad-bg/CurrentLook.tsx": () => import("../components/mockups/ranchpad-bg/CurrentLook.tsx"),
   "./components/mockups/ranchpad-theme/DarkWhiteTheme.tsx": () => import("../components/mockups/ranchpad-theme/DarkWhiteTheme.tsx"),
   "./components/mockups/ranchpad-theme/RefinedA.tsx": () => import("../components/mockups/ranchpad-theme/RefinedA.tsx"),
-  "./components/mockups/ranchpad-theme/RefinedB.tsx": () => import("../components/mockups/ranchpad-theme/RefinedB.tsx")
+  "./components/mockups/ranchpad-theme/RefinedB.tsx": () => import("../components/mockups/ranchpad-theme/RefinedB.tsx"),
+  "./components/mockups/ranchpad-theme/RefinedB_Alerts.tsx": () => import("../components/mockups/ranchpad-theme/RefinedB_Alerts.tsx"),
+  "./components/mockups/ranchpad-theme/RefinedB_Animals.tsx": () => import("../components/mockups/ranchpad-theme/RefinedB_Animals.tsx"),
+  "./components/mockups/ranchpad-theme/RefinedB_Settings.tsx": () => import("../components/mockups/ranchpad-theme/RefinedB_Settings.tsx")
 };
