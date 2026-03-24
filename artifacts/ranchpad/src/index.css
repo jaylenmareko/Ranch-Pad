@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -20,16 +20,16 @@
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-  
+
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  
+
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-  
+
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  
+
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
@@ -44,73 +44,43 @@
 }
 
 :root {
-  /* Clean neutral palette — modern SaaS / AI product */
-  --background: 220 16% 95%;     /* Soft cool gray #EEF0F5 */
-  --foreground: 220 20% 10%;     /* Near-black with cool tone */
+  /* Dark earthy ranch palette */
+  --background: 171 38% 18%;       /* #1C3F3A */
+  --foreground: 45 13% 75%;        /* #C8C4B8 — warm body text */
 
-  --card: 0 0% 100%;             /* Pure white cards */
-  --card-foreground: 220 20% 10%;
-  --card-border: 220 13% 91%;
+  --card: 174 39% 19%;             /* #1E4440 — slightly lighter surface */
+  --card-foreground: 45 13% 75%;
+  --card-border: 173 34% 25%;      /* #2A5550 */
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 220 20% 10%;
-  --popover-border: 220 13% 91%;
+  --popover: 174 39% 19%;
+  --popover-foreground: 45 13% 75%;
+  --popover-border: 173 34% 25%;
 
-  --primary: 145 38% 32%;        /* Forest Green */
-  --primary-foreground: 0 0% 100%;
+  --primary: 0 61% 26%;            /* #6B1A1A — dark rust */
+  --primary-foreground: 33 42% 71%; /* #D4B896 — warm cream */
 
-  --secondary: 220 12% 92%;      /* Light neutral gray */
-  --secondary-foreground: 220 15% 25%;
+  --secondary: 173 34% 25%;        /* #2A5550 */
+  --secondary-foreground: 33 42% 71%;
 
-  --muted: 220 12% 92%;
-  --muted-foreground: 220 10% 50%;
+  --muted: 172 36% 22%;
+  --muted-foreground: 45 10% 55%;
 
-  --accent: 220 12% 92%;
-  --accent-foreground: 220 20% 10%;
+  --accent: 173 34% 25%;
+  --accent-foreground: 33 42% 71%;
 
-  --destructive: 0 70% 50%;
-  --destructive-foreground: 0 0% 100%;
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 33 42% 71%;
 
-  --border: 220 13% 90%;
-  --input: 220 13% 90%;
-  --ring: 145 38% 32%;
+  --border: 173 34% 25%;           /* #2A5550 */
+  --input: 173 34% 25%;
+  --ring: 0 61% 26%;
 
-  --app-font-sans: 'Inter', system-ui, sans-serif;
-  --app-font-display: 'Fraunces', serif;
+  --heading-foreground: 33 42% 71%; /* #D4B896 — warm heading cream */
 
-  --radius: 0.625rem; /* 10px */
-}
+  --app-font-sans: 'Lora', Georgia, serif;
+  --app-font-display: 'Playfair Display', Georgia, serif;
 
-.dark {
-  --background: 222 25% 10%;
-  --foreground: 220 15% 94%;
-
-  --card: 222 22% 14%;
-  --card-foreground: 220 15% 94%;
-  --card-border: 222 18% 22%;
-
-  --popover: 222 22% 14%;
-  --popover-foreground: 220 15% 94%;
-  --popover-border: 222 18% 22%;
-
-  --primary: 145 32% 45%;
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 222 18% 20%;
-  --secondary-foreground: 220 15% 94%;
-
-  --muted: 222 18% 18%;
-  --muted-foreground: 220 10% 60%;
-
-  --accent: 222 18% 20%;
-  --accent-foreground: 220 15% 94%;
-
-  --destructive: 0 65% 55%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border: 222 18% 22%;
-  --input: 222 18% 24%;
-  --ring: 145 32% 45%;
+  --radius: 0rem;
 }
 
 @layer base {
@@ -121,18 +91,17 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     line-height: 1.6;
-    letter-spacing: -0.01em;
-    selection-background-color: hsl(var(--primary) / 0.15);
-    selection-color: hsl(var(--primary));
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans font-semibold tracking-tight text-foreground;
+    font-family: var(--app-font-display);
+    color: hsl(var(--heading-foreground));
     line-height: 1.25;
+    font-weight: 700;
   }
 }
 
-/* Smooth scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -141,11 +110,10 @@
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full;
-  background: hsl(var(--muted-foreground) / 0.25);
+  background: hsl(var(--muted-foreground) / 0.3);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 /* Form inputs remove clear button */
