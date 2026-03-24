@@ -1,15 +1,19 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, PawPrint, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse } from "lucide-react";
+import { Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useNavigation } from "@/contexts/navigation-context";
 
+function CowIcon({ className }: { className?: string }) {
+  return <span className={className} style={{ fontSize: "1rem", lineHeight: 1, display: "inline-flex", alignItems: "center" }}>🐄</span>;
+}
+
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Dashboard" },
-  { href: "/animals", icon: PawPrint, label: "Animals" },
+  { href: "/animals", icon: CowIcon, label: "Animals" },
   { href: "/alerts", icon: Bell, label: "Alerts" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
