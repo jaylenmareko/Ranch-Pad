@@ -22,21 +22,24 @@ export default function Landing() {
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-black/25" />
+      {/* Base darkening overlay */}
+      <div className="absolute inset-0 bg-black/40" />
+      {/* Radial scrim — extra darkness centred on the text block */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 65% at 50% 48%, rgba(0,0,0,0.45) 0%, transparent 100%)" }} />
 
       <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
-            <HoofIcon className="w-7 h-7 text-white" />
+            <HoofIcon className="w-7 h-7 text-white" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} />
           </div>
-          <span className="font-display font-bold text-4xl text-white drop-shadow tracking-tight">
+          <span className="font-display font-bold text-4xl text-white tracking-tight" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}>
             RanchPad
           </span>
         </div>
 
         {/* Tagline */}
-        <p className="text-base font-semibold text-white/90 mb-8 drop-shadow tracking-wide uppercase">
+        <p className="text-base font-semibold text-white mb-8 tracking-wide uppercase" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
           Livestock Management
         </p>
 
@@ -44,8 +47,8 @@ export default function Landing() {
         <ul className="flex flex-col gap-3 mb-10 text-left w-full">
           {BULLETS.map((point) => (
             <li key={point} className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5 drop-shadow" />
-              <span className="text-white/90 font-medium text-sm leading-relaxed drop-shadow">
+              <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} />
+              <span className="text-white font-medium text-sm leading-relaxed" style={{ textShadow: "0 1px 5px rgba(0,0,0,0.85)" }}>
                 {point}
               </span>
             </li>
