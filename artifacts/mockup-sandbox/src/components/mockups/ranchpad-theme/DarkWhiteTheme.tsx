@@ -14,7 +14,7 @@ const RED_DIM = "rgba(192,57,43,0.18)";
 function Sidebar() {
   const items = [
     { icon: Home, label: "Dashboard", active: true },
-    { icon: PawPrint, label: "Animals" },
+    { icon: Warehouse, label: "Animals" },
     { icon: Bell, label: "Alerts" },
     { icon: Settings, label: "Settings" },
   ];
