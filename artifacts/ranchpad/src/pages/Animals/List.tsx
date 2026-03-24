@@ -326,7 +326,7 @@ function GuestAnimalList() {
       {guestAnimals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
-            <PawPrint className="w-10 h-10 text-primary/50" />
+            <span className="text-4xl leading-none">🐄</span>
           </div>
           <h2 className="font-bold text-xl text-foreground mb-2">No animals yet</h2>
           <p className="text-muted-foreground text-sm max-w-xs mb-6 leading-relaxed">
@@ -711,7 +711,7 @@ export default function AnimalList() {
       ) : grouped.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-3xl border border-border border-dashed">
           <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-10 h-10 text-muted-foreground" />
+            <span className="text-4xl leading-none">🐄</span>
           </div>
           <h3 className="text-xl font-bold text-foreground">No animals found</h3>
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
