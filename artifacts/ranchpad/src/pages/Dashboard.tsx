@@ -14,6 +14,11 @@ import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
+const INVARIANT_PLURAL = new Set(["Cattle", "Sheep", "Bison", "Deer"]);
+function pluralizeSpecies(species: string) {
+  return INVARIANT_PLURAL.has(species) ? species : `${species}s`;
+}
+
 // ─── Guest Dashboard ──────────────────────────────────────────────────────────
 
 function GuestDashboard() {
@@ -208,7 +213,7 @@ function GuestDashboard() {
           const speciesCards = Object.entries(speciesCounts).slice(0, 3).map(([species, count]) => (
             <Card key={species} className="border-none shadow-md shadow-black/5">
               <CardContent className="p-5">
-                <p className="text-sm font-semibold text-muted-foreground mb-1">{species}s</p>
+                <p className="text-sm font-semibold text-muted-foreground mb-1">{pluralizeSpecies(species)}</p>
                 <p className="text-3xl font-bold font-display text-foreground">{count}</p>
               </CardContent>
             </Card>
@@ -540,7 +545,7 @@ function AuthDashboard() {
               const speciesCards = Object.entries(speciesCounts).slice(0, 3).map(([species, count]) => (
                 <Card key={species} className="border-none shadow-md shadow-black/5">
                   <CardContent className="p-5">
-                    <p className="text-sm font-semibold text-muted-foreground mb-1">{species}s</p>
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">{pluralizeSpecies(species)}</p>
                     <p className="text-3xl font-bold font-display text-foreground">{count}</p>
                   </CardContent>
                 </Card>
