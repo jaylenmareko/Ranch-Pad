@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, Search, X, Check } from "lucide-react";
 import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals, getGetAnimalQueryKey, type Animal } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,6 +50,10 @@ const SEX_OPTIONS: Record<string, Array<{ value: string; label: string }>> = {
   ],
 };
 
+const FEMALE_SEXES = new Set([
+  "Heifer", "Cow", "Ewe", "Doe", "Gilt", "Sow", "Filly", "Mare", "Female",
+]);
+
 // ─── Form schema ──────────────────────────────────────────────────────────────
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -59,10 +63,8 @@ const formSchema = z.object({
   sex: z.string().min(1, "Sex is required"),
   dateOfBirth: z.string().nullable().optional(),
   expectedDueDate: z.string().nullable().optional(),
-  // Parents — pick from herd
   sireId: z.number().nullable().optional(),
   damId: z.number().nullable().optional(),
-  // Parents — custom text (when not in herd)
   sireName: z.string().nullable().optional(),
   damName: z.string().nullable().optional(),
 });
@@ -80,10 +82,10 @@ const chevron = (
 );
 
 // ─── Parent selector sub-component ───────────────────────────────────────────
+type ParentMode = "unknown" | "manual" | "herd";
+
 function ParentField({
   label,
-  idField,
-  nameField,
   animals,
   idValue,
   nameValue,
@@ -91,46 +93,120 @@ function ParentField({
   onNameChange,
 }: {
   label: string;
-  idField: string;
-  nameField: string;
   animals: Animal[];
   idValue: number | null | undefined;
   nameValue: string | null | undefined;
   onIdChange: (v: number | null) => void;
   onNameChange: (v: string) => void;
 }) {
-  const mode = idValue != null ? "herd" : nameValue ? "custom" : "none";
+  const [mode, setMode] = useState<ParentMode>(() =>
+    idValue != null ? "herd" : nameValue ? "manual" : "unknown"
+  );
+  const [search, setSearch] = useState("");
+
+  // Sync mode when parent resets form data (e.g. during edit load)
+  useEffect(() => {
+    if (idValue != null) setMode("herd");
+    else if (nameValue) setMode("manual");
+  }, [idValue, nameValue]);
+
+  const selectedAnimal = idValue != null ? animals.find(a => a.id === idValue) : null;
+  const filtered = animals.filter(a =>
+    a.name.toLowerCase().includes(search.toLowerCase()) ||
+    (a.tagNumber ?? "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  function selectMode(next: ParentMode) {
+    setMode(next);
+    if (next === "unknown") { onIdChange(null); onNameChange(""); }
+    if (next === "manual") { onIdChange(null); }
+    if (next === "herd") { onNameChange(""); setSearch(""); }
+  }
+
+  const btnBase = "flex-1 h-9 px-3 rounded-lg text-xs font-semibold border transition-colors";
+  const btnActive = "bg-primary text-primary-foreground border-primary";
+  const btnInactive = "bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground";
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <Label>{label}</Label>
-      <div className="relative">
-        <select
-          value={mode === "herd" ? String(idValue) : mode === "custom" ? "custom" : ""}
-          onChange={e => {
-            const v = e.target.value;
-            if (v === "") { onIdChange(null); onNameChange(""); }
-            else if (v === "custom") { onIdChange(null); onNameChange(nameValue || ""); }
-            else { onIdChange(parseInt(v, 10)); onNameChange(""); }
-          }}
-          className={selectClass}
-        >
-          <option value="">Unknown / Not recorded</option>
-          <option value="custom">Enter name manually…</option>
-          {animals.map(a => (
-            <option key={a.id} value={String(a.id)}>
-              {a.name}{a.tagNumber ? ` (#${a.tagNumber})` : ""}
-            </option>
-          ))}
-        </select>
-        {chevron}
+
+      {/* Mode selector */}
+      <div className="flex gap-2">
+        <button type="button" onClick={() => selectMode("unknown")} className={`${btnBase} ${mode === "unknown" ? btnActive : btnInactive}`}>
+          Unknown / Other
+        </button>
+        <button type="button" onClick={() => selectMode("manual")} className={`${btnBase} ${mode === "manual" ? btnActive : btnInactive}`}>
+          Enter Manually
+        </button>
+        <button type="button" onClick={() => selectMode("herd")} className={`${btnBase} ${mode === "herd" ? btnActive : btnInactive}`}>
+          From Herd
+        </button>
       </div>
-      {mode === "custom" && (
+
+      {/* Manual name input */}
+      {mode === "manual" && (
         <Input
           placeholder={`Enter ${label.toLowerCase()} name`}
           value={nameValue || ""}
           onChange={e => onNameChange(e.target.value)}
         />
+      )}
+
+      {/* Herd directory browser */}
+      {mode === "herd" && (
+        <div className="rounded-xl border border-border bg-muted/40 overflow-hidden">
+          {selectedAnimal ? (
+            <div className="flex items-center gap-3 px-4 py-3">
+              <Check className="w-4 h-4 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{selectedAnimal.name}</p>
+                {selectedAnimal.tagNumber && <p className="text-xs text-muted-foreground">#{selectedAnimal.tagNumber}</p>}
+              </div>
+              <button type="button" onClick={() => { onIdChange(null); setSearch(""); }} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+                <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search herd by name or tag…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                />
+              </div>
+              <ul className="max-h-44 overflow-y-auto divide-y divide-border">
+                {filtered.length === 0 ? (
+                  <li className="px-4 py-3 text-sm text-muted-foreground text-center">
+                    {animals.length === 0 ? "No other animals in herd yet." : "No matches found."}
+                  </li>
+                ) : (
+                  filtered.map(a => (
+                    <li key={a.id}>
+                      <button
+                        type="button"
+                        onClick={() => { onIdChange(a.id); setSearch(""); }}
+                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-accent transition-colors flex items-center gap-3"
+                      >
+                        <span className="font-semibold text-foreground truncate">{a.name}</span>
+                        {a.tagNumber && <span className="text-xs text-muted-foreground shrink-0">#{a.tagNumber}</span>}
+                        {a.breed && <span className="text-xs text-muted-foreground shrink-0 ml-auto">{a.breed}</span>}
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
+
+      {mode === "unknown" && (
+        <p className="text-xs text-muted-foreground italic">Not recorded — parentage will be left blank.</p>
       )}
     </div>
   );
@@ -145,6 +221,9 @@ export default function AnimalForm() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+
+  // Breeding status — UI only, gates expectedDueDate visibility
+  const [breedingStatus, setBreedingStatus] = useState<"unknown" | "open" | "bred">("unknown");
 
   const { data: animal, isLoading: loadingAnimal } = useGetAnimal(animalId, {
     query: { queryKey: getGetAnimalQueryKey(animalId), enabled: isEditing }
@@ -169,13 +248,15 @@ export default function AnimalForm() {
   });
 
   const selectedSpecies = form.watch("species");
+  const selectedSex = form.watch("sex");
   const sexOptions = SEX_OPTIONS[selectedSpecies] ?? SEX_OPTIONS.Other;
+  const isFemale = FEMALE_SEXES.has(selectedSex);
+  const showDueDate = isFemale && breedingStatus === "bred";
 
   // Guard: skip clearing parents when form.reset() fires during data load
   const skipParentReset = useRef(false);
 
   // When species changes, reset sex to first valid option and clear parent selections
-  // (a sire/dam from a different species is no longer a valid option)
   useEffect(() => {
     const currentSex = form.getValues("sex");
     const valid = (SEX_OPTIONS[selectedSpecies] ?? SEX_OPTIONS.Other).map(o => o.value);
@@ -190,6 +271,21 @@ export default function AnimalForm() {
     }
     skipParentReset.current = false;
   }, [selectedSpecies, form]);
+
+  // When sex changes to a non-female, reset breeding status and clear due date
+  useEffect(() => {
+    if (!FEMALE_SEXES.has(selectedSex)) {
+      setBreedingStatus("unknown");
+      form.setValue("expectedDueDate", "");
+    }
+  }, [selectedSex, form]);
+
+  // When breeding status is no longer "bred", clear due date
+  useEffect(() => {
+    if (breedingStatus !== "bred") {
+      form.setValue("expectedDueDate", "");
+    }
+  }, [breedingStatus, form]);
 
   useEffect(() => {
     if (animal && isEditing) {
@@ -207,6 +303,8 @@ export default function AnimalForm() {
         sireName: (animal as any).sireName || "",
         damName: (animal as any).damName || "",
       });
+      // Infer breeding status from existing due date
+      if (animal.expectedDueDate) setBreedingStatus("bred");
     }
   }, [animal, isEditing, form]);
 
@@ -241,7 +339,7 @@ export default function AnimalForm() {
         breed: values.breed || null,
         sex: values.sex,
         dateOfBirth: values.dateOfBirth || null,
-        expectedDueDate: values.expectedDueDate || null,
+        expectedDueDate: showDueDate ? (values.expectedDueDate || null) : null,
         notes: null,
       });
       toast({ title: "Animal added", description: "Saved locally — sign up to keep it forever." });
@@ -255,7 +353,7 @@ export default function AnimalForm() {
       tagNumber: values.tagNumber || null,
       breed: values.breed || null,
       dateOfBirth: values.dateOfBirth || null,
-      expectedDueDate: values.expectedDueDate || null,
+      expectedDueDate: showDueDate ? (values.expectedDueDate || null) : null,
       sireId: values.sireId ?? null,
       damId: values.damId ?? null,
       sireName: values.sireName || null,
@@ -277,6 +375,20 @@ export default function AnimalForm() {
   const herdAnimals = (allAnimals ?? []).filter(a => !isEditing || a.id !== animalId);
   // Parent options: only same-species animals
   const sameSpeciesAnimals = herdAnimals.filter(a => a.species === selectedSpecies);
+
+  const breedBtn = (val: typeof breedingStatus, label: string) => (
+    <button
+      type="button"
+      onClick={() => setBreedingStatus(val)}
+      className={`flex-1 h-9 px-3 rounded-lg text-xs font-semibold border transition-colors ${
+        breedingStatus === val
+          ? "bg-primary text-primary-foreground border-primary"
+          : "bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -343,10 +455,25 @@ export default function AnimalForm() {
                 <Input id="dateOfBirth" type="date" {...form.register("dateOfBirth")} className="font-medium" />
               </div>
 
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="expectedDueDate">Expected Due Date <span className="text-muted-foreground font-normal text-sm">(females only)</span></Label>
-                <Input id="expectedDueDate" type="date" {...form.register("expectedDueDate")} className="font-medium" />
-              </div>
+              {/* Breeding status — only for females */}
+              {isFemale && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Breeding Status</Label>
+                  <div className="flex gap-2">
+                    {breedBtn("unknown", "Unknown")}
+                    {breedBtn("open", "Open — not bred")}
+                    {breedBtn("bred", "Bred — expecting")}
+                  </div>
+                </div>
+              )}
+
+              {/* Expected due date — only when female + bred */}
+              {showDueDate && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="expectedDueDate">Expected Due Date</Label>
+                  <Input id="expectedDueDate" type="date" {...form.register("expectedDueDate")} className="font-medium" />
+                </div>
+              )}
             </div>
 
             {/* ── Parentage ── */}
@@ -358,8 +485,6 @@ export default function AnimalForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ParentField
                   label="Sire (Father)"
-                  idField="sireId"
-                  nameField="sireName"
                   animals={sameSpeciesAnimals}
                   idValue={form.watch("sireId")}
                   nameValue={form.watch("sireName")}
@@ -368,8 +493,6 @@ export default function AnimalForm() {
                 />
                 <ParentField
                   label="Dam (Mother)"
-                  idField="damId"
-                  nameField="damName"
                   animals={sameSpeciesAnimals}
                   idValue={form.watch("damId")}
                   nameValue={form.watch("damName")}
