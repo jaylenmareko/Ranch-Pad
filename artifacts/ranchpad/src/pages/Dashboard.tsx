@@ -516,7 +516,7 @@ function AuthDashboard() {
           </div>
         </Link>
 
-        <Link href="/animals">
+        <Link href="/animals?filter=due-soon">
           <div className={`group cursor-pointer rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-center gap-4 ${dueSoonCount > 0 ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" : "bg-card border-border"}`}>
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${dueSoonCount > 0 ? "bg-blue-100 dark:bg-blue-900/50" : "bg-muted"}`}>
               <Calendar className={`w-5 h-5 ${dueSoonCount > 0 ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"}`} />

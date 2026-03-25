@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
@@ -451,10 +451,12 @@ function SpeciesFolder({
 }
 
 export default function AnimalList() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [sexFilter, setSexFilter] = useState("All");
   const [breedFilter, setBreedFilter] = useState("All");
+
+  const dueSoonFilter = new URLSearchParams(location.includes("?") ? location.split("?")[1] : "").get("filter") === "due-soon";
   const [importing, setImporting] = useState(false);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -530,6 +532,18 @@ export default function AnimalList() {
     if (!animals) return [];
     let result = animals as Animal[];
 
+    if (dueSoonFilter) {
+      const today = new Date();
+      const in30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const todayStr = today.toISOString().split("T")[0];
+      const in30DaysStr = in30Days.toISOString().split("T")[0];
+      result = result.filter(a =>
+        a.expectedDueDate &&
+        a.expectedDueDate >= todayStr &&
+        a.expectedDueDate <= in30DaysStr
+      );
+    }
+
     if (search.length > 0 && search.length <= 2) {
       const lower = search.toLowerCase();
       result = result.filter(a =>
@@ -541,10 +555,16 @@ export default function AnimalList() {
     if (breedFilter !== "All") result = result.filter(a => a.breed === breedFilter);
 
     return result;
-  }, [animals, search, sexFilter, breedFilter]);
+  }, [animals, search, sexFilter, breedFilter, dueSoonFilter]);
 
   const uniqueBreeds: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.breed).filter(Boolean))).sort() as string[]];
-  const hasActiveFilters = sexFilter !== "All" || breedFilter !== "All";
+  const hasActiveFilters = sexFilter !== "All" || breedFilter !== "All" || dueSoonFilter;
+
+  function clearAllFilters() {
+    setSexFilter("All");
+    setBreedFilter("All");
+    if (dueSoonFilter) setLocation("/animals");
+  }
 
   const grouped = React.useMemo(() => {
     const map: Record<string, Animal[]> = {};
@@ -656,6 +676,24 @@ export default function AnimalList() {
         </div>
       )}
 
+      {/* Due Soon banner */}
+      {dueSoonFilter && (
+        <div className="flex items-center justify-between gap-3 px-5 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
+            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+              Showing animals due within the next 30 days
+            </p>
+          </div>
+          <button
+            onClick={() => setLocation("/animals")}
+            className="shrink-0 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-xs font-semibold uppercase tracking-wide"
+          >
+            Show all
+          </button>
+        </div>
+      )}
+
       {/* Filter bar */}
       <div className="bg-card border border-border p-3 rounded-2xl shadow-sm">
         <div className="flex flex-col md:flex-row gap-3">
@@ -689,7 +727,7 @@ export default function AnimalList() {
             <option value="Castrated">Castrated</option>
           </select>
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={() => { setSexFilter("All"); setBreedFilter("All"); }} className="shrink-0 text-destructive hover:text-destructive">
+            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="shrink-0 text-destructive hover:text-destructive">
               Clear filters
             </Button>
           )}
