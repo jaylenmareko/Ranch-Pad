@@ -767,7 +767,7 @@ export default function AnimalList() {
         <div className="space-y-4">
           {grouped.map(([species, speciesAnimals]) => (
             <SpeciesFolder
-              key={species}
+              key={`${species}-${dueSoonFilter}`}
               species={species}
               animals={speciesAnimals}
               initialOpen={dueSoonFilter ? true : undefined}
