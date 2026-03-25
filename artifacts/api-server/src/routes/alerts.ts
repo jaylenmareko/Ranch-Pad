@@ -188,8 +188,8 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
     const dueDate = new Date(animal.expectedDueDate + "T12:00:00");
     const daysUntil = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Alert 14 days before
-    if (daysUntil >= 12 && daysUntil <= 14) {
+    // Alert 30 days before
+    if (daysUntil >= 28 && daysUntil <= 30) {
       const key = makeKey("calving_soon", animal.id, animal.expectedDueDate);
       const wasCreated = await upsertAlert({
         ranchId, animalId: animal.id, alertType: "record",

@@ -3,6 +3,8 @@ import { db, medicationRecordsTable, animalsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 
+const FEMALE_SEXES = new Set(["Heifer", "Cow", "Ewe", "Doe", "Gilt", "Sow", "Filly", "Mare", "Female"]);
+
 const router: IRouter = Router();
 
 router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
@@ -44,7 +46,7 @@ router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
     .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate));
 
   const upcomingPregnancies = animals
-    .filter(a => a.sex === "Female" && a.expectedDueDate && a.expectedDueDate >= todayStr && a.expectedDueDate <= in60DaysStr)
+    .filter(a => FEMALE_SEXES.has(a.sex) && a.expectedDueDate && a.expectedDueDate >= todayStr && a.expectedDueDate <= in60DaysStr)
     .map(a => ({
       animalId: a.id,
       animalName: a.name,
@@ -60,7 +62,7 @@ router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
   const overdueMedsCount = medications.filter(m => m.nextDueDate && m.nextDueDate < todayStr).length;
 
   const dueSoonCount = animals.filter(a =>
-    a.sex === "Female" &&
+    FEMALE_SEXES.has(a.sex) &&
     a.expectedDueDate &&
     a.expectedDueDate >= todayStr &&
     a.expectedDueDate <= in30DaysStr
