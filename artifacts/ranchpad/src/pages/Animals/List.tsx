@@ -386,11 +386,13 @@ function setFolderOpen(species: string, value: boolean): void {
 function SpeciesFolder({
   species,
   animals,
+  initialOpen,
 }: {
   species: string;
   animals: Animal[];
+  initialOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(() => getFolderOpen(species));
+  const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(species));
 
   function toggle() {
     setOpen(o => {
@@ -768,6 +770,7 @@ export default function AnimalList() {
               key={species}
               species={species}
               animals={speciesAnimals}
+              initialOpen={dueSoonFilter ? false : undefined}
             />
           ))}
         </div>
