@@ -7,6 +7,7 @@ const BULLETS = [
   "Simple herd log for animals, treatments, and health.",
   "Get early warnings when local conditions raise disease risk.",
   "Get reminders so you never miss shots or treatments.",
+  "First 2 Weeks Free.",
 ];
 
 export default function Landing() {
