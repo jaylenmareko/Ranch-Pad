@@ -770,7 +770,7 @@ export default function AnimalList() {
               key={species}
               species={species}
               animals={speciesAnimals}
-              initialOpen={dueSoonFilter ? false : undefined}
+              initialOpen={dueSoonFilter ? true : undefined}
             />
           ))}
         </div>
