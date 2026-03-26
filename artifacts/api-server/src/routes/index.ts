@@ -11,6 +11,7 @@ import alertsRouter from "./alerts.js";
 import weatherRouter from "./weather.js";
 import upcomingRouter from "./upcoming.js";
 import billingRouter from "./billing.js";
+import teamRouter from "./team.js";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(alertsRouter);
 router.use(weatherRouter);
 router.use(upcomingRouter);
 router.use(billingRouter);
+router.use(teamRouter);
 
 export default router;

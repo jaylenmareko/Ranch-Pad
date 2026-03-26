@@ -16,6 +16,7 @@ import {
 import { formatAge, formatDate } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 export default function AnimalDetail() {
@@ -24,6 +25,7 @@ export default function AnimalDetail() {
   const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha">("health");
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { role } = useAuth();
 
   const { data: animal, isLoading } = useGetAnimal(animalId);
   const deleteMutation = useDeleteAnimal({
@@ -34,6 +36,24 @@ export default function AnimalDetail() {
       }
     }
   });
+
+  const requestDeleteAnimal = async () => {
+    if (!animal) return;
+    if (!confirm(`Request deletion of ${animal.name}? The owner will need to approve.`)) return;
+    const res = await fetch("/api/team/delete-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resourceType: "animal", resourceId: animalId, resourceName: animal.name }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast({ title: "Deletion request sent", description: "The owner will review your request." });
+    } else if (res.status === 409) {
+      toast({ title: "Request already pending", description: "The owner has been notified." });
+    } else {
+      toast({ title: "Error", description: data.message, variant: "destructive" });
+    }
+  };
 
   if (isLoading) {
     return <div className="p-12 text-center text-muted-foreground animate-pulse font-bold">Loading profile...</div>;
@@ -50,14 +70,23 @@ export default function AnimalDetail() {
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Herd
         </Link>
         <div className="flex items-center gap-3">
-          <Link href={`/animals/${animal.id}/edit`}>
-            <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
-          </Link>
-          <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
-            if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
-              deleteMutation.mutate({ animalId });
-            }
-          }}><Trash2 className="w-4 h-4" /></Button>
+          {role !== "viewer" && (
+            <Link href={`/animals/${animal.id}/edit`}>
+              <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
+            </Link>
+          )}
+          {role === "owner" && (
+            <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
+              if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
+                deleteMutation.mutate({ animalId });
+              }
+            }}><Trash2 className="w-4 h-4" /></Button>
+          )}
+          {role === "ranch_hand" && (
+            <Button variant="outline" size="sm" className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10" onClick={requestDeleteAnimal}>
+              <Trash2 className="w-4 h-4 mr-1.5" /> Request Deletion
+            </Button>
+          )}
         </div>
       </div>
 
@@ -155,6 +184,18 @@ function HealthTab({ animalId }: { animalId: number }) {
   const { data: events, isLoading } = useListHealthEvents(animalId);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { role } = useAuth();
+
+  const requestDeleteEvent = async (eventId: number, eventDate: string) => {
+    if (!confirm("Request deletion of this health event?")) return;
+    const res = await fetch("/api/team/delete-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resourceType: "health_event", resourceId: eventId, resourceName: `Health event on ${eventDate}` }),
+    });
+    const d = await res.json();
+    toast({ title: res.ok ? "Request sent" : (res.status === 409 ? "Already pending" : "Error"), description: res.ok ? "Owner will review." : d.message, variant: res.ok || res.status === 409 ? "default" : "destructive" });
+  };
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState("");
@@ -198,7 +239,7 @@ function HealthTab({ animalId }: { animalId: number }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="font-display font-bold text-xl">Health History</h3>
-        <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Event</Button>
+        {role !== "viewer" && <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Event</Button>}
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen} title="Log Health Event">
@@ -259,12 +300,21 @@ function HealthTab({ animalId }: { animalId: number }) {
                   <p className="text-foreground">{ev.description}</p>
                 </div>
                 <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                  <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit event">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete event">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {role !== "viewer" && (
+                    <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit event">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {role === "owner" && (
+                    <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete event">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {role === "ranch_hand" && (
+                    <button onClick={() => requestDeleteEvent(ev.id, ev.eventDate)} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Request deletion" title="Request deletion">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -279,6 +329,18 @@ function MedsTab({ animalId }: { animalId: number }) {
   const { data: meds, isLoading } = useListMedications(animalId);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { role } = useAuth();
+
+  const requestDeleteMed = async (medId: number, medName: string) => {
+    if (!confirm(`Request deletion of ${medName}?`)) return;
+    const res = await fetch("/api/team/delete-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resourceType: "medication", resourceId: medId, resourceName: medName }),
+    });
+    const d = await res.json();
+    toast({ title: res.ok ? "Request sent" : (res.status === 409 ? "Already pending" : "Error"), description: res.ok ? "Owner will review." : d.message, variant: res.ok || res.status === 409 ? "default" : "destructive" });
+  };
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingMedId, setEditingMedId] = useState<number | null>(null);
   
@@ -323,7 +385,7 @@ function MedsTab({ animalId }: { animalId: number }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="font-display font-bold text-xl">Medication Records</h3>
-        <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Med</Button>
+        {role !== "viewer" && <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Med</Button>}
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen} title="Record Medication">
@@ -391,12 +453,21 @@ function MedsTab({ animalId }: { animalId: number }) {
                   </div>
                 </div>
                 <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                  <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit medication">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete medication">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {role !== "viewer" && (
+                    <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit medication">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {role === "owner" && (
+                    <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete medication">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {role === "ranch_hand" && (
+                    <button onClick={() => requestDeleteMed(med.id, med.medicationName)} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Request deletion" title="Request deletion">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -411,6 +482,18 @@ function FamachaTab({ animalId }: { animalId: number }) {
   const { data: scores, isLoading } = useListFamachaScores(animalId);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { role } = useAuth();
+
+  const requestDeleteFamacha = async (scoreId: number, recordedDate: string) => {
+    if (!confirm("Request deletion of this FAMACHA score?")) return;
+    const res = await fetch("/api/team/delete-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resourceType: "famacha_score", resourceId: scoreId, resourceName: `FAMACHA score on ${recordedDate}` }),
+    });
+    const d = await res.json();
+    toast({ title: res.ok ? "Request sent" : (res.status === 409 ? "Already pending" : "Error"), description: res.ok ? "Owner will review." : d.message, variant: res.ok || res.status === 409 ? "default" : "destructive" });
+  };
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [score, setScore] = useState(3);
   const [date, setDate] = useState("");
@@ -461,7 +544,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
           <h3 className="font-display font-bold text-xl">FAMACHA Eye Scores</h3>
           <p className="text-sm text-muted-foreground">Monitor anemia/parasite load (1=Critical, 5=Healthy)</p>
         </div>
-        <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Score</Button>
+        {role !== "viewer" && <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Score</Button>}
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen} title="Record FAMACHA">
@@ -539,41 +622,69 @@ function FamachaTab({ animalId }: { animalId: number }) {
               </div>
               <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
               {/* Mobile: always-visible action row */}
-              <div className="flex justify-center gap-1 mt-2 sm:hidden">
-                <button
-                  onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
-                  className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-primary rounded-lg hover:bg-muted"
-                  aria-label="Edit FAMACHA score"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
-                  className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted"
-                  aria-label="Delete FAMACHA score"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {role !== "viewer" && (
+                <div className="flex justify-center gap-1 mt-2 sm:hidden">
+                  <button
+                    onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
+                    className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-primary rounded-lg hover:bg-muted"
+                    aria-label="Edit FAMACHA score"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  {role === "owner" && (
+                    <button
+                      onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
+                      className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted"
+                      aria-label="Delete FAMACHA score"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {role === "ranch_hand" && (
+                    <button
+                      onClick={() => requestDeleteFamacha(s.id, s.recordedDate)}
+                      className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted"
+                      aria-label="Request deletion"
+                      title="Request deletion"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
               {/* Desktop: hover-reveal corner buttons */}
-              <div className="absolute top-0.5 right-0.5 hidden sm:flex opacity-0 group-hover:opacity-100 transition-all gap-0.5">
-                <button
-                  onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
-                  className="p-1.5 rounded-full hover:bg-muted"
-                  title="Edit score"
-                  aria-label="Edit FAMACHA score"
-                >
-                  <Edit2 className="w-3 h-3 text-muted-foreground" />
-                </button>
-                <button
-                  onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
-                  className="p-1.5 rounded-full hover:bg-muted"
-                  title="Delete score"
-                  aria-label="Delete FAMACHA score"
-                >
-                  <Trash2 className="w-3 h-3 text-destructive/70" />
-                </button>
-              </div>
+              {role !== "viewer" && (
+                <div className="absolute top-0.5 right-0.5 hidden sm:flex opacity-0 group-hover:opacity-100 transition-all gap-0.5">
+                  <button
+                    onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
+                    className="p-1.5 rounded-full hover:bg-muted"
+                    title="Edit score"
+                    aria-label="Edit FAMACHA score"
+                  >
+                    <Edit2 className="w-3 h-3 text-muted-foreground" />
+                  </button>
+                  {role === "owner" && (
+                    <button
+                      onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
+                      className="p-1.5 rounded-full hover:bg-muted"
+                      title="Delete score"
+                      aria-label="Delete FAMACHA score"
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive/70" />
+                    </button>
+                  )}
+                  {role === "ranch_hand" && (
+                    <button
+                      onClick={() => requestDeleteFamacha(s.id, s.recordedDate)}
+                      className="p-1.5 rounded-full hover:bg-muted"
+                      title="Request deletion"
+                      aria-label="Request deletion"
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive/70" />
+                    </button>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

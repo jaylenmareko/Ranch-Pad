@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse } from "lucide-react";
+import { Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -19,9 +19,9 @@ const NAV_ITEMS = [
 ];
 
 function NavLink({
-  href, icon: Icon, label, active, onClick,
+  href, icon: Icon, label, active, badge, onClick,
 }: {
-  href: string; icon: React.ElementType; label: string; active: boolean; onClick?: () => void;
+  href: string; icon: React.ElementType; label: string; active: boolean; badge?: number; onClick?: () => void;
 }) {
   return (
     <Link
@@ -39,18 +39,24 @@ function NavLink({
       )}
       <Icon className={cn("w-4 h-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
       {label}
+      {badge != null && badge > 0 && (
+        <span className="ml-auto flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-background text-xs font-bold leading-none">
+          {badge > 9 ? "9+" : badge}
+        </span>
+      )}
     </Link>
   );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated, role, pendingDeleteRequests } = useAuth();
   const { openLogin, openSignup } = useAuthModal();
   const { hasNavigated, markNavigated, resetNavigation } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isLanding = !hasNavigated && !isAuthenticated && location === "/";
+  const isOwner = role === "owner";
 
   const isActive = (href: string) =>
     href === "/" ? location === "/" : location.startsWith(href);
@@ -82,6 +88,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
               onClick={markNavigated}
             />
           ))}
+          {isAuthenticated && isOwner && (
+            <NavLink
+              href="/team"
+              icon={Users}
+              label="Team"
+              active={isActive("/team")}
+              badge={pendingDeleteRequests}
+              onClick={markNavigated}
+            />
+          )}
         </nav>
 
         <div className="px-3 py-4 border-t border-border">
@@ -138,6 +154,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 onClick={() => { markNavigated(); setMenuOpen(false); }}
               />
             ))}
+            {isAuthenticated && isOwner && (
+              <NavLink
+                href="/team"
+                icon={Users}
+                label="Team"
+                active={isActive("/team")}
+                badge={pendingDeleteRequests}
+                onClick={() => { markNavigated(); setMenuOpen(false); }}
+              />
+            )}
           </nav>
 
           <div className="px-3 py-4 border-t border-border">

@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, famachaScoresTable, animalsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -43,7 +43,7 @@ router.get("/animals/:animalId/famacha", requireAuth, async (req, res): Promise<
   res.json(scores);
 });
 
-router.post("/animals/:animalId/famacha", requireAuth, async (req, res): Promise<void> => {
+router.post("/animals/:animalId/famacha", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
 
@@ -103,7 +103,7 @@ router.patch("/animals/:animalId/famacha/:famachaId", requireAuth, async (req, r
   res.json(updated);
 });
 
-router.delete("/animals/:animalId/famacha/:famachaId", requireAuth, async (req, res): Promise<void> => {
+router.delete("/animals/:animalId/famacha/:famachaId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
   const famachaId = parseId(req.params.famachaId);

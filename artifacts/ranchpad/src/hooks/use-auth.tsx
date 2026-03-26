@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetRanch, getGetRanchQueryKey } from "@workspace/api-client-react";
@@ -9,8 +9,11 @@ interface AuthContextType {
   isGuest: boolean;
   isLoading: boolean;
   token: string | null;
+  role: string | null;
+  pendingDeleteRequests: number;
   login: (token: string) => Promise<void>;
   logout: () => void;
+  refreshRole: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,12 +21,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
   const [token, setToken] = useState<string | null>(localStorage.getItem("ranchpad_token"));
+  const [role, setRole] = useState<string | null>(null);
+  const [pendingDeleteRequests, setPendingDeleteRequests] = useState(0);
   const queryClient = useQueryClient();
+  const roleAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const handleAuthExpired = () => {
       setToken(null);
-      // Dispatch event for AuthModalProvider to open login popup
+      setRole(null);
+      setPendingDeleteRequests(0);
       window.dispatchEvent(new Event("open-login-modal"));
     };
 
@@ -38,6 +45,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       retry: false,
     }
   });
+
+  const fetchRole = useCallback(async () => {
+    if (!token) {
+      setRole(null);
+      setPendingDeleteRequests(0);
+      return;
+    }
+
+    if (roleAbortRef.current) roleAbortRef.current.abort();
+    roleAbortRef.current = new AbortController();
+
+    try {
+      const res = await fetch("/api/team/my-role", {
+        signal: roleAbortRef.current.signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRole(data.role ?? null);
+        setPendingDeleteRequests(data.pendingDeleteRequests ?? 0);
+      }
+    } catch {
+      // ignore abort or network errors
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchRole();
+  }, [fetchRole]);
 
   const login = async (newToken: string) => {
     const guestAnimals = getGuestAnimals();
@@ -78,6 +113,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem("ranchpad_token");
     setToken(null);
+    setRole(null);
+    setPendingDeleteRequests(0);
     setLocation("/");
   };
 
@@ -86,8 +123,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isGuest: !token,
     isLoading: !!token && isPending,
     token,
+    role,
+    pendingDeleteRequests,
     login,
     logout,
+    refreshRole: fetchRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

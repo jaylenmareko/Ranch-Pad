@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, fieldNotesTable, animalsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -42,7 +42,7 @@ router.get("/animals/:animalId/notes", requireAuth, async (req, res): Promise<vo
   res.json(notes);
 });
 
-router.post("/animals/:animalId/notes", requireAuth, async (req, res): Promise<void> => {
+router.post("/animals/:animalId/notes", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
 
@@ -101,7 +101,7 @@ router.patch("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): 
   res.json(updated);
 });
 
-router.delete("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): Promise<void> => {
+router.delete("/animals/:animalId/notes/:noteId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
   const noteId = parseId(req.params.noteId);

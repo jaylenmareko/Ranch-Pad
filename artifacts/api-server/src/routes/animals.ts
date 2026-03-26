@@ -1,9 +1,9 @@
 import { Router, type IRouter } from "express";
 import multer from "multer";
 import { parse as parseCsv } from "csv-parse/sync";
-import { db, animalsTable, healthEventsTable, medicationRecordsTable } from "@workspace/db";
+import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable } from "@workspace/db";
 import { eq, and, or, inArray } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -70,6 +70,17 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
     );
   }
 
+  // Viewer: filter to assigned animals only
+  const { userId, role } = req.user!;
+  if (role === "viewer") {
+    const assignments = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId)));
+    const assignedIds = new Set(assignments.map(a => a.animalId));
+    animals = animals.filter(a => assignedIds.has(a.id));
+  }
+
   const result = await Promise.all(
     animals.map(async animal => ({
       ...animal,
@@ -92,7 +103,7 @@ async function validateLineageOwnership(damId: number | null | undefined, sireId
   return null;
 }
 
-router.post("/animals", requireAuth, async (req, res): Promise<void> => {
+router.post("/animals", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const parsed = createAnimalSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -167,7 +178,7 @@ router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   res.json({ ...animal, dam, sire, babies, latestHealthSeverity });
 });
 
-router.put("/animals/:animalId", requireAuth, async (req, res): Promise<void> => {
+router.put("/animals/:animalId", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
   const animalId = parseInt(raw, 10);
@@ -198,7 +209,7 @@ router.put("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   res.json({ ...animal, latestHealthSeverity: null });
 });
 
-router.delete("/animals/:animalId", requireAuth, async (req, res): Promise<void> => {
+router.delete("/animals/:animalId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
   const animalId = parseInt(raw, 10);
@@ -238,7 +249,7 @@ interface ImportSummary {
   skipped: ImportSkip[];
 }
 
-router.post("/animals/import-csv", requireAuth, upload.single("file"), async (req, res): Promise<void> => {
+router.post("/animals/import-csv", requireAuth, requireNotViewer, upload.single("file"), async (req, res): Promise<void> => {
   if (!req.file) {
     res.status(400).json({ error: true, message: "No file uploaded" });
     return;

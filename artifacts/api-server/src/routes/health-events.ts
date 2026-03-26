@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, healthEventsTable, animalsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -44,7 +44,7 @@ router.get("/animals/:animalId/health-events", requireAuth, async (req, res): Pr
   res.json(events);
 });
 
-router.post("/animals/:animalId/health-events", requireAuth, async (req, res): Promise<void> => {
+router.post("/animals/:animalId/health-events", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
 
@@ -68,7 +68,7 @@ router.post("/animals/:animalId/health-events", requireAuth, async (req, res): P
   res.status(201).json(event);
 });
 
-router.put("/animals/:animalId/health-events/:healthEventId", requireAuth, async (req, res): Promise<void> => {
+router.put("/animals/:animalId/health-events/:healthEventId", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
   const healthEventId = parseId(req.params.healthEventId);
@@ -99,7 +99,7 @@ router.put("/animals/:animalId/health-events/:healthEventId", requireAuth, async
   res.json(event);
 });
 
-router.delete("/animals/:animalId/health-events/:healthEventId", requireAuth, async (req, res): Promise<void> => {
+router.delete("/animals/:animalId/health-events/:healthEventId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
   const healthEventId = parseId(req.params.healthEventId);

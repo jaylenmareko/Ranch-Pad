@@ -31,6 +31,8 @@ import AnimalDetail from "@/pages/Animals/Detail";
 import AlertsList from "@/pages/Alerts/List";
 import Settings from "@/pages/Settings";
 import Paywall from "@/pages/Paywall";
+import Team from "@/pages/Team";
+import InviteAccept from "@/pages/InviteAccept";
 
 import type { BillingStatus } from "@/hooks/use-billing";
 
@@ -140,6 +142,7 @@ function AppContent() {
       <Route path="/animals/:id" component={AnimalDetail} />
       <Route path="/alerts" component={AlertsList} />
       <Route path="/settings" component={Settings} />
+      <Route path="/team" component={Team} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -160,6 +163,7 @@ function Router() {
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/invite/:token" component={InviteAccept} />
 
       <Route path="*">
         <Layout>
