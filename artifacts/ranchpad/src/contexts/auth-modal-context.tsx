@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useRef, useState } from "react";
-import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin, FolderOpen, Plus, X } from "lucide-react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SimpleDialog } from "@/components/ui/dialog";
@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-type View = "login" | "signup" | "forgot";
+type View = "login" | "signup" | "forgot" | "pastures";
 
 interface AuthModalContextType {
   openLogin: () => void;
@@ -48,6 +48,11 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [setupLocs, setSetupLocs] = useState<Array<{ id: number; name: string }>>([]);
+  const [setupNewLocName, setSetupNewLocName] = useState("");
+  const [setupAddingLoc, setSetupAddingLoc] = useState(false);
+
   const { login: setAuthContext } = useAuth();
   const { toast } = useToast();
   const loginMutation = useLogin();
@@ -63,14 +68,24 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("open-login-modal", handler);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  function resetModal() {
+    setForgotSent(false);
+    setForgotEmail("");
+    setPasswordMismatch(false);
+    setConfirmPassword("");
+    setSetupLocs([]);
+    setSetupNewLocName("");
+    setPendingToken(null);
+    setView("login");
+  }
+
   function handleClose(val: boolean) {
-    setOpen(val);
-    if (!val) {
-      setForgotSent(false);
-      setForgotEmail("");
-      setPasswordMismatch(false);
-      setConfirmPassword("");
+    // If user dismisses the dialog while in the pasture step, still log them in
+    if (!val && pendingToken) {
+      setAuthContext(pendingToken);
     }
+    setOpen(val);
+    if (!val) resetModal();
   }
 
   function handleAddressChange(value: string) {
@@ -127,7 +142,7 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
     loginMutation.mutate(
       { data: { email: loginEmail, password: loginPassword } },
       {
-        onSuccess: (data) => { setOpen(false); setAuthContext(data.token); },
+        onSuccess: (data) => { setOpen(false); resetModal(); setAuthContext(data.token); },
         onError: (error: Error) => {
           toast({ title: "Login Failed", description: error.message || "Invalid credentials.", variant: "destructive" });
         },
@@ -146,7 +161,10 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
     signupMutation.mutate(
       { data: { email: signupEmail, password: signupPassword, name, lat: geocodedLat, lon: geocodedLon } },
       {
-        onSuccess: (data) => { setOpen(false); setAuthContext(data.token); },
+        onSuccess: (data) => {
+          setPendingToken(data.token);
+          setView("pastures");
+        },
         onError: (error: Error) => {
           toast({ title: "Signup Failed", description: error.message || "Could not create account.", variant: "destructive" });
         },
@@ -154,7 +172,45 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const title = view === "login" ? "Welcome back" : view === "signup" ? "Create your ranch" : "Reset password";
+  async function addSetupLocation() {
+    if (!setupNewLocName.trim() || !pendingToken) return;
+    setSetupAddingLoc(true);
+    try {
+      const res = await fetch("/api/locations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${pendingToken}` },
+        body: JSON.stringify({ name: setupNewLocName.trim() }),
+      });
+      if (res.ok) {
+        const loc = await res.json();
+        setSetupLocs(prev => [...prev, loc]);
+        setSetupNewLocName("");
+      }
+    } finally {
+      setSetupAddingLoc(false);
+    }
+  }
+
+  async function removeSetupLocation(id: number) {
+    if (!pendingToken) return;
+    const res = await fetch(`/api/locations/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${pendingToken}` },
+    });
+    if (res.ok) setSetupLocs(prev => prev.filter(l => l.id !== id));
+  }
+
+  function handleFinishSetup() {
+    if (pendingToken) setAuthContext(pendingToken);
+    setOpen(false);
+    resetModal();
+  }
+
+  const title =
+    view === "login" ? "Welcome back" :
+    view === "signup" ? "Create your ranch" :
+    view === "pastures" ? "Set up your pastures" :
+    "Reset password";
 
   return (
     <AuthModalContext.Provider value={{ openLogin, openSignup }}>
@@ -260,6 +316,67 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
               <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setView("login")}>Log in</button>
             </p>
           </form>
+        )}
+
+        {/* ── Pastures Setup ── */}
+        {view === "pastures" && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Add the pastures, pens, or areas on your ranch. You can always manage these later in Settings.
+            </p>
+
+            {setupLocs.length > 0 && (
+              <ul className="rounded-xl border border-border divide-y divide-border overflow-hidden">
+                {setupLocs.map(loc => (
+                  <li key={loc.id} className="flex items-center gap-2.5 px-3 py-2.5">
+                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="flex-1 text-sm font-medium text-foreground">{loc.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSetupLocation(loc.id)}
+                      className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex gap-2">
+              <Input
+                placeholder="e.g. South Pasture, Barn, Lot A"
+                value={setupNewLocName}
+                onChange={e => setSetupNewLocName(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSetupLocation(); } }}
+                className="flex-1"
+                autoFocus
+              />
+              <Button
+                type="button"
+                onClick={addSetupLocation}
+                isLoading={setupAddingLoc}
+                disabled={!setupNewLocName.trim()}
+                className="shrink-0 gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </Button>
+            </div>
+
+            <Button className="w-full" onClick={handleFinishSetup}>
+              <FolderOpen className="w-4 h-4 mr-1.5" />
+              Enter RanchPad
+            </Button>
+            <button
+              type="button"
+              onClick={handleFinishSetup}
+              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-center block"
+            >
+              Skip for now
+            </button>
+          </div>
         )}
 
         {/* ── Forgot Password ── */}
