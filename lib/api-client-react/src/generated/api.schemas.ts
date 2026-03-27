@@ -27,6 +27,7 @@ export interface SignupBody {
   lon?: number | null;
   /** @nullable */
   joinRanchName?: string | null;
+  pastures?: string[];
 }
 
 export interface LoginBody {

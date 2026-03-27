@@ -25,7 +25,10 @@ export const SignupBody = zod.object({
   ranchName: zod.string().optional(),
   ranchCity: zod.string().optional(),
   ranchState: zod.string().optional(),
+  lat: zod.number().nullish(),
+  lon: zod.number().nullish(),
   joinRanchName: zod.string().nullish(),
+  pastures: zod.array(zod.string()).optional(),
 });
 
 /**

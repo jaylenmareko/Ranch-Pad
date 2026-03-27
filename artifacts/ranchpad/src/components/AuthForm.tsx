@@ -13,22 +13,16 @@ export interface AuthFormProps {
   initialView?: "login" | "signup";
   /** Called after auth is fully complete (login done, or pastures step finished/skipped). */
   onDone: () => void;
-  /**
-   * Called immediately when signup succeeds and the pastures step is about to show.
-   * The parent can store this token so that if the container is dismissed early
-   * (e.g. dialog closed), the user is still logged in — their account is already created.
-   */
-  onTokenReady?: (token: string) => void;
 }
 
-export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFormProps) {
+export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
   const [view, setView] = useState<AuthView>(initialView);
 
   // Login fields
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  // Signup fields
+  // Signup fields (collected locally — no API call until user finishes pastures)
   const [name, setName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
@@ -49,11 +43,9 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
   const [forgotSent, setForgotSent] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  // Pasture setup (post-signup)
-  const [pendingToken, setPendingToken] = useState<string | null>(null);
-  const [setupLocs, setSetupLocs] = useState<Array<{ id: number; name: string }>>([]);
+  // Pastures — local only until the user explicitly finishes
+  const [setupLocs, setSetupLocs] = useState<string[]>([]);
   const [setupNewLocName, setSetupNewLocName] = useState("");
-  const [setupAddingLoc, setSetupAddingLoc] = useState(false);
 
   const { login: setAuthContext } = useAuth();
   const { toast } = useToast();
@@ -107,8 +99,8 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
     );
   }
 
-  // ── Signup ────────────────────────────────────────────────────────────────
-  function handleSignup(e: React.FormEvent) {
+  // ── Signup step 1: validate locally, advance to pastures ─────────────────
+  function handleAdvanceToPastures(e: React.FormEvent) {
     e.preventDefault();
     if (signupPassword !== confirmPassword) { setPasswordMismatch(true); return; }
     setPasswordMismatch(false);
@@ -116,16 +108,32 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
       toast({ title: "Location required", description: "Enter your ranch address and select a suggestion.", variant: "destructive" });
       return;
     }
+    // No API call — just move to the local pastures setup step
+    setView("pastures");
+  }
+
+  // ── Signup step 2: create account + pastures in one shot ─────────────────
+  function handleFinishSetup(pastures: string[]) {
     signupMutation.mutate(
-      { data: { email: signupEmail, password: signupPassword, name, lat: geocodedLat, lon: geocodedLon } },
+      {
+        data: {
+          email: signupEmail,
+          password: signupPassword,
+          name,
+          lat: geocodedLat!,
+          lon: geocodedLon!,
+          pastures,
+        },
+      },
       {
         onSuccess: (data) => {
-          setPendingToken(data.token);
-          onTokenReady?.(data.token);
-          setView("pastures");
+          setAuthContext(data.token);
+          onDone();
         },
         onError: (error: Error) => {
           toast({ title: "Signup Failed", description: error.message || "Could not create account.", variant: "destructive" });
+          // Send user back to signup form so they can correct and retry
+          setView("signup");
         },
       }
     );
@@ -152,40 +160,6 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
     } finally {
       setForgotLoading(false);
     }
-  }
-
-  // ── Pasture setup ─────────────────────────────────────────────────────────
-  async function addSetupLocation() {
-    if (!setupNewLocName.trim() || !pendingToken) return;
-    setSetupAddingLoc(true);
-    try {
-      const res = await fetch("/api/locations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${pendingToken}` },
-        body: JSON.stringify({ name: setupNewLocName.trim() }),
-      });
-      if (res.ok) {
-        const loc = await res.json();
-        setSetupLocs(prev => [...prev, loc]);
-        setSetupNewLocName("");
-      }
-    } finally {
-      setSetupAddingLoc(false);
-    }
-  }
-
-  async function removeSetupLocation(id: number) {
-    if (!pendingToken) return;
-    const res = await fetch(`/api/locations/${id}`, {
-      method: "DELETE",
-      headers: { "Authorization": `Bearer ${pendingToken}` },
-    });
-    if (res.ok) setSetupLocs(prev => prev.filter(l => l.id !== id));
-  }
-
-  function handleFinishSetup() {
-    if (pendingToken) setAuthContext(pendingToken);
-    onDone();
   }
 
   // ── Views ─────────────────────────────────────────────────────────────────
@@ -228,7 +202,7 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
       <>
         <h1 className="text-lg font-semibold text-foreground mb-1">Create your ranch</h1>
         <p className="text-sm text-muted-foreground mb-6">Free 14-day trial. No credit card required.</p>
-        <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleAdvanceToPastures} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="af-name">Full Name</Label>
             <Input id="af-name" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
@@ -286,8 +260,8 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
               </div>
             )}
           </div>
-          <Button type="submit" className="w-full" isLoading={signupMutation.isPending}>
-            Create Ranch {!signupMutation.isPending && <ArrowRight className="w-4 h-4 ml-1.5" />}
+          <Button type="submit" className="w-full">
+            Next: Set Up Pastures <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground mt-5">
@@ -308,11 +282,16 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
 
         {setupLocs.length > 0 && (
           <ul className="rounded-xl border border-border divide-y divide-border overflow-hidden mb-3">
-            {setupLocs.map(loc => (
-              <li key={loc.id} className="flex items-center gap-2.5 px-3 py-2.5">
+            {setupLocs.map((loc, idx) => (
+              <li key={idx} className="flex items-center gap-2.5 px-3 py-2.5">
                 <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="flex-1 text-sm font-medium text-foreground">{loc.name}</span>
-                <button type="button" onClick={() => removeSetupLocation(loc.id)} className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors" aria-label="Remove">
+                <span className="flex-1 text-sm font-medium text-foreground">{loc}</span>
+                <button
+                  type="button"
+                  onClick={() => setSetupLocs(prev => prev.filter((_, i) => i !== idx))}
+                  className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+                  aria-label="Remove"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </li>
@@ -325,21 +304,40 @@ export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFo
             placeholder="e.g. South Pasture, Barn, Lot A"
             value={setupNewLocName}
             onChange={e => setSetupNewLocName(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSetupLocation(); } }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const trimmed = setupNewLocName.trim();
+                if (trimmed) { setSetupLocs(prev => [...prev, trimmed]); setSetupNewLocName(""); }
+              }
+            }}
             className="flex-1"
             autoFocus
           />
-          <Button type="button" onClick={addSetupLocation} isLoading={setupAddingLoc} disabled={!setupNewLocName.trim()} className="shrink-0 gap-1">
+          <Button
+            type="button"
+            onClick={() => {
+              const trimmed = setupNewLocName.trim();
+              if (trimmed) { setSetupLocs(prev => [...prev, trimmed]); setSetupNewLocName(""); }
+            }}
+            disabled={!setupNewLocName.trim()}
+            className="shrink-0 gap-1"
+          >
             <Plus className="w-4 h-4" />
             Add
           </Button>
         </div>
 
-        <Button className="w-full mb-3" onClick={handleFinishSetup}>
+        <Button className="w-full mb-3" onClick={() => handleFinishSetup(setupLocs)} isLoading={signupMutation.isPending}>
           <FolderOpen className="w-4 h-4 mr-1.5" />
           Enter RanchPad
         </Button>
-        <button type="button" onClick={handleFinishSetup} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-center block">
+        <button
+          type="button"
+          onClick={() => handleFinishSetup([])}
+          disabled={signupMutation.isPending}
+          className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-center block disabled:opacity-50"
+        >
           Skip for now
         </button>
       </>

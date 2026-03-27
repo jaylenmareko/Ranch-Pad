@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { Resend } from "resend";
-import { db, usersTable, ranchesTable, ranchUsersTable, teamInvitesTable } from "@workspace/db";
+import { db, usersTable, ranchesTable, ranchUsersTable, teamInvitesTable, pastureLocationsTable } from "@workspace/db";
 import { eq, and, gt } from "drizzle-orm";
 import { signToken } from "../lib/jwt.js";
 import { requireAuth } from "../middlewares/auth.js";
@@ -23,6 +23,7 @@ const signupSchema = z.object({
   lon: z.number().nullable().optional(),
   joinRanchName: z.string().optional().nullable(),
   inviteToken: z.string().optional().nullable(),
+  pastures: z.array(z.string().min(1)).optional(),
 });
 
 const loginSchema = z.object({
@@ -37,7 +38,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const { email, password, name, ranchName, ranchCity, ranchState, lat, lon, joinRanchName, inviteToken } = parsed.data;
+  const { email, password, name, ranchName, ranchCity, ranchState, lat, lon, joinRanchName, inviteToken, pastures } = parsed.data;
 
   // Check duplicate email before any writes
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
@@ -132,6 +133,13 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
 
     return { user: newUser, ranch: txRanch };
   });
+
+  // Insert pastures if provided (only meaningful when creating a new ranch)
+  if (pastures && pastures.length > 0 && !joinRanchName && !inviteToken) {
+    await db.insert(pastureLocationsTable).values(
+      pastures.map((name, i) => ({ ranchId: ranch.id, name, sortOrder: i }))
+    );
+  }
 
   const token = signToken({ userId: user.id, ranchId: ranch.id, email: user.email });
 
