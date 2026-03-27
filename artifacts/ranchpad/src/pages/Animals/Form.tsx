@@ -223,7 +223,12 @@ export default function AnimalForm() {
   const animalId = parseInt(params.id || "0", 10);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isViewer } = useAuth();
+
+  // Viewers cannot add or edit animals
+  useEffect(() => {
+    if (isViewer) setLocation("/animals");
+  }, [isViewer, setLocation]);
 
   const [locations, setLocations] = useState<PastureLocation[]>([]);
 

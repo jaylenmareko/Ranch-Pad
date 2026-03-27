@@ -865,9 +865,11 @@ export default function AnimalList() {
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
             {search || hasActiveFilters
               ? "Try adjusting your search or filters."
-              : "Your herd is empty. Add your first animal to get started."}
+              : role === "viewer"
+                ? "No animals have been assigned to you yet. Contact the ranch owner."
+                : "Your herd is empty. Add your first animal to get started."}
           </p>
-          {!search && !hasActiveFilters && (
+          {!search && !hasActiveFilters && role !== "viewer" && (
             <Button className="mt-6" onClick={() => setLocation("/animals/new")}>Add First Animal</Button>
           )}
         </div>
