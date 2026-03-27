@@ -13,6 +13,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { AuthModalProvider, useAuthModal } from "@/contexts/auth-modal-context";
 import { NavigationProvider, useNavigation } from "@/contexts/navigation-context";
+import { RanchProvider } from "@/contexts/ranch-context";
 
 // Components
 import { Layout } from "@/components/Layout";
@@ -180,14 +181,16 @@ function App() {
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <AuthProvider>
-            <AuthModalProvider>
-              <NavigationProvider>
-                <Router />
-                <GuestFloatingCard />
-                <GuestSignupPrompt />
-                <Toaster />
-              </NavigationProvider>
-            </AuthModalProvider>
+            <RanchProvider>
+              <AuthModalProvider>
+                <NavigationProvider>
+                  <Router />
+                  <GuestFloatingCard />
+                  <GuestSignupPrompt />
+                  <Toaster />
+                </NavigationProvider>
+              </AuthModalProvider>
+            </RanchProvider>
           </AuthProvider>
         </WouterRouter>
       </TooltipProvider>

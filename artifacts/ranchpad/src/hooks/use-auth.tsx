@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   token: string | null;
   role: string | null;
+  userName: string | null;
   pendingDeleteRequests: number;
   login: (token: string) => Promise<void>;
   logout: () => void;
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
   const [token, setToken] = useState<string | null>(localStorage.getItem("ranchpad_token"));
   const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [pendingDeleteRequests, setPendingDeleteRequests] = useState(0);
   const queryClient = useQueryClient();
   const roleAbortRef = useRef<AbortController | null>(null);
@@ -30,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleAuthExpired = () => {
       setToken(null);
       setRole(null);
+      setUserName(null);
       setPendingDeleteRequests(0);
       window.dispatchEvent(new Event("open-login-modal"));
     };
@@ -70,8 +73,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token]);
 
+  const fetchUserName = useCallback(async () => {
+    if (!token) {
+      setUserName(null);
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        setUserName(data.name ?? null);
+      }
+    } catch {
+      // ignore
+    }
+  }, [token]);
+
   useEffect(() => {
     fetchRole();
+  }, [fetchRole]);
+
+  useEffect(() => {
+    fetchUserName();
+  }, [fetchUserName]);
+
+  // Re-fetch role whenever the active ranch switches
+  useEffect(() => {
+    const handleRanchSwitch = () => { fetchRole(); };
+    window.addEventListener("ranch-switched", handleRanchSwitch);
+    return () => window.removeEventListener("ranch-switched", handleRanchSwitch);
   }, [fetchRole]);
 
   const login = async (newToken: string) => {
@@ -107,13 +137,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("ranchpad_token", newToken);
     queryClient.removeQueries({ queryKey: getGetRanchQueryKey() });
     setToken(newToken);
+    // Notify ranch context to refresh
+    window.dispatchEvent(new Event("user-logged-in"));
     setLocation("/");
   };
 
   const logout = () => {
     localStorage.removeItem("ranchpad_token");
+    localStorage.removeItem("ranchpad_active_ranch");
     setToken(null);
     setRole(null);
+    setUserName(null);
     setPendingDeleteRequests(0);
     setLocation("/");
   };
@@ -124,6 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: !!token && isPending,
     token,
     role,
+    userName,
     pendingDeleteRequests,
     login,
     logout,

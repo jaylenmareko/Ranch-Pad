@@ -22,16 +22,33 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   try {
     const payload = verifyToken(token);
 
+    // Support X-Ranch-Id header for multi-ranch context switching
+    const ranchIdHeader = req.headers["x-ranch-id"];
+    const effectiveRanchId = ranchIdHeader
+      ? parseInt(ranchIdHeader as string, 10)
+      : payload.ranchId;
+
     const [ranchUser] = await db
       .select({ role: ranchUsersTable.role })
       .from(ranchUsersTable)
-      .where(and(eq(ranchUsersTable.userId, payload.userId), eq(ranchUsersTable.ranchId, payload.ranchId)))
+      .where(and(eq(ranchUsersTable.userId, payload.userId), eq(ranchUsersTable.ranchId, effectiveRanchId)))
       .limit(1);
 
-    const rawRole = ranchUser?.role ?? "owner";
+    if (!ranchUser) {
+      if (ranchIdHeader) {
+        res.status(403).json({ error: true, message: "Access denied to this ranch" });
+        return;
+      }
+      // Fallback: use default role
+      req.user = { ...payload, ranchId: effectiveRanchId, role: "owner" };
+      next();
+      return;
+    }
+
+    const rawRole = ranchUser.role;
     const role = rawRole === "member" ? "ranch_hand" : rawRole;
 
-    req.user = { ...payload, role };
+    req.user = { ...payload, ranchId: effectiveRanchId, role };
     next();
   } catch {
     res.status(401).json({ error: true, message: "Invalid or expired token" });
