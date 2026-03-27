@@ -1,14 +1,14 @@
 import React, { useState, useRef } from "react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin, FolderOpen, Plus, X } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-type View = "login" | "signup" | "forgot";
+type View = "login" | "signup" | "forgot" | "pastures";
 
 export default function Login() {
   const [view, setView] = useState<View>(() => {
@@ -35,6 +35,11 @@ export default function Login() {
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [setupLocs, setSetupLocs] = useState<Array<{ id: number; name: string }>>([]);
+  const [setupNewLocName, setSetupNewLocName] = useState("");
+  const [setupAddingLoc, setSetupAddingLoc] = useState(false);
 
   const { login: setAuthContext } = useAuth();
   const { toast } = useToast();
@@ -128,12 +133,47 @@ export default function Login() {
     signupMutation.mutate(
       { data: { email: signupEmail, password: signupPassword, name, lat: geocodedLat, lon: geocodedLon } },
       {
-        onSuccess: (data) => setAuthContext(data.token),
+        onSuccess: (data) => {
+          setPendingToken(data.token);
+          setView("pastures");
+        },
         onError: (error: Error) => {
           toast({ title: "Signup Failed", description: error.message || "Could not create account.", variant: "destructive" });
         },
       }
     );
+  }
+
+  async function addSetupLocation() {
+    if (!setupNewLocName.trim() || !pendingToken) return;
+    setSetupAddingLoc(true);
+    try {
+      const res = await fetch("/api/locations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${pendingToken}` },
+        body: JSON.stringify({ name: setupNewLocName.trim() }),
+      });
+      if (res.ok) {
+        const loc = await res.json();
+        setSetupLocs(prev => [...prev, loc]);
+        setSetupNewLocName("");
+      }
+    } finally {
+      setSetupAddingLoc(false);
+    }
+  }
+
+  async function removeSetupLocation(id: number) {
+    if (!pendingToken) return;
+    const res = await fetch(`/api/locations/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${pendingToken}` },
+    });
+    if (res.ok) setSetupLocs(prev => prev.filter(l => l.id !== id));
+  }
+
+  function handleFinishSetup() {
+    if (pendingToken) setAuthContext(pendingToken);
   }
 
   return (
@@ -382,6 +422,72 @@ export default function Login() {
                 </p>
               </>
             )}
+          </>
+        )}
+
+        {/* ── Pastures Setup ── */}
+        {view === "pastures" && (
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              <FolderOpen className="w-5 h-5 text-primary shrink-0" />
+              <h1 className="text-lg font-semibold text-foreground">Set up your pastures</h1>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5">
+              Add the pastures, pens, or areas on your ranch. You can always manage these later in Settings.
+            </p>
+
+            {/* Added locations list */}
+            {setupLocs.length > 0 && (
+              <ul className="rounded-xl border border-border divide-y divide-border mb-3 overflow-hidden">
+                {setupLocs.map(loc => (
+                  <li key={loc.id} className="flex items-center gap-2.5 px-3 py-2.5">
+                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="flex-1 text-sm font-medium text-foreground">{loc.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSetupLocation(loc.id)}
+                      className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Add location input */}
+            <div className="flex gap-2 mb-5">
+              <Input
+                placeholder="e.g. South Pasture, Barn, Lot A"
+                value={setupNewLocName}
+                onChange={e => setSetupNewLocName(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSetupLocation(); } }}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                onClick={addSetupLocation}
+                isLoading={setupAddingLoc}
+                disabled={!setupNewLocName.trim()}
+                className="shrink-0 gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </Button>
+            </div>
+
+            <Button className="w-full mb-3" onClick={handleFinishSetup}>
+              Enter RanchPad
+              <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
+            <button
+              type="button"
+              onClick={handleFinishSetup}
+              className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-center"
+            >
+              Skip for now
+            </button>
           </>
         )}
       </div>
