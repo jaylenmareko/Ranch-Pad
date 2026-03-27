@@ -99,7 +99,8 @@ export default function Settings() {
         const loc = await res.json();
         setLocations(prev => [...prev, loc]);
         setNewLocName("");
-        toast({ title: "Location added" });
+        toast({ title: "Location added — now assign animals" });
+        await openAssignPanel(loc.id);
       }
     } finally {
       setAddingLoc(false);
