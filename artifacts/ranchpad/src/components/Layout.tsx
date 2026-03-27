@@ -335,7 +335,7 @@ function MyRanchSetupDialog({
 
 // ── Profile box ────────────────────────────────────────────────────────────────
 
-function ProfileBox({ userName, activeRanchName }: { userName: string | null; activeRanchName: string | null }) {
+function ProfileBox({ userName }: { userName: string | null }) {
   const initials = userName
     ? userName.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()
     : "?";
@@ -348,9 +348,6 @@ function ProfileBox({ userName, activeRanchName }: { userName: string | null; ac
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{userName ?? "..."}</p>
-          {activeRanchName && (
-            <p className="text-[11px] text-muted-foreground truncate">{activeRanchName}</p>
-          )}
         </div>
       </div>
     </div>
@@ -487,7 +484,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="border-t border-border">
       {isAuthenticated ? (
         <>
-          <ProfileBox userName={userName} activeRanchName={activeRanch?.name ?? null} />
+          <ProfileBox userName={userName} />
           <div className="px-3 pb-3">
             <button
               onClick={() => { resetNavigation(); logout(); }}
@@ -521,7 +518,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="border-t border-border">
       {isAuthenticated ? (
         <>
-          <ProfileBox userName={userName} activeRanchName={activeRanch?.name ?? null} />
+          <ProfileBox userName={userName} />
           <div className="px-3 pb-3">
             <button
               onClick={() => { setMenuOpen(false); resetNavigation(); logout(); }}
