@@ -125,6 +125,18 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
 
 // ─── App Routes ────────────────────────────────────────────────────────────────
 
+function DashboardRoute() {
+  const { isViewer } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (isViewer) setLocation("/animals");
+  }, [isViewer, setLocation]);
+
+  if (isViewer) return null;
+  return <Dashboard />;
+}
+
 function AppContent() {
   const { isAuthenticated } = useAuth();
   const { hasNavigated } = useNavigation();
@@ -136,7 +148,7 @@ function AppContent() {
 
   const routes = (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={DashboardRoute} />
       <Route path="/animals" component={AnimalList} />
       <Route path="/animals/new" component={AnimalForm} />
       <Route path="/animals/:id/edit" component={AnimalForm} />

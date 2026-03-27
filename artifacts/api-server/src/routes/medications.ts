@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, medicationRecordsTable, animalsTable } from "@workspace/db";
+import { db, medicationRecordsTable, animalsTable, animalAssignmentsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
@@ -29,12 +29,22 @@ async function verifyAnimalOwnership(animalId: number, ranchId: number) {
 
 router.get("/animals/:animalId/medications", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
   const animalId = parseAnimalId(req.params.animalId);
 
   const animal = await verifyAnimalOwnership(animalId, ranchId);
   if (!animal) {
     res.status(404).json({ error: true, message: "Animal not found" });
     return;
+  }
+
+  if (role === "viewer") {
+    const [assignment] = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId), eq(animalAssignmentsTable.animalId, animalId)))
+      .limit(1);
+    if (!assignment) { res.status(403).json({ error: true, message: "Access denied" }); return; }
   }
 
   const records = await db

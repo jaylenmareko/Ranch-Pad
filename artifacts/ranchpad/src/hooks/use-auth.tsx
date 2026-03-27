@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   token: string | null;
   role: string | null;
+  isViewer: boolean;
   userName: string | null;
   pendingDeleteRequests: number;
   login: (token: string) => Promise<void>;
@@ -158,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: !!token && isPending,
     token,
     role,
+    isViewer: role === "viewer",
     userName,
     pendingDeleteRequests,
     login,

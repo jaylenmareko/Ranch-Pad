@@ -127,6 +127,7 @@ router.post("/animals", requireAuth, requireNotViewer, async (req, res): Promise
 
 router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
   const animalId = parseInt(raw, 10);
 
@@ -139,6 +140,23 @@ router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   if (!animal) {
     res.status(404).json({ error: true, message: "Animal not found" });
     return;
+  }
+
+  // Viewer: only allow access to assigned animals
+  if (role === "viewer") {
+    const [assignment] = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(
+        eq(animalAssignmentsTable.ranchId, ranchId),
+        eq(animalAssignmentsTable.viewerUserId, userId),
+        eq(animalAssignmentsTable.animalId, animalId)
+      ))
+      .limit(1);
+    if (!assignment) {
+      res.status(403).json({ error: true, message: "Access denied" });
+      return;
+    }
   }
 
   // Get dam, sire, babies

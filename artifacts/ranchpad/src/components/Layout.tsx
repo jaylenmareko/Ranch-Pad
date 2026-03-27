@@ -37,6 +37,13 @@ function getOwnerRanchItems(): NavItem[] {
   ];
 }
 
+function getViewerItems(): NavItem[] {
+  return [
+    { href: "/animals", icon: CowIcon, label: "Animals" },
+    { href: "/alerts", icon: Bell, label: "Alerts" },
+  ];
+}
+
 function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
   return [
     { href: "/", icon: Home, label: "Dashboard" },
@@ -353,7 +360,7 @@ function ProfileBox({ userName, activeRanchName }: { userName: string | null; ac
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { logout, isAuthenticated, role, pendingDeleteRequests, userName } = useAuth();
+  const { logout, isAuthenticated, role, isViewer, pendingDeleteRequests, userName } = useAuth();
   const { ranches, activeRanchId, activeRanch, hasPersonalRanch, setActiveRanch, refreshRanches } = useRanch();
   const { openLogin, openSignup } = useAuthModal();
   const { hasNavigated, markNavigated, resetNavigation } = useNavigation();
@@ -408,6 +415,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const renderFlatNav = (onItemClick?: () => void) => {
     const items = getFlatNavItems(pendingDeleteRequests);
     return items.map((item) => {
+      if (item.href === "/" && isViewer) return null;
       if ((item.href === "/settings" || item.href === "/team") && !isOwner) return null;
       return (
         <NavLink
@@ -430,7 +438,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <RanchFolder
           key={ranch.id}
           ranch={ranch}
-          items={getOwnerRanchItems()}
+          items={ranch.role === "viewer" ? getViewerItems() : getOwnerRanchItems()}
           isOpen={openFolders.has(ranch.id)}
           onToggle={() => toggleFolder(ranch.id)}
           activeRanchId={activeRanchId}

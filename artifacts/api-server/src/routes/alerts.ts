@@ -7,9 +7,10 @@ import {
   healthEventsTable,
   famachaScoresTable,
   ranchesTable,
+  animalAssignmentsTable,
 } from "@workspace/db";
 import { eq, and, gte, lte, isNull, sql, desc } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireNotViewer } from "../middlewares/auth.js";
 import Anthropic from "@anthropic-ai/sdk";
 
 const router: IRouter = Router();
@@ -342,6 +343,7 @@ Only generate alerts for genuine risks based on the forecast data. Return valid 
 
 router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
 
   const alerts = await db
     .select()
@@ -350,7 +352,7 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
     .orderBy(alertsTable.generatedAt);
 
   // Attach animal names
-  const result = await Promise.all(
+  let result = await Promise.all(
     alerts.map(async alert => {
       let animalName: string | null = null;
       if (alert.animalId) {
@@ -364,6 +366,16 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
       return { ...alert, animalName };
     })
   );
+
+  // Viewer: only show alerts tied to their assigned animals (no weather/global alerts)
+  if (role === "viewer") {
+    const assignments = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId)));
+    const assignedIds = new Set(assignments.map(a => a.animalId));
+    result = result.filter(a => a.animalId !== null && assignedIds.has(a.animalId));
+  }
 
   // Sort by severity: high -> medium -> low
   const severityOrder = { high: 0, medium: 1, low: 2 };
@@ -384,7 +396,7 @@ router.post("/alerts/generate", requireAuth, async (req, res): Promise<void> => 
   res.json({ created, message: `Generated ${created} new alert(s)` });
 });
 
-router.post("/alerts/:alertId/dismiss", requireAuth, async (req, res): Promise<void> => {
+router.post("/alerts/:alertId/dismiss", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const alertId = parseId(req.params.alertId);
 
