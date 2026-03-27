@@ -112,16 +112,17 @@ interface SimpleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  hideTitle?: boolean;
   description?: string;
   children: React.ReactNode;
 }
 
-function SimpleDialog({ open, onOpenChange, title, description, children }: SimpleDialogProps) {
+function SimpleDialog({ open, onOpenChange, title, hideTitle, description, children }: SimpleDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className={hideTitle ? "sr-only" : undefined}>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <div className="p-6 overflow-y-auto flex-1">
