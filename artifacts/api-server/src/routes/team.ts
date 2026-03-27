@@ -143,13 +143,31 @@ router.post("/team/invite", requireAuth, requireOwner, async (req, res): Promise
     return;
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
+  const token = crypto.randomBytes(9).toString("base64url");
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   await db.insert(teamInvitesTable).values({ ranchId, token, role, createdBy, expiresAt });
 
   const origin = (req.headers.origin as string) || `https://${req.headers.host}`;
   res.json({ token, url: `${origin}/invite/${token}` });
+});
+
+router.delete("/team/invite/:id", requireAuth, requireOwner, async (req, res): Promise<void> => {
+  const { ranchId } = req.user!;
+  const id = parseInt(req.params.id, 10);
+
+  const [invite] = await db
+    .select({ id: teamInvitesTable.id })
+    .from(teamInvitesTable)
+    .where(and(eq(teamInvitesTable.id, id), eq(teamInvitesTable.ranchId, ranchId)));
+
+  if (!invite) {
+    res.status(404).json({ error: true, message: "Invite not found" });
+    return;
+  }
+
+  await db.delete(teamInvitesTable).where(eq(teamInvitesTable.id, id));
+  res.sendStatus(204);
 });
 
 router.get("/team/invite/:token", async (req, res): Promise<void> => {

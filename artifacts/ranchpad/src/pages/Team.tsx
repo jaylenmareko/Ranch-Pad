@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Check, Link2, UserMinus, Shield, Eye, Users, ClipboardList, CheckCircle, XCircle, ChevronDown, X } from "lucide-react";
+import { Copy, Check, Link2, UserMinus, Shield, Eye, Users, ClipboardList, CheckCircle, XCircle, ChevronDown, X, Trash2 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -164,6 +164,17 @@ export default function Team() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const revokeInvite = async (id: number) => {
+    if (!confirm("Revoke this invite link? Anyone with the link won't be able to use it.")) return;
+    const res = await fetch(`/api/team/invite/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      toast({ title: "Invite revoked" });
+      refetchTeam();
+    } else {
+      toast({ title: "Failed to revoke invite", variant: "destructive" });
+    }
+  };
+
   // ── Member actions ─────────────────────────────────────────────────────────
 
   const changeRole = async (userId: number, role: string) => {
@@ -320,13 +331,11 @@ export default function Team() {
           </CardHeader>
           <CardContent className="space-y-1 p-0 pb-2">
             {pendingInvites.map(inv => (
-              <div key={inv.id} className="flex items-center gap-3 px-6 py-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground truncate font-mono">{inv.token.slice(0, 16)}…</p>
-                  <p className="text-xs text-muted-foreground">Expires {new Date(inv.expiresAt).toLocaleDateString()}</p>
-                </div>
-                <RoleBadge role={inv.role} />
-              </div>
+              <PendingInviteRow
+                key={inv.id}
+                invite={inv}
+                onRevoke={() => revokeInvite(inv.id)}
+              />
             ))}
           </CardContent>
         </Card>
@@ -465,6 +474,40 @@ export default function Team() {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+function PendingInviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const origin = window.location.origin;
+  const url = `${origin}/invite/${invite.token}`;
+
+  const copy = () => {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center gap-3 px-6 py-3">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <p className="text-xs font-mono text-foreground">{invite.token}</p>
+          <button onClick={copy} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors" title="Copy link">
+            {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground">Expires {new Date(invite.expiresAt).toLocaleDateString()}</p>
+      </div>
+      <RoleBadge role={invite.role} />
+      <button
+        onClick={onRevoke}
+        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+        title="Revoke invite"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
 
 function RoleSelect({ current, onChange }: { current: string; onChange: (role: string) => void }) {
   return (
