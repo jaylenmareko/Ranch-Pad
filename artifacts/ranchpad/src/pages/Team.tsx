@@ -625,7 +625,7 @@ function ViewerAssignmentRow({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
             >
               <ChevronDown className="w-3.5 h-3.5" />
-              Assign Animals
+              Click to Assign Animals
             </button>
           ) : (
             <div className="rounded-lg border border-border bg-background overflow-hidden">
