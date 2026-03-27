@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse, Users,
-  ChevronRight, Plus, MapPin
+  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -188,19 +188,67 @@ function MyRanchSetupDialog({
   const { createPersonalRanch } = useRanch();
   const { toast } = useToast();
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Address geocoding state (same pattern as signup)
+  const [address, setAddress] = useState("");
+  const [geocodedLat, setGeocodedLat] = useState<number | null>(null);
+  const [geocodedLon, setGeocodedLon] = useState<number | null>(null);
+  const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleAddressChange(value: string) {
+    setAddress(value);
+    if (geocodedLat !== null) { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); }
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (value.trim().length < 3) { setSuggestions([]); setShowSuggestions(false); return; }
+    suggestTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5`,
+          { headers: { "Accept-Language": "en" } }
+        );
+        const results: Array<{ display_name: string; lat: string; lon: string }> = await res.json();
+        setSuggestions(results ?? []);
+        setShowSuggestions((results ?? []).length > 0);
+      } catch { setSuggestions([]); setShowSuggestions(false); }
+    }, 350);
+  }
+
+  function selectSuggestion(s: { display_name: string; lat: string; lon: string }) {
+    setAddress(s.display_name);
+    setGeocodedLat(parseFloat(parseFloat(s.lat).toFixed(6)));
+    setGeocodedLon(parseFloat(parseFloat(s.lon).toFixed(6)));
+    setGeocodeLabel(s.display_name);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }
+
+  function resetForm() {
+    setName("");
+    setAddress("");
+    setGeocodedLat(null);
+    setGeocodedLon(null);
+    setGeocodeLabel(null);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (geocodedLat === null || geocodedLon === null) {
+      toast({ title: "Location required", description: "Enter your ranch address and select a suggestion.", variant: "destructive" });
+      return;
+    }
     setIsSaving(true);
     try {
-      const ranch = await createPersonalRanch({ name, locationCity: city || undefined, locationState: state || undefined });
+      const ranch = await createPersonalRanch({ name, lat: geocodedLat, lon: geocodedLon });
       toast({ title: "Ranch created!", description: `${name} is ready.` });
       onCreated(ranch);
       onOpenChange(false);
-      setName(""); setCity(""); setState("");
+      resetForm();
     } catch (err: unknown) {
       toast({ title: "Error", description: err instanceof Error ? err.message : "Failed to create ranch", variant: "destructive" });
     } finally {
@@ -209,27 +257,66 @@ function MyRanchSetupDialog({
   };
 
   return (
-    <SimpleDialog open={open} onOpenChange={onOpenChange} title="Set Up My Ranch">
-      <div className="space-y-1 mb-4">
-        <p className="text-sm text-muted-foreground">
-          Create your own personal ranch to track your own livestock, separate from the ranches you work on.
-        </p>
-      </div>
+    <SimpleDialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) resetForm(); }} title="Set Up My Ranch">
+      <p className="text-sm text-muted-foreground mb-4">
+        Create your own personal ranch to track your own livestock, separate from the ranches you work on.
+      </p>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label>Ranch Name</Label>
           <Input required placeholder="e.g. Sunrise Acres" value={name} onChange={e => setName(e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label>City <span className="text-muted-foreground text-xs">(optional)</span></Label>
-            <Input placeholder="Amarillo" value={city} onChange={e => setCity(e.target.value)} />
+
+        <div className="space-y-1.5 pt-2 border-t border-border">
+          <div className="flex items-center gap-1.5 pt-2 mb-1">
+            <Tractor className="w-4 h-4 text-primary" />
+            <Label className="text-primary font-semibold text-xs uppercase tracking-wide">Ranch Location</Label>
           </div>
-          <div className="space-y-2">
-            <Label>State <span className="text-muted-foreground text-xs">(optional)</span></Label>
-            <Input placeholder="TX" maxLength={2} value={state} onChange={e => setState(e.target.value.toUpperCase())} />
+          <div className="relative">
+            <Input
+              placeholder="Start typing your address…"
+              value={address}
+              onChange={e => handleAddressChange(e.target.value)}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              autoComplete="off"
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0"
+                    onMouseDown={() => selectSuggestion(s)}
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                    <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+          {geocodedLat !== null && geocodedLon !== null && (
+            <div className="rounded-lg border bg-green-50/60 border-green-200 p-2.5">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  {geocodeLabel && <p className="text-xs text-muted-foreground truncate mb-0.5">{geocodeLabel}</p>}
+                  <p className="text-xs font-mono text-foreground">{geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
+                  className="p-0.5 rounded hover:bg-muted text-muted-foreground shrink-0"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
         <Button type="submit" className="w-full" isLoading={isSaving}>
           <MapPin className="w-4 h-4 mr-2" /> Create My Ranch
         </Button>
