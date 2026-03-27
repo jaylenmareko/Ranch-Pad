@@ -13,9 +13,15 @@ export interface AuthFormProps {
   initialView?: "login" | "signup";
   /** Called after auth is fully complete (login done, or pastures step finished/skipped). */
   onDone: () => void;
+  /**
+   * Called immediately when signup succeeds and the pastures step is about to show.
+   * The parent can store this token so that if the container is dismissed early
+   * (e.g. dialog closed), the user is still logged in — their account is already created.
+   */
+  onTokenReady?: (token: string) => void;
 }
 
-export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
+export function AuthForm({ initialView = "login", onDone, onTokenReady }: AuthFormProps) {
   const [view, setView] = useState<AuthView>(initialView);
 
   // Login fields
@@ -115,6 +121,7 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
       {
         onSuccess: (data) => {
           setPendingToken(data.token);
+          onTokenReady?.(data.token);
           setView("pastures");
         },
         onError: (error: Error) => {

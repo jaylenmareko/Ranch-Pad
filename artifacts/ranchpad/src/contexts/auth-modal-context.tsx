@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { SimpleDialog } from "@/components/ui/dialog";
 import { AuthForm } from "@/components/AuthForm";
+import { useAuth } from "@/hooks/use-auth";
 
 type ModalView = "login" | "signup";
 
@@ -20,24 +21,38 @@ export function useAuthModal() {
 export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [initialView, setInitialView] = useState<ModalView>("login");
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const { login: setAuthContext } = useAuth();
 
-  const openLogin = () => { setInitialView("login"); setOpen(true); };
-  const openSignup = () => { setInitialView("signup"); setOpen(true); };
+  const openLogin = useCallback(() => { setInitialView("login"); setOpen(true); }, []);
+  const openSignup = useCallback(() => { setInitialView("signup"); setOpen(true); }, []);
 
   // Listen for auth-expired event from use-auth
   React.useEffect(() => {
-    const handler = () => openLogin();
-    window.addEventListener("open-login-modal", handler);
-    return () => window.removeEventListener("open-login-modal", handler);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    window.addEventListener("open-login-modal", openLogin);
+    return () => window.removeEventListener("open-login-modal", openLogin);
+  }, [openLogin]);
+
+  function handleOpenChange(val: boolean) {
+    if (!val && pendingToken) {
+      // Account is already created — log them in even if they close the dialog early
+      setAuthContext(pendingToken);
+      setPendingToken(null);
+    }
+    setOpen(val);
+  }
 
   return (
     <AuthModalContext.Provider value={{ openLogin, openSignup }}>
       {children}
 
-      <SimpleDialog open={open} onOpenChange={setOpen} title="RanchPad" hideTitle>
+      <SimpleDialog open={open} onOpenChange={handleOpenChange} title="RanchPad" hideTitle>
         {open && (
-          <AuthForm initialView={initialView} onDone={() => setOpen(false)} />
+          <AuthForm
+            initialView={initialView}
+            onDone={() => { setPendingToken(null); setOpen(false); }}
+            onTokenReady={setPendingToken}
+          />
         )}
       </SimpleDialog>
     </AuthModalContext.Provider>
