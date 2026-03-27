@@ -144,7 +144,7 @@ router.post("/team/invite", requireAuth, requireOwner, async (req, res): Promise
   }
 
   const token = crypto.randomBytes(9).toString("base64url");
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
   await db.insert(teamInvitesTable).values({ ranchId, token, role, createdBy, expiresAt });
 

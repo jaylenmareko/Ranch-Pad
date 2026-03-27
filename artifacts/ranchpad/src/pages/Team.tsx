@@ -319,28 +319,6 @@ export default function Team() {
         </CardContent>
       </Card>
 
-      {/* ── Pending Invites ───────────────────────────────────────────────── */}
-      {pendingInvites.length > 0 && (
-        <Card className="border border-border bg-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <Link2 className="w-4 h-4 text-primary" />
-              Pending Invites
-              <span className="ml-auto text-xs font-normal text-muted-foreground">{pendingInvites.length} active</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1 p-0 pb-2">
-            {pendingInvites.map(inv => (
-              <PendingInviteRow
-                key={inv.id}
-                invite={inv}
-                onRevoke={() => revokeInvite(inv.id)}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
       {/* ── Generate Invite ───────────────────────────────────────────────── */}
       <Card className="border border-border bg-card">
         <CardHeader className="pb-3">
@@ -390,10 +368,59 @@ export default function Team() {
           )}
 
           <p className="text-xs text-muted-foreground">
-            Links expire in 7 days and can only be used once. Recipients will sign up with the selected role.
+            Links expire in 15 minutes and can only be used once. Recipients will sign up with the selected role.
           </p>
         </CardContent>
       </Card>
+
+      {/* ── Animal Assignments (viewers) ──────────────────────────────────── */}
+      {viewersWithAssignments.length > 0 && (
+        <Card className="border border-border bg-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-bold">
+              <Eye className="w-4 h-4 text-primary" />
+              Viewer Animal Access
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-muted-foreground">
+              Viewers only see animals assigned to them. Use the dropdowns below to control their access.
+            </p>
+            {viewersWithAssignments.map(viewer => (
+              <ViewerAssignmentRow
+                key={viewer.userId}
+                viewer={viewer}
+                allAnimals={allAnimals}
+                onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
+                onRemove={removeAssignment}
+                onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Pending Invites ───────────────────────────────────────────────── */}
+      {pendingInvites.length > 0 && (
+        <Card className="border border-border bg-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-bold">
+              <Link2 className="w-4 h-4 text-primary" />
+              Pending Invites
+              <span className="ml-auto text-xs font-normal text-muted-foreground">{pendingInvites.length} active</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 p-0 pb-2">
+            {pendingInvites.map(inv => (
+              <PendingInviteRow
+                key={inv.id}
+                invite={inv}
+                onRevoke={() => revokeInvite(inv.id)}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Delete Requests ───────────────────────────────────────────────── */}
       {pendingRequests.length > 0 && (
@@ -442,33 +469,6 @@ export default function Team() {
           </CardContent>
         </Card>
       )}
-
-      {/* ── Animal Assignments (viewers) ──────────────────────────────────── */}
-      {viewersWithAssignments.length > 0 && (
-        <Card className="border border-border bg-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <Eye className="w-4 h-4 text-primary" />
-              Viewer Animal Access
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Viewers only see animals assigned to them. Use the dropdowns below to control their access.
-            </p>
-            {viewersWithAssignments.map(viewer => (
-              <ViewerAssignmentRow
-                key={viewer.userId}
-                viewer={viewer}
-                allAnimals={allAnimals}
-                onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
-                onRemove={removeAssignment}
-                onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
@@ -495,7 +495,7 @@ function PendingInviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () =
             {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">Expires {new Date(invite.expiresAt).toLocaleDateString()}</p>
+        <p className="text-xs text-muted-foreground">Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
       </div>
       <RoleBadge role={invite.role} />
       <button
