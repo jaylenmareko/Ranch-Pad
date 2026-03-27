@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Check, Link2, UserMinus, Shield, Eye, Users, ClipboardList, Trash2, CheckCircle, XCircle, ChevronDown } from "lucide-react";
+import { Copy, Check, Link2, UserMinus, Shield, Eye, Users, ClipboardList, CheckCircle, XCircle, ChevronDown, X } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -234,6 +234,20 @@ export default function Team() {
     refetchAssignments();
   };
 
+  const bulkAssignAnimals = async (viewerUserId: number, animalIds: number[]) => {
+    const res = await fetch("/api/team/animal-assignments/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ viewerUserId, animalIds }),
+    });
+    if (res.ok) {
+      refetchAssignments();
+    } else {
+      const d = await res.json();
+      toast({ title: "Error", description: d.message, variant: "destructive" });
+    }
+  };
+
   // ── Computed ───────────────────────────────────────────────────────────────
 
   const members = teamData?.members ?? [];
@@ -440,6 +454,7 @@ export default function Team() {
                 allAnimals={allAnimals}
                 onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
                 onRemove={removeAssignment}
+                onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
               />
             ))}
           </CardContent>
@@ -488,15 +503,43 @@ function RoleToggleButton({
 }
 
 function ViewerAssignmentRow({
-  viewer, allAnimals, onAssign, onRemove,
+  viewer, allAnimals, onAssign, onRemove, onBulkAssign,
 }: {
   viewer: ViewerWithAssignments;
   allAnimals: AnimalItem[];
   onAssign: (animalId: number) => void;
   onRemove: (id: number) => void;
+  onBulkAssign: (animalIds: number[]) => Promise<void>;
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [assigning, setAssigning] = useState(false);
+
   const assignedIds = new Set(viewer.assignments.map(a => a.animalId));
   const unassigned = allAnimals.filter(a => !assignedIds.has(a.id));
+
+  const toggleAnimal = (id: number) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => setSelected(new Set(unassigned.map(a => a.id)));
+  const clearAll = () => setSelected(new Set());
+
+  const allSelected = unassigned.length > 0 && selected.size === unassigned.length;
+
+  const handleConfirm = async () => {
+    if (selected.size === 0) return;
+    setAssigning(true);
+    await onBulkAssign(Array.from(selected));
+    setSelected(new Set());
+    setPickerOpen(false);
+    setAssigning(false);
+  };
 
   return (
     <div className="p-3 rounded-xl bg-muted/30 border border-border space-y-2">
@@ -532,18 +575,73 @@ function ViewerAssignmentRow({
       )}
 
       {unassigned.length > 0 && (
-        <select
-          onChange={e => { if (e.target.value) onAssign(parseInt(e.target.value, 10)); e.target.value = ""; }}
-          defaultValue=""
-          className="w-full text-xs rounded-lg border border-border bg-background text-foreground px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-        >
-          <option value="" disabled>+ Assign an animal…</option>
-          {unassigned.map(a => (
-            <option key={a.id} value={a.id}>
-              {a.name}{a.tagNumber ? ` (#${a.tagNumber})` : ""} — {a.species}
-            </option>
-          ))}
-        </select>
+        <>
+          {!pickerOpen ? (
+            <button
+              onClick={() => { setPickerOpen(true); setSelected(new Set()); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+              Assign Animals
+            </button>
+          ) : (
+            <div className="rounded-lg border border-border bg-background overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+                <span className="text-xs font-semibold text-foreground">Select animals to assign</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={allSelected ? clearAll : selectAll}
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    {allSelected ? "Deselect All" : "Select All"}
+                  </button>
+                  <button
+                    onClick={() => { setPickerOpen(false); setSelected(new Set()); }}
+                    className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+                    title="Close"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-h-48 overflow-y-auto divide-y divide-border/50">
+                {unassigned.map(a => (
+                  <label
+                    key={a.id}
+                    className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-white/5 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected.has(a.id)}
+                      onChange={() => toggleAnimal(a.id)}
+                      className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
+                    />
+                    <span className="text-xs text-foreground font-medium flex-1">
+                      {a.name}
+                      {a.tagNumber && <span className="text-muted-foreground"> #{a.tagNumber}</span>}
+                    </span>
+                    <span className="text-xs text-muted-foreground capitalize">{a.species}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="px-3 py-2 border-t border-border">
+                <button
+                  onClick={handleConfirm}
+                  disabled={selected.size === 0 || assigning}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {assigning
+                    ? "Assigning…"
+                    : selected.size === 0
+                    ? "Select animals above"
+                    : `Assign ${selected.size} animal${selected.size !== 1 ? "s" : ""}`}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

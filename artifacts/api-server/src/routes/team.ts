@@ -373,6 +373,54 @@ router.post("/team/animal-assignments", requireAuth, requireOwner, async (req, r
   res.status(201).json(assignment);
 });
 
+router.post("/team/animal-assignments/bulk", requireAuth, requireOwner, async (req, res): Promise<void> => {
+  const { ranchId } = req.user!;
+  const { viewerUserId, animalIds } = req.body;
+
+  if (!Array.isArray(animalIds) || animalIds.length === 0) {
+    res.status(400).json({ error: true, message: "animalIds must be a non-empty array" });
+    return;
+  }
+
+  const [viewer] = await db
+    .select()
+    .from(ranchUsersTable)
+    .where(
+      and(
+        eq(ranchUsersTable.ranchId, ranchId),
+        eq(ranchUsersTable.userId, viewerUserId),
+        eq(ranchUsersTable.role, "viewer"),
+      )
+    )
+    .limit(1);
+
+  if (!viewer) {
+    res.status(400).json({ error: true, message: "Viewer not found in this ranch" });
+    return;
+  }
+
+  const existing = await db
+    .select({ animalId: animalAssignmentsTable.animalId })
+    .from(animalAssignmentsTable)
+    .where(
+      and(
+        eq(animalAssignmentsTable.ranchId, ranchId),
+        eq(animalAssignmentsTable.viewerUserId, viewerUserId),
+      )
+    );
+
+  const existingIds = new Set(existing.map(e => e.animalId));
+  const toInsert = (animalIds as number[]).filter(id => !existingIds.has(id));
+
+  if (toInsert.length > 0) {
+    await db.insert(animalAssignmentsTable).values(
+      toInsert.map(animalId => ({ ranchId, animalId, viewerUserId }))
+    );
+  }
+
+  res.json({ assigned: toInsert.length, skipped: animalIds.length - toInsert.length });
+});
+
 router.delete("/team/animal-assignments/:id", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const { ranchId } = req.user!;
   const assignmentId = parseInt(req.params.id, 10);
