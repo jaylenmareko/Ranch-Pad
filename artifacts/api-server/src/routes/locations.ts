@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, pastureLocationsTable } from "@workspace/db";
+import { db, pastureLocationsTable, animalsTable } from "@workspace/db";
 import { eq, and, asc } from "drizzle-orm";
 import { requireAuth, requireOwner } from "../middlewares/auth.js";
 
@@ -59,6 +59,12 @@ router.put("/locations/:id", requireAuth, requireOwner, async (req, res): Promis
 router.delete("/locations/:id", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const { ranchId } = req.user!;
   const locationId = parseInt(req.params.id, 10);
+
+  // First: unassign all animals from this location so they fall back to Unassigned
+  await db
+    .update(animalsTable)
+    .set({ locationId: null })
+    .where(and(eq(animalsTable.locationId, locationId), eq(animalsTable.ranchId, ranchId)));
 
   const [deleted] = await db
     .delete(pastureLocationsTable)

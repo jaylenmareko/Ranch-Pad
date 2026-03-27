@@ -232,6 +232,34 @@ router.put("/animals/:animalId", requireAuth, requireNotViewer, async (req, res)
   res.json({ ...animal, latestHealthSeverity: null });
 });
 
+router.patch("/animals/location", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const { ranchId } = req.user!;
+  const { locationId, animalIds } = req.body;
+
+  if (typeof locationId !== "number" || !Number.isInteger(locationId)) {
+    res.status(400).json({ error: true, message: "locationId must be an integer" });
+    return;
+  }
+  if (!Array.isArray(animalIds) || !animalIds.every(id => typeof id === "number")) {
+    res.status(400).json({ error: true, message: "animalIds must be an array of integers" });
+    return;
+  }
+
+  // Remove existing assignments for this location
+  await db.update(animalsTable)
+    .set({ locationId: null })
+    .where(and(eq(animalsTable.ranchId, ranchId), eq(animalsTable.locationId, locationId)));
+
+  // Apply new assignments
+  if (animalIds.length > 0) {
+    await db.update(animalsTable)
+      .set({ locationId })
+      .where(and(eq(animalsTable.ranchId, ranchId), inArray(animalsTable.id, animalIds)));
+  }
+
+  res.json({ updated: animalIds.length });
+});
+
 router.delete("/animals/:animalId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;

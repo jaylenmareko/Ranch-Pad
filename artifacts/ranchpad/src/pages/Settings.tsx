@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, Cog, Loader2, FolderOpen, Plus, Pencil, Trash2 } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, Cog, Loader2, FolderOpen, Plus, Pencil, Trash2, ListChecks } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 
 interface PastureLocation { id: number; name: string; }
+interface HerdAnimal { id: number; name: string; tagNumber?: string | null; species: string; locationId?: number | null; }
 
 export default function Settings() {
   const queryClient = useQueryClient();
@@ -35,10 +36,55 @@ export default function Settings() {
   const [editLocName, setEditLocName] = useState("");
   const [savingLoc, setSavingLoc] = useState(false);
 
+  const [assigningLocId, setAssigningLocId] = useState<number | null>(null);
+  const [allAnimals, setAllAnimals] = useState<HerdAnimal[] | null>(null);
+  const [selectedAnimalIds, setSelectedAnimalIds] = useState<Set<number>>(new Set());
+  const [savingAssign, setSavingAssign] = useState(false);
+
   useEffect(() => {
     if (!isAuthenticated) return;
     fetch("/api/locations").then(r => r.json()).then(setLocations).catch(() => {});
   }, [isAuthenticated]);
+
+  // Sync checkbox selections whenever the assign panel opens or animals load
+  useEffect(() => {
+    if (allAnimals !== null && assigningLocId !== null) {
+      setSelectedAnimalIds(new Set(allAnimals.filter(a => a.locationId === assigningLocId).map(a => a.id)));
+    }
+  }, [allAnimals, assigningLocId]);
+
+  async function openAssignPanel(locId: number) {
+    setAssigningLocId(locId);
+    setEditingLocId(null);
+    if (allAnimals !== null) {
+      setSelectedAnimalIds(new Set(allAnimals.filter(a => a.locationId === locId).map(a => a.id)));
+      return;
+    }
+    try {
+      const res = await fetch("/api/animals");
+      if (res.ok) setAllAnimals(await res.json());
+    } catch { /* ignore */ }
+  }
+
+  async function saveAssignments() {
+    if (assigningLocId == null) return;
+    setSavingAssign(true);
+    try {
+      const res = await fetch("/api/animals/location", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locationId: assigningLocId, animalIds: Array.from(selectedAnimalIds) }),
+      });
+      if (res.ok) {
+        const refreshed = await fetch("/api/animals");
+        if (refreshed.ok) setAllAnimals(await refreshed.json());
+        setAssigningLocId(null);
+        toast({ title: `${selectedAnimalIds.size} ${selectedAnimalIds.size === 1 ? "animal" : "animals"} assigned` });
+      }
+    } finally {
+      setSavingAssign(false);
+    }
+  }
 
   async function addLocation() {
     if (!newLocName.trim()) return;
@@ -318,7 +364,10 @@ export default function Settings() {
             ) : (
               <ul className="divide-y divide-border">
                 {locations.map(loc => (
-                  <li key={loc.id} className="flex items-center gap-3 px-4 py-3">
+                  <li
+                    key={loc.id}
+                    className={assigningLocId === loc.id ? "px-4 py-4 space-y-3" : "flex items-center gap-3 px-4 py-3"}
+                  >
                     {editingLocId === loc.id ? (
                       <>
                         <Input
@@ -335,13 +384,79 @@ export default function Settings() {
                           Cancel
                         </Button>
                       </>
+                    ) : assigningLocId === loc.id ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-foreground">{loc.name}</span>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected
+                          </span>
+                        </div>
+                        {allAnimals === null ? (
+                          <div className="flex items-center gap-2 py-2 text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                            <span className="text-sm">Loading animals…</span>
+                          </div>
+                        ) : allAnimals.length === 0 ? (
+                          <p className="text-sm text-muted-foreground py-2">No animals in your herd yet.</p>
+                        ) : (
+                          <div className="max-h-52 overflow-y-auto rounded-xl border border-border divide-y divide-border">
+                            {allAnimals.map(a => (
+                              <label
+                                key={a.id}
+                                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedAnimalIds.has(a.id)}
+                                  onChange={e => {
+                                    setSelectedAnimalIds(prev => {
+                                      const next = new Set(prev);
+                                      if (e.target.checked) next.add(a.id);
+                                      else next.delete(a.id);
+                                      return next;
+                                    });
+                                  }}
+                                  className="w-4 h-4 rounded accent-primary shrink-0"
+                                />
+                                <span className="text-sm font-semibold text-foreground truncate flex-1">{a.name}</span>
+                                {a.tagNumber && (
+                                  <span className="text-xs text-muted-foreground font-mono shrink-0">#{a.tagNumber}</span>
+                                )}
+                                <span className="text-xs text-muted-foreground shrink-0 ml-1">{a.species}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={saveAssignments}
+                            isLoading={savingAssign}
+                            disabled={allAnimals === null}
+                            className="shrink-0"
+                          >
+                            Save Assignments
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setAssigningLocId(null)} className="shrink-0">
+                            Cancel
+                          </Button>
+                        </div>
+                      </>
                     ) : (
                       <>
                         <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
                         <button
-                          onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); }}
+                          onClick={() => openAssignPanel(loc.id)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                          title="Edit location"
+                          title="Assign animals to this location"
+                        >
+                          <ListChecks className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          title="Edit location name"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
