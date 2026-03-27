@@ -370,7 +370,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   // Determine sidebar mode
   const hasInvitedRanches = ranches.some(r => !r.isPersonal);
-  const showFolderSidebar = isAuthenticated && hasInvitedRanches;
+  const showFolderSidebar = isAuthenticated && (hasInvitedRanches || role === "owner");
 
   // Invited (non-personal) ranches
   const invitedRanches = ranches.filter(r => !r.isPersonal);
