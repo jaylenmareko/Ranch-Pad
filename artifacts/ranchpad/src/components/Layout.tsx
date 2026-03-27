@@ -446,14 +446,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       ))}
 
       <div className="border-t border-border/40 mt-1 pt-1 flex flex-col gap-0.5">
-        <NavLink
-          href="/account"
-          icon={UserCog}
-          label="Account Settings"
-          active={isActive("/account")}
-          onClick={() => { markNavigated(); onItemClick?.(); }}
-        />
-
         {hasPersonalRanch && personalRanch ? (
           <RanchFolder
             ranch={personalRanch}
@@ -476,6 +468,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             noPersonalRanchCta={() => { setSetupOpen(true); onItemClick?.(); }}
           />
         )}
+
+        <NavLink
+          href="/account"
+          icon={UserCog}
+          label="Account Settings"
+          active={isActive("/account")}
+          onClick={() => { markNavigated(); onItemClick?.(); }}
+        />
       </div>
     </>
   );
