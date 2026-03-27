@@ -445,30 +445,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
       ))}
 
-      {hasPersonalRanch && personalRanch ? (
-        <RanchFolder
-          ranch={personalRanch}
-          items={getPersonalRanchItems(pendingDeleteRequests)}
-          isOpen={openFolders.has(personalRanch.id)}
-          onToggle={() => toggleFolder(personalRanch.id)}
-          activeRanchId={activeRanchId}
-          currentPath={location}
-          onNavClick={(id) => { handleNavClick(id); onItemClick?.(); }}
-        />
-      ) : (
-        <RanchFolder
-          ranch={{ id: -1, name: "My Ranch", role: "none", ownerName: null, isPersonal: true }}
-          items={[]}
-          isOpen={openFolders.has(-1)}
-          onToggle={() => toggleFolder(-1)}
-          activeRanchId={activeRanchId}
-          currentPath={location}
-          onNavClick={() => {}}
-          noPersonalRanchCta={() => { setSetupOpen(true); onItemClick?.(); }}
-        />
-      )}
-
-      <div className="border-t border-border/40 mt-1 pt-1">
+      <div className="border-t border-border/40 mt-1 pt-1 flex flex-col gap-0.5">
         <NavLink
           href="/account"
           icon={UserCog}
@@ -476,6 +453,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
           active={isActive("/account")}
           onClick={() => { markNavigated(); onItemClick?.(); }}
         />
+
+        {hasPersonalRanch && personalRanch ? (
+          <RanchFolder
+            ranch={personalRanch}
+            items={getPersonalRanchItems(pendingDeleteRequests)}
+            isOpen={openFolders.has(personalRanch.id)}
+            onToggle={() => toggleFolder(personalRanch.id)}
+            activeRanchId={activeRanchId}
+            currentPath={location}
+            onNavClick={(id) => { handleNavClick(id); onItemClick?.(); }}
+          />
+        ) : (
+          <RanchFolder
+            ranch={{ id: -1, name: "My Ranch", role: "none", ownerName: null, isPersonal: true }}
+            items={[]}
+            isOpen={openFolders.has(-1)}
+            onToggle={() => toggleFolder(-1)}
+            activeRanchId={activeRanchId}
+            currentPath={location}
+            onNavClick={() => {}}
+            noPersonalRanchCta={() => { setSetupOpen(true); onItemClick?.(); }}
+          />
+        )}
       </div>
     </>
   );
