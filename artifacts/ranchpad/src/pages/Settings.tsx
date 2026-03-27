@@ -1,80 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, User, LogOut, KeyRound, CreditCard, Loader2, Cog } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, Cog, Loader2 } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useNavigation } from "@/contexts/navigation-context";
-import { useAuthModal } from "@/contexts/auth-modal-context";
-import type { BillingStatus } from "@/hooks/use-billing";
-
-interface UserProfile {
-  id: number;
-  name: string;
-  email: string;
-}
+import { useLocation } from "wouter";
 
 export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { logout, isAuthenticated } = useAuth();
-  const { resetNavigation } = useNavigation();
-  const { openLogin, openSignup } = useAuthModal();
+  const { isAuthenticated, role } = useAuth();
+  const [, setLocation] = useLocation();
   const { data: ranch, isLoading } = useGetRanch({ query: { enabled: isAuthenticated } });
-
-  const { data: billing, isLoading: isBillingLoading } = useQuery<BillingStatus>({
-    queryKey: ["/api/billing/status"],
-    queryFn: async () => {
-      const res = await fetch("/api/billing/status");
-      if (!res.ok) throw new Error("Failed to fetch billing status");
-      return res.json() as Promise<BillingStatus>;
-    },
-    enabled: isAuthenticated,
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    retry: false,
-  });
-
-  const [isBillingRedirecting, setIsBillingRedirecting] = useState(false);
-
-  async function handleSubscribe() {
-    setIsBillingRedirecting(true);
-    try {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast({ title: "Checkout failed", description: data.message ?? "Please try again.", variant: "destructive" });
-        return;
-      }
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast({ title: "Checkout failed", description: "Network error. Try again.", variant: "destructive" });
-    } finally {
-      setIsBillingRedirecting(false);
-    }
-  }
-
-  async function handleManageBilling() {
-    setIsBillingRedirecting(true);
-    try {
-      const res = await fetch("/api/billing/portal", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast({ title: "Portal error", description: data.message ?? "Please try again.", variant: "destructive" });
-        return;
-      }
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast({ title: "Portal error", description: "Network error. Try again.", variant: "destructive" });
-    } finally {
-      setIsBillingRedirecting(false);
-    }
-  }
 
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
@@ -86,21 +26,6 @@ export default function Settings() {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
 
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [displayName, setDisplayName] = useState("");
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [isSavingName, setIsSavingName] = useState(false);
-
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-
-  const [newEmail, setNewEmail] = useState("");
-  const [emailPassword, setEmailPassword] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [isChangingEmail, setIsChangingEmail] = useState(false);
-
   useEffect(() => {
     if (ranch) {
       setName(ranch.name ?? "");
@@ -111,130 +36,37 @@ export default function Settings() {
     }
   }, [ranch]);
 
+  // Redirect non-owners to account settings
   useEffect(() => {
-    if (!isAuthenticated) { setIsLoadingProfile(false); return; }
-    setIsLoadingProfile(true);
-    fetch("/api/auth/me")
-      .then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error((err as { message?: string }).message ?? "Could not load account info");
-        }
-        return res.json() as Promise<UserProfile>;
-      })
-      .then((data) => {
-        setUserProfile(data);
-        setDisplayName(data.name ?? "");
-      })
-      .catch(() => {
-        toast({ title: "Could not load account info", variant: "destructive" });
-      })
-      .finally(() => setIsLoadingProfile(false));
-  }, [isAuthenticated]);
+    if (isAuthenticated && role && role !== "owner") {
+      setLocation("/account");
+    }
+  }, [isAuthenticated, role, setLocation]);
 
-  // Guest users see a simple sign-up prompt instead of settings
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
-        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Settings</h1>
+        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Ranch Settings</h1>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
             <Cog className="w-10 h-10 text-primary/50" />
           </div>
-          <h2 className="font-bold text-xl text-foreground mb-2">Ranch &amp; account settings</h2>
+          <h2 className="font-bold text-xl text-foreground mb-2">Ranch Settings</h2>
           <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
-            Create a free account to set up your ranch profile, configure your location for weather alerts, and manage your subscription.
+            Sign in as a ranch owner to manage your ranch name and location.
           </p>
-          <div className="flex gap-3">
-            <button onClick={openSignup} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-              Create Free Account
-            </button>
-            <button onClick={openLogin} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-medium border border-border text-foreground hover:bg-muted transition-colors">
-              Log In
-            </button>
-          </div>
         </div>
       </div>
     );
   }
 
-  async function handleSaveName(e: React.FormEvent) {
-    e.preventDefault();
-    if (!displayName.trim()) return;
-    setIsSavingName(true);
-    try {
-      const res = await fetch("/api/auth/me", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: displayName.trim() }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message ?? "Save failed");
-      }
-      const updated: UserProfile = await res.json();
-      setUserProfile(updated);
-      setDisplayName(updated.name);
-      toast({ title: "Name updated", description: "Your display name has been saved." });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong.";
-      toast({ title: "Save failed", description: message, variant: "destructive" });
-    } finally {
-      setIsSavingName(false);
-    }
-  }
-
-  async function handleChangeEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setEmailError(null);
-    setIsChangingEmail(true);
-    try {
-      const res = await fetch("/api/auth/me/email", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newEmail: newEmail.trim(), currentPassword: emailPassword }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        setEmailError(err.message ?? "Could not update email");
-        return;
-      }
-      const updated: UserProfile = await res.json();
-      setUserProfile(updated);
-      setNewEmail("");
-      setEmailPassword("");
-      toast({ title: "Email updated", description: `Your email is now ${updated.email}.` });
-    } catch {
-      setEmailError("Something went wrong. Try again.");
-    } finally {
-      setIsChangingEmail(false);
-    }
-  }
-
-  async function handleChangePassword(e: React.FormEvent) {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) return;
-    setIsChangingPassword(true);
-    try {
-      const res = await fetch("/api/auth/me/password", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message ?? "Password change failed");
-      }
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      toast({ title: "Password updated", description: "Your new password is active." });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong.";
-      toast({ title: "Password change failed", description: message, variant: "destructive" });
-    } finally {
-      setIsChangingPassword(false);
-    }
+  if (isLoading || !role) {
+    return (
+      <div className="flex items-center gap-2 p-12 text-muted-foreground animate-pulse">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        <span className="font-bold text-sm">Loading...</span>
+      </div>
+    );
   }
 
   async function handleGeocode() {
@@ -285,167 +117,12 @@ export default function Settings() {
     });
   }
 
-  if (isLoading) {
-    return <div className="p-12 text-center text-muted-foreground animate-pulse font-bold">Loading settings...</div>;
-  }
-
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Settings</h1>
-        <p className="text-muted-foreground font-medium mt-1">Manage your account and ranch profile.</p>
+        <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Ranch Settings</h1>
+        <p className="text-muted-foreground font-medium mt-1">Manage your ranch name and location.</p>
       </div>
-
-      {/* Your Account */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <User className="w-5 h-5 text-primary" />
-            Your Account
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingProfile ? (
-            <p className="text-sm text-muted-foreground animate-pulse font-medium">Loading account info...</p>
-          ) : (
-            <>
-              <form onSubmit={handleSaveName} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Display Name</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Your name"
-                      required
-                      className="flex-1"
-                    />
-                    <Button
-                      type="submit"
-                      variant="secondary"
-                      isLoading={isSavingName}
-                      disabled={isSavingName || displayName.trim() === (userProfile?.name ?? "")}
-                      className="shrink-0"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      Save
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-1 pt-2 border-t border-border">
-                  <Label>Current Email</Label>
-                  <p className="text-sm font-medium text-foreground">{userProfile?.email ?? "—"}</p>
-                </div>
-              </form>
-
-              <form onSubmit={handleChangeEmail} className="space-y-3 pt-5 border-t border-border mt-5">
-                <p className="text-sm font-semibold text-foreground">Change Email</p>
-                <div className="space-y-2">
-                  <Label>New Email Address</Label>
-                  <Input
-                    type="email"
-                    value={newEmail}
-                    onChange={e => { setNewEmail(e.target.value); setEmailError(null); }}
-                    placeholder="new@example.com"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Confirm with Current Password</Label>
-                  <Input
-                    type="password"
-                    value={emailPassword}
-                    onChange={e => { setEmailPassword(e.target.value); setEmailError(null); }}
-                    placeholder="Enter your current password"
-                    required
-                    autoComplete="current-password"
-                  />
-                </div>
-                {emailError && (
-                  <p className="text-xs text-destructive font-medium">{emailError}</p>
-                )}
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  isLoading={isChangingEmail}
-                  disabled={isChangingEmail || !newEmail.trim() || !emailPassword}
-                  className="w-full gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Update Email
-                </Button>
-              </form>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Change Password */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <KeyRound className="w-5 h-5 text-primary" />
-            Change Password
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Current Password</Label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={e => setCurrentPassword(e.target.value)}
-                placeholder="Enter your current password"
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>New Password</Label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                placeholder="At least 6 characters"
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Confirm New Password</Label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                placeholder="Repeat new password"
-                required
-                autoComplete="new-password"
-              />
-              {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-destructive font-medium">Passwords do not match.</p>
-              )}
-            </div>
-            <Button
-              type="submit"
-              variant="secondary"
-              isLoading={isChangingPassword}
-              disabled={
-                isChangingPassword ||
-                !currentPassword ||
-                newPassword.length < 6 ||
-                newPassword !== confirmPassword
-              }
-              className="w-full gap-2"
-            >
-              <KeyRound className="w-4 h-4" />
-              Update Password
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Ranch Info */}
@@ -519,7 +196,6 @@ export default function Settings() {
               </Button>
             </div>
 
-            {/* Result */}
             {lat !== null && lon !== null && (
               <div className={`rounded-xl border p-4 space-y-2 ${geocodeLabel ? "bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800" : "bg-muted/40 border-border"}`}>
                 <div className="flex items-start gap-2">
@@ -558,120 +234,6 @@ export default function Settings() {
           Save Ranch Settings
         </Button>
       </form>
-
-      {/* Subscription / Billing */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <CreditCard className="w-5 h-5 text-primary" />
-            Subscription
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isBillingLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Loading subscription info...
-            </div>
-          ) : !billing ? (
-            <p className="text-sm text-muted-foreground font-medium">Billing information unavailable.</p>
-          ) : (
-            <div className="space-y-4">
-              {/* Status badge */}
-              <div className="flex items-center gap-3">
-                {billing.status === "active" && !billing.cancelAtPeriodEnd && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Active
-                  </span>
-                )}
-                {billing.status === "active" && billing.cancelAtPeriodEnd && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                    Canceling
-                  </span>
-                )}
-                {billing.status === "trialing" && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                    Free Trial
-                  </span>
-                )}
-                {billing.status === "past_due" && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                    Past Due
-                  </span>
-                )}
-                {billing.status === "canceled" && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                    Canceled
-                  </span>
-                )}
-                {billing.status === "expired" && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                    Trial Expired
-                  </span>
-                )}
-              </div>
-
-              {/* Trial days left */}
-              {billing.status === "trialing" && billing.trialDaysLeft !== null && (
-                <p className="text-sm font-medium text-muted-foreground">
-                  {billing.trialDaysLeft} day{billing.trialDaysLeft !== 1 ? "s" : ""} left in your free trial.
-                </p>
-              )}
-              {billing.status === "active" && billing.currentPeriodEnd && !billing.cancelAtPeriodEnd && (
-                <p className="text-sm font-medium text-muted-foreground">
-                  Next billing date: {new Date(billing.currentPeriodEnd).toLocaleDateString()}
-                </p>
-              )}
-              {billing.status === "active" && billing.currentPeriodEnd && billing.cancelAtPeriodEnd && (
-                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                  Access ends on {new Date(billing.currentPeriodEnd).toLocaleDateString()} — you can resubscribe any time.
-                </p>
-              )}
-              {billing.status === "canceled" && billing.currentPeriodEnd && (
-                <p className="text-sm font-medium text-muted-foreground">
-                  Access expired on {new Date(billing.currentPeriodEnd).toLocaleDateString()}
-                </p>
-              )}
-
-              {/* CTA button */}
-              {(billing.status === "active" || billing.status === "past_due") ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="gap-2"
-                  onClick={handleManageBilling}
-                  disabled={isBillingRedirecting}
-                >
-                  {isBillingRedirecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                  Manage Subscription
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  className="gap-2"
-                  onClick={handleSubscribe}
-                  disabled={isBillingRedirecting}
-                >
-                  {isBillingRedirecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                  {billing.status === "trialing" ? "Subscribe · $12/month" : "Re-subscribe · $12/month"}
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Log Out */}
-      <div className="border-t pt-6">
-        <Button
-          variant="destructive"
-          className="w-full gap-2"
-          onClick={() => { resetNavigation(); logout(); }}
-        >
-          <LogOut className="w-4 h-4" />
-          Log Out
-        </Button>
-      </div>
     </div>
   );
 }

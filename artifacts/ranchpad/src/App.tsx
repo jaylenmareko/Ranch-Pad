@@ -31,6 +31,7 @@ import AnimalForm from "@/pages/Animals/Form";
 import AnimalDetail from "@/pages/Animals/Detail";
 import AlertsList from "@/pages/Alerts/List";
 import Settings from "@/pages/Settings";
+import AccountSettings from "@/pages/AccountSettings";
 import Paywall from "@/pages/Paywall";
 import Team from "@/pages/Team";
 import InviteAccept from "@/pages/InviteAccept";
@@ -155,6 +156,7 @@ function AppContent() {
       <Route path="/animals/:id" component={AnimalDetail} />
       <Route path="/alerts" component={AlertsList} />
       <Route path="/settings" component={Settings} />
+      <Route path="/account" component={AccountSettings} />
       <Route path="/team" component={Team} />
       <Route component={NotFound} />
     </Switch>

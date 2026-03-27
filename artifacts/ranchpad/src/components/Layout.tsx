@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse, Users,
-  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor
+  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor, UserCog
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -49,18 +49,19 @@ function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Animals" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/settings", icon: Settings, label: "Settings" },
+    { href: "/settings", icon: Settings, label: "Ranch Settings" },
     { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
   ];
 }
 
-// Flat nav items for solo owners (unchanged current experience)
+// Flat nav items for solo owners
 function getFlatNavItems(pendingDeleteRequests: number): NavItem[] {
   return [
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Animals" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/settings", icon: Settings, label: "Settings" },
+    { href: "/settings", icon: Settings, label: "Ranch Settings" },
+    { href: "/account", icon: UserCog, label: "Account Settings" },
     { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
   ];
 }
@@ -469,6 +470,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
           noPersonalRanchCta={() => { setSetupOpen(true); onItemClick?.(); }}
         />
       )}
+
+      <div className="border-t border-border/40 mt-1 pt-1">
+        <NavLink
+          href="/account"
+          icon={UserCog}
+          label="Account Settings"
+          active={isActive("/account")}
+          onClick={() => { markNavigated(); onItemClick?.(); }}
+        />
+      </div>
     </>
   );
 
