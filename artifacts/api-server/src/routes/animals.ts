@@ -1,8 +1,8 @@
 import { Router, type IRouter } from "express";
 import multer from "multer";
 import { parse as parseCsv } from "csv-parse/sync";
-import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable } from "@workspace/db";
-import { eq, and, or, inArray } from "drizzle-orm";
+import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable, pastureLocationsTable } from "@workspace/db";
+import { eq, and, or, inArray, getTableColumns } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 
@@ -22,6 +22,7 @@ const createAnimalSchema = z.object({
   sireId: z.number().int().nullable().optional(),
   sireName: z.string().nullable().optional(),
   expectedDueDate: z.string().nullable().optional(),
+  locationId: z.number().int().nullable().optional(),
 });
 
 // Compute health dot color from events in last 7 days
@@ -52,8 +53,12 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   const { species, sex, breed, search } = req.query as Record<string, string>;
 
   let animals = await db
-    .select()
+    .select({
+      ...getTableColumns(animalsTable),
+      locationName: pastureLocationsTable.name,
+    })
     .from(animalsTable)
+    .leftJoin(pastureLocationsTable, eq(animalsTable.locationId, pastureLocationsTable.id))
     .where(eq(animalsTable.ranchId, ranchId))
     .orderBy(animalsTable.createdAt);
 

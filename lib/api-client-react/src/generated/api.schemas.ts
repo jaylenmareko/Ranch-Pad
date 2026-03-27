@@ -95,6 +95,10 @@ export interface Animal {
   sireName?: string | null;
   /** @nullable */
   expectedDueDate?: string | null;
+  /** @nullable */
+  locationId?: number | null;
+  /** @nullable */
+  locationName?: string | null;
   createdAt: string;
   /** @nullable */
   latestHealthSeverity?: string | null;

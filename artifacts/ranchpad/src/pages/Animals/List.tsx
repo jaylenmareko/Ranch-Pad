@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
@@ -452,6 +452,92 @@ function SpeciesFolder({
   );
 }
 
+function LocationFolder({
+  locationId,
+  locationName,
+  animals,
+  initialOpen,
+}: {
+  locationId: number | null;
+  locationName: string | null;
+  animals: Animal[];
+  initialOpen?: boolean;
+}) {
+  const folderKey = locationId != null ? `loc:${locationId}` : "loc:unassigned";
+  const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(folderKey));
+
+  function toggle() {
+    setOpen(o => {
+      const next = !o;
+      setFolderOpen(folderKey, next);
+      return next;
+    });
+  }
+
+  const bySpecies = React.useMemo(() => {
+    const map: Record<string, Animal[]> = {};
+    for (const a of animals) {
+      if (!map[a.species]) map[a.species] = [];
+      map[a.species].push(a);
+    }
+    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
+  }, [animals]);
+
+  const highCount = animals.filter(a => a.latestHealthSeverity === "high").length;
+  const medCount = animals.filter(a => a.latestHealthSeverity === "medium").length;
+  const isUnassigned = locationId == null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+      <button
+        onClick={toggle}
+        className="relative w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
+      >
+        <MapPin className={`w-5 h-5 shrink-0 ${isUnassigned ? "text-muted-foreground/50" : "text-primary"}`} />
+        <span className="font-black text-lg text-foreground font-display flex-1 text-left">
+          {isUnassigned ? "Unassigned" : locationName}
+        </span>
+        {!open && (
+          <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
+            Click Here
+          </span>
+        )}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+            {animals.length} {animals.length === 1 ? "animal" : "animals"}
+          </span>
+          {highCount > 0 && (
+            <span className="text-xs font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+              {highCount} urgent
+            </span>
+          )}
+          {medCount > 0 && highCount === 0 && (
+            <span className="text-xs font-bold text-yellow-600 bg-yellow-500/10 px-2 py-0.5 rounded-full">
+              {medCount} watch
+            </span>
+          )}
+          {open
+            ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            : <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          }
+        </div>
+      </button>
+
+      {open && (
+        <div className="p-4 space-y-3">
+          {bySpecies.map(([species, speciesAnimals]) => (
+            <SpeciesFolder
+              key={`${folderKey}-${species}`}
+              species={species}
+              animals={speciesAnimals}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AnimalList() {
   const [location, setLocation] = useLocation();
   const [search, setSearch] = useState("");
@@ -577,6 +663,20 @@ export default function AnimalList() {
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [filteredAnimals]);
 
+  const locationGrouped = React.useMemo(() => {
+    if (!filteredAnimals.some(a => a.locationId != null)) return null;
+    const map = new Map<number | null, { name: string | null; animals: Animal[] }>();
+    for (const a of filteredAnimals) {
+      const locId = a.locationId ?? null;
+      if (!map.has(locId)) map.set(locId, { name: a.locationName ?? null, animals: [] });
+      map.get(locId)!.animals.push(a);
+    }
+    const entries = Array.from(map.entries());
+    const assigned = entries.filter(([id]) => id != null).sort(([, a], [, b]) => (a.name ?? "").localeCompare(b.name ?? ""));
+    const unassigned = entries.filter(([id]) => id == null);
+    return [...assigned, ...unassigned] as Array<[number | null, { name: string | null; animals: Animal[] }]>;
+  }, [filteredAnimals]);
+
   return (
     <div className="space-y-5">
       {/* Hidden file input */}
@@ -593,7 +693,11 @@ export default function AnimalList() {
         <div>
           <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
           <p className="text-muted-foreground font-medium mt-1">
-            {isLoading ? "Loading…" : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
+            {isLoading
+              ? "Loading…"
+              : locationGrouped
+                ? `${filteredAnimals.length} animals across ${locationGrouped.length} ${locationGrouped.length === 1 ? "location" : "locations"}`
+                : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
           </p>
         </div>
         <TooltipProvider delayDuration={300}>
@@ -766,6 +870,18 @@ export default function AnimalList() {
           {!search && !hasActiveFilters && (
             <Button className="mt-6" onClick={() => setLocation("/animals/new")}>Add First Animal</Button>
           )}
+        </div>
+      ) : locationGrouped ? (
+        <div className="space-y-4">
+          {locationGrouped.map(([locId, { name, animals: locAnimals }]) => (
+            <LocationFolder
+              key={locId ?? "unassigned"}
+              locationId={locId}
+              locationName={name}
+              animals={locAnimals}
+              initialOpen={dueSoonFilter ? true : undefined}
+            />
+          ))}
         </div>
       ) : (
         <div className="space-y-4">

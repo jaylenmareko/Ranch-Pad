@@ -6,12 +6,14 @@ import { z } from "zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, Search, X, Check } from "lucide-react";
+import { ArrowLeft, Users, Search, X, Check, MapPin } from "lucide-react";
 import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals, getGetAnimalQueryKey, type Animal } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { addGuestAnimal } from "@/lib/guest-store";
+
+interface PastureLocation { id: number; name: string; }
 
 // ─── Species-specific sex options ─────────────────────────────────────────────
 const SEX_OPTIONS: Record<string, Array<{ value: string; label: string }>> = {
@@ -67,6 +69,7 @@ const formSchema = z.object({
   damId: z.number().nullable().optional(),
   sireName: z.string().nullable().optional(),
   damName: z.string().nullable().optional(),
+  locationId: z.number().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -222,6 +225,13 @@ export default function AnimalForm() {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
 
+  const [locations, setLocations] = useState<PastureLocation[]>([]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetch("/api/locations").then(r => r.json()).then(setLocations).catch(() => {});
+  }, [isAuthenticated]);
+
   // Breeding status — UI only, gates expectedDueDate visibility
   const [breedingStatus, setBreedingStatus] = useState<"unknown" | "open" | "bred">("unknown");
 
@@ -244,6 +254,7 @@ export default function AnimalForm() {
       damId: null,
       sireName: "",
       damName: "",
+      locationId: null,
     }
   });
 
@@ -302,6 +313,7 @@ export default function AnimalForm() {
         damId: animal.damId ?? null,
         sireName: (animal as any).sireName || "",
         damName: (animal as any).damName || "",
+        locationId: animal.locationId ?? null,
       });
       // Infer breeding status from existing due date
       if (animal.expectedDueDate) setBreedingStatus("bred");
@@ -358,6 +370,7 @@ export default function AnimalForm() {
       damId: values.damId ?? null,
       sireName: values.sireName || null,
       damName: values.damName || null,
+      locationId: values.locationId ?? null,
     };
 
     if (isEditing) {
@@ -475,6 +488,39 @@ export default function AnimalForm() {
                 </div>
               )}
             </div>
+
+            {/* ── Placement ── */}
+            {isAuthenticated && (
+              <div className="pt-2 border-t border-border/60 space-y-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Placement</h3>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="locationId">Pasture / Location</Label>
+                  <div className="relative">
+                    <select
+                      id="locationId"
+                      value={form.watch("locationId") ?? ""}
+                      onChange={e => form.setValue("locationId", e.target.value ? parseInt(e.target.value, 10) : null)}
+                      className={selectClass}
+                    >
+                      <option value="">— No location —</option>
+                      {locations.map(loc => (
+                        <option key={loc.id} value={loc.id}>{loc.name}</option>
+                      ))}
+                    </select>
+                    {chevron}
+                  </div>
+                  {locations.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      No pastures configured yet. Add them in{" "}
+                      <a href="/settings" className="underline text-primary font-semibold">Ranch Settings</a>.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ── Parentage ── */}
             <div className="pt-2 border-t border-border/60 space-y-4">

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, Cog, Loader2 } from "lucide-react";
+import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, Cog, Loader2, FolderOpen, Plus, Pencil, Trash2 } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+
+interface PastureLocation { id: number; name: string; }
 
 export default function Settings() {
   const queryClient = useQueryClient();
@@ -25,6 +27,66 @@ export default function Settings() {
   const [address, setAddress] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
+
+  const [locations, setLocations] = useState<PastureLocation[]>([]);
+  const [newLocName, setNewLocName] = useState("");
+  const [addingLoc, setAddingLoc] = useState(false);
+  const [editingLocId, setEditingLocId] = useState<number | null>(null);
+  const [editLocName, setEditLocName] = useState("");
+  const [savingLoc, setSavingLoc] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetch("/api/locations").then(r => r.json()).then(setLocations).catch(() => {});
+  }, [isAuthenticated]);
+
+  async function addLocation() {
+    if (!newLocName.trim()) return;
+    setAddingLoc(true);
+    try {
+      const res = await fetch("/api/locations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newLocName.trim() }),
+      });
+      if (res.ok) {
+        const loc = await res.json();
+        setLocations(prev => [...prev, loc]);
+        setNewLocName("");
+        toast({ title: "Location added" });
+      }
+    } finally {
+      setAddingLoc(false);
+    }
+  }
+
+  async function saveLocEdit(id: number) {
+    if (!editLocName.trim()) return;
+    setSavingLoc(true);
+    try {
+      const res = await fetch(`/api/locations/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editLocName.trim() }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setLocations(prev => prev.map(l => l.id === id ? updated : l));
+        setEditingLocId(null);
+        toast({ title: "Location updated" });
+      }
+    } finally {
+      setSavingLoc(false);
+    }
+  }
+
+  async function deleteLocation(id: number) {
+    const res = await fetch(`/api/locations/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setLocations(prev => prev.filter(l => l.id !== id));
+      toast({ title: "Location removed" });
+    }
+  }
 
   useEffect(() => {
     if (ranch) {
@@ -234,6 +296,90 @@ export default function Settings() {
           Save Ranch Settings
         </Button>
       </form>
+
+      {/* Pastures & Locations */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <FolderOpen className="w-4 h-4 text-primary" />
+            Pastures &amp; Locations
+          </h2>
+          <p className="text-sm text-muted-foreground font-medium mt-0.5 ml-6">
+            Tag animals to specific pastures or areas. Animals are then grouped by location in the Herd Directory.
+          </p>
+        </div>
+
+        <Card className="shadow-sm">
+          <CardContent className="p-0">
+            {locations.length === 0 ? (
+              <p className="px-6 py-5 text-sm text-muted-foreground font-medium">
+                No locations yet — add your first pasture or pen below.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {locations.map(loc => (
+                  <li key={loc.id} className="flex items-center gap-3 px-4 py-3">
+                    {editingLocId === loc.id ? (
+                      <>
+                        <Input
+                          value={editLocName}
+                          onChange={e => setEditLocName(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
+                          className="flex-1 h-9"
+                          autoFocus
+                        />
+                        <Button size="sm" onClick={() => saveLocEdit(loc.id)} isLoading={savingLoc} className="shrink-0">
+                          Save
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingLocId(null)} className="shrink-0">
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
+                        <button
+                          onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); }}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          title="Edit location"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => deleteLocation(loc.id)}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete location"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-2">
+          <Input
+            value={newLocName}
+            onChange={e => setNewLocName(e.target.value)}
+            placeholder="e.g. South Pasture, Barn, Lot A"
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
+          />
+          <Button
+            type="button"
+            onClick={addLocation}
+            isLoading={addingLoc}
+            disabled={!newLocName.trim()}
+            className="shrink-0 gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            Add
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
