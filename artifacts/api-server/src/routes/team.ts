@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import {
   db,
   ranchUsersTable,
@@ -16,6 +17,7 @@ import {
 } from "@workspace/db";
 import { eq, and, isNull, gt, desc, sql } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
+import { signToken } from "../lib/jwt.js";
 
 const router: IRouter = Router();
 
@@ -180,6 +182,75 @@ router.get("/team/invite/:token", async (req, res): Promise<void> => {
   }
 
   res.json({ valid: true, role: invite.role, ranchName: invite.ranchName });
+});
+
+// POST /team/invite/:token/login — existing user accepts invite by logging in
+router.post("/team/invite/:token/login", async (req, res): Promise<void> => {
+  const { token } = req.params;
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400).json({ error: true, message: "Email and password are required" });
+    return;
+  }
+
+  // Validate invite
+  const [invite] = await db
+    .select({
+      id: teamInvitesTable.id,
+      role: teamInvitesTable.role,
+      ranchId: teamInvitesTable.ranchId,
+      expiresAt: teamInvitesTable.expiresAt,
+      usedBy: teamInvitesTable.usedBy,
+      ranchName: ranchesTable.name,
+    })
+    .from(teamInvitesTable)
+    .innerJoin(ranchesTable, eq(teamInvitesTable.ranchId, ranchesTable.id))
+    .where(eq(teamInvitesTable.token, token))
+    .limit(1);
+
+  if (!invite) {
+    res.status(404).json({ error: true, message: "Invite not found" });
+    return;
+  }
+  if (invite.usedBy) {
+    res.status(410).json({ error: true, message: "This invite link has already been used" });
+    return;
+  }
+  if (new Date() > invite.expiresAt) {
+    res.status(410).json({ error: true, message: "This invite link has expired" });
+    return;
+  }
+
+  // Authenticate user
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+  if (!user) {
+    res.status(401).json({ error: true, message: "Invalid email or password" });
+    return;
+  }
+  const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+  if (!passwordMatch) {
+    res.status(401).json({ error: true, message: "Invalid email or password" });
+    return;
+  }
+
+  // Check not already a member
+  const [existing] = await db
+    .select()
+    .from(ranchUsersTable)
+    .where(and(eq(ranchUsersTable.userId, user.id), eq(ranchUsersTable.ranchId, invite.ranchId)))
+    .limit(1);
+  if (existing) {
+    res.status(409).json({ error: true, message: "You are already a member of this ranch" });
+    return;
+  }
+
+  // Add to ranch + mark invite used
+  await db.insert(ranchUsersTable).values({ userId: user.id, ranchId: invite.ranchId, role: invite.role });
+  await db.update(teamInvitesTable).set({ usedBy: user.id }).where(eq(teamInvitesTable.id, invite.id));
+
+  const authToken = signToken({ userId: user.id, ranchId: invite.ranchId, email: user.email });
+  res.json({ token: authToken, ranchName: invite.ranchName });
 });
 
 // ─── Delete Requests ──────────────────────────────────────────────────────────
