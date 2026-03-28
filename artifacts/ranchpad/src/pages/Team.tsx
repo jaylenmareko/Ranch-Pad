@@ -186,6 +186,7 @@ export default function Team() {
     if (res.ok) {
       toast({ title: "Role updated" });
       refetchTeam();
+      refetchAssignments();
     } else {
       const d = await res.json();
       toast({ title: "Error", description: d.message, variant: "destructive" });
