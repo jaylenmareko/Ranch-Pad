@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
-import { getGuestAnimals, importCsvToGuestStore, clearGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
+import { getGuestAnimals, clearGuestAnimals, type GuestAnimal, setPostSignupAction, setPostSignupCsv, getPostSignupAction, clearPostSignupState } from "@/lib/guest-store";
+import { SimpleDialog } from "@/components/ui/dialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
@@ -162,9 +163,49 @@ function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
   );
 }
 
-// ─── Guest Animal List ─────────────────────────────────────────────────────────
+// ─── Save Your Herd Dialog ─────────────────────────────────────────────────────
 
-interface GuestImportSummary { animalsCreated: number; skipped: { row: number; reason: string }[] }
+function SaveHerdDialog({ open, onOpenChange, onSignup, onLogin }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSignup: () => void;
+  onLogin: () => void;
+}) {
+  return (
+    <SimpleDialog open={open} onOpenChange={onOpenChange} title="Save Your Herd">
+      <div className="flex flex-col items-center text-center gap-5 py-1">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+          <span className="text-3xl leading-none">🐄</span>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
+          Create a free account to keep your animals forever — accessible on any device, with alerts and health reminders.
+        </p>
+        <div className="flex flex-col gap-2.5 w-full max-w-xs">
+          <button
+            onClick={onSignup}
+            className="w-full inline-flex items-center justify-center gap-2 h-10 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Create Free Account <ArrowRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onLogin}
+            className="w-full inline-flex items-center justify-center h-10 px-6 rounded-xl font-semibold border border-border text-foreground hover:bg-muted transition-colors"
+          >
+            Log In
+          </button>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+          >
+            Not now
+          </button>
+        </div>
+      </div>
+    </SimpleDialog>
+  );
+}
+
+// ─── Guest Animal List ─────────────────────────────────────────────────────────
 
 function GuestSpeciesFolder({ species, animals }: { species: string; animals: GuestAnimal[] }) {
   const [open, setOpen] = useState(() => getFolderOpen(species));
@@ -210,13 +251,11 @@ function GuestSpeciesFolder({ species, animals }: { species: string; animals: Gu
 }
 
 function GuestAnimalList() {
-  const { openSignup } = useAuthModal();
+  const { openSignup, openLogin } = useAuthModal();
   const [guestAnimals, setGuestAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
-  const [importing, setImporting] = useState(false);
+  const [readingFile, setReadingFile] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const [importSummary, setImportSummary] = useState<GuestImportSummary | null>(null);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [saveHerdOpen, setSaveHerdOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -225,40 +264,43 @@ function GuestAnimalList() {
     return () => window.removeEventListener("guest-save", refresh);
   }, []);
 
-  async function doImport(file: File, replace: boolean) {
-    setImporting(true);
-    setModeDialogOpen(false);
-    setPendingFile(null);
-    try {
-      const text = await file.text();
-      if (replace) clearGuestAnimals();
-      const result = importCsvToGuestStore(text);
-      setImportSummary(result);
-      if (result.animalsCreated > 0) {
-        window.dispatchEvent(new CustomEvent("guest-save"));
-      }
-    } catch {
-      setImportError("Something went wrong reading your file. Please try again.");
-    } finally {
-      setImporting(false);
-    }
-  }
-
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
     setImportError(null);
-    setImportSummary(null);
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
     if (!isCSV) { setImportError("Please upload a CSV file."); return; }
     if (file.size === 0) { setImportError("This file appears to be empty."); return; }
-    if (guestAnimals.length > 0) {
-      setPendingFile(file);
-      setModeDialogOpen(true);
-    } else {
-      doImport(file, false);
-    }
+    setReadingFile(true);
+    file.text().then(text => {
+      setPostSignupCsv(text);
+      setPostSignupAction("import");
+      setSaveHerdOpen(true);
+    }).catch(() => {
+      setImportError("Something went wrong reading your file. Please try again.");
+    }).finally(() => setReadingFile(false));
+  }
+
+  function handleAddAnimal() {
+    setPostSignupAction("add");
+    setSaveHerdOpen(true);
+  }
+
+  function handleSignup() {
+    setSaveHerdOpen(false);
+    openSignup();
+  }
+
+  function handleLogin() {
+    clearPostSignupState();
+    setSaveHerdOpen(false);
+    openLogin();
+  }
+
+  function handleDismiss() {
+    clearPostSignupState();
+    setSaveHerdOpen(false);
   }
 
   const bySpecies = guestAnimals.reduce<Record<string, GuestAnimal[]>>((acc, a) => {
@@ -288,18 +330,18 @@ function GuestAnimalList() {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file here">
-                  {importing
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={readingFile} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file here">
+                  {readingFile
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Reading…</>
                     : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
                   }
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Upload your herd from a csv file here</TooltipContent>
             </Tooltip>
-            <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
+            <Button onClick={handleAddAnimal} className="h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 mr-2" /> Add Animal
-            </Link>
+            </Button>
           </div>
         </TooltipProvider>
       </div>
@@ -312,17 +354,6 @@ function GuestAnimalList() {
         </div>
       )}
 
-      {importSummary && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-          <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
-          <p className="flex-1 text-sm font-semibold text-green-700 dark:text-green-300">
-            Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
-            {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} skipped`}
-          </p>
-          <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors" aria-label="Dismiss"><XCircle className="w-4 h-4" /></button>
-        </div>
-      )}
-
       {guestAnimals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
@@ -330,11 +361,11 @@ function GuestAnimalList() {
           </div>
           <h2 className="font-bold text-xl text-foreground mb-2">No animals yet</h2>
           <p className="text-muted-foreground text-sm max-w-xs mb-6 leading-relaxed">
-            Add your first animal to get started — no account needed. Sign up anytime to sync your herd across devices.
+            Add your first animal to get started. Create a free account to save your herd across devices.
           </p>
-          <Link href="/animals/new" className="inline-flex items-center justify-center h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
+          <Button onClick={handleAddAnimal} className="h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
             <Plus className="w-4 h-4 mr-2" /> Add Your First Animal
-          </Link>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -349,11 +380,11 @@ function GuestAnimalList() {
         </div>
       )}
 
-      <ImportModeDialog
-        open={modeDialogOpen}
-        onOpenChange={setModeDialogOpen}
-        onAdd={() => pendingFile && doImport(pendingFile, false)}
-        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      <SaveHerdDialog
+        open={saveHerdOpen}
+        onOpenChange={open => { if (!open) handleDismiss(); else setSaveHerdOpen(true); }}
+        onSignup={handleSignup}
+        onLogin={handleLogin}
       />
     </div>
   );
@@ -553,6 +584,16 @@ export default function AnimalList() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { isAuthenticated, role } = useAuth();
+
+  // After signup: carry out the pending action (navigate to add form)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const action = getPostSignupAction();
+    if (action === "add") {
+      clearPostSignupState();
+      setLocation("/animals/new");
+    }
+  }, [isAuthenticated]);
 
   const { data: animals, isLoading } = useListAnimals(
     { search: search.length > 2 ? search : undefined },

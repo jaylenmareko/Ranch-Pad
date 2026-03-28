@@ -67,6 +67,34 @@ export function clearGuestPromptDismissal(): void {
   sessionStorage.removeItem(GUEST_PROMPT_KEY);
 }
 
+// ─── Post-signup pending action (sessionStorage) ────────────────────────────
+
+const POST_SIGNUP_ACTION_KEY = "ranchpad_post_signup_action";
+const POST_SIGNUP_CSV_KEY = "ranchpad_post_signup_csv";
+
+export function setPostSignupAction(action: "add" | "import"): void {
+  sessionStorage.setItem(POST_SIGNUP_ACTION_KEY, action);
+}
+
+export function getPostSignupAction(): "add" | "import" | null {
+  const val = sessionStorage.getItem(POST_SIGNUP_ACTION_KEY);
+  if (val === "add" || val === "import") return val;
+  return null;
+}
+
+export function setPostSignupCsv(text: string): void {
+  sessionStorage.setItem(POST_SIGNUP_CSV_KEY, text);
+}
+
+export function getPostSignupCsv(): string | null {
+  return sessionStorage.getItem(POST_SIGNUP_CSV_KEY);
+}
+
+export function clearPostSignupState(): void {
+  sessionStorage.removeItem(POST_SIGNUP_ACTION_KEY);
+  sessionStorage.removeItem(POST_SIGNUP_CSV_KEY);
+}
+
 // ─── Client-side CSV parser for guest mode ─────────────────────────────────
 
 export function importCsvToGuestStore(csvText: string): { animalsCreated: number; skipped: { row: number; reason: string }[] } {
