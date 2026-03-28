@@ -280,11 +280,12 @@ Weather forecast for ${ranch.name} (${ranch.locationCity ?? ""}, ${ranch.locatio
 ${JSON.stringify(summary, null, 2)}
 
 Assess risk for:
-- Barber pole worm and parasite pressure (warm + wet conditions favor larvae)
-- Respiratory illness (cold + wet + windy conditions)
-- Foot rot (wet + muddy conditions)
-- Heat stress (high temperatures + humidity)
-- Hypothermia risk for young animals (cold + wet)
+- Barber pole worm and parasite pressure (warm + wet conditions favor larvae survival and migration)
+- Pneumonia / respiratory illness (cold + wet + windy; rapid day-to-day temperature drops >15°F; sustained damp chilly conditions stress the lungs and immune system)
+- Foot rot (wet + muddy prolonged conditions allow bacteria to enter through softened hoof tissue)
+- Heat stress (high temperature combined with high humidity reduces the animal's ability to cool down)
+- Hypothermia risk for young/newborn animals (cold + wet + wind chill)
+- Pink eye / Infectious Keratoconjunctivitis (bright sunny + dry + dusty + windy conditions; UV exposure, dust, and fly activity all increase transmission risk; warm temperatures above 55°F that support fly populations)
 
 Return a JSON array of alerts (may be empty if no significant risks). Each alert must have:
 - "alertType": "weather"

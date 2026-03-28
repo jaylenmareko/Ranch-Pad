@@ -5,14 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight } from "lucide-react";
-import { useListAnimals, type Animal } from "@workspace/api-client-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Trash2, Check } from "lucide-react";
+import { useListAnimals, useDeleteAnimal, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { getGuestAnimals, clearGuestAnimals, type GuestAnimal, setPostSignupAction, setPostSignupCsv, getPostSignupAction, clearPostSignupState } from "@/lib/guest-store";
-import { SimpleDialog } from "@/components/ui/dialog";
+import { SimpleDialog, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
@@ -85,47 +86,83 @@ function HealthDot({ severity }: { severity?: string | null }) {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full border ${colorClass} shrink-0`} title={`Health: ${severity || "Clear"}`} />;
 }
 
+// ─── Select context (for bulk delete) ──────────────────────────────────────
+
+interface SelectContextType {
+  selectMode: boolean;
+  selectedIds: Set<number>;
+  toggleSelect: (id: number) => void;
+}
+
+const SelectContext = React.createContext<SelectContextType>({
+  selectMode: false,
+  selectedIds: new Set(),
+  toggleSelect: () => {},
+});
+
+// ─── Animal Card ────────────────────────────────────────────────────────────
+
 function AnimalCard({ animal }: { animal: Animal }) {
-  return (
-    <Link href={`/animals/${animal.id}`}>
-      <Card className="hover:shadow-md hover:border-primary/40 transition-all duration-200 cursor-pointer group h-full">
-        <CardContent className="p-4 flex flex-col h-full">
-          <div className="flex items-start gap-2.5 mb-3">
+  const { selectMode, selectedIds, toggleSelect } = React.useContext(SelectContext);
+  const isSelected = selectMode && selectedIds.has(animal.id);
+
+  const cardInner = (
+    <Card className={`h-full transition-all duration-200 cursor-pointer group ${
+      selectMode
+        ? isSelected
+          ? "border-primary ring-2 ring-primary/30 bg-primary/5 shadow-none"
+          : "border-border/70 hover:border-primary/40"
+        : "hover:shadow-md hover:border-primary/40"
+    }`}>
+      <CardContent className="p-4 flex flex-col h-full">
+        <div className="flex items-start gap-2.5 mb-3">
+          {selectMode ? (
+            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+              isSelected ? "border-primary bg-primary" : "border-muted-foreground/40 bg-background"
+            }`}>
+              {isSelected && <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />}
+            </div>
+          ) : (
             <HealthDot severity={animal.latestHealthSeverity} />
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors leading-tight truncate">
-                {animal.name}
-              </h3>
-              {animal.tagNumber && (
-                <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
-                  #{animal.tagNumber}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="mt-auto space-y-1.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
-              {animal.breed && (
-                <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
-              )}
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-              {animal.dateOfBirth ? (
-                <span>{new Date(animal.dateOfBirth).toLocaleDateString()}</span>
-              ) : <span />}
-              <span>{formatAge(animal.dateOfBirth)}</span>
-            </div>
-            {animal.sex === "Female" && animal.expectedDueDate && (
-              <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
-                Due: {new Date(animal.expectedDueDate).toLocaleDateString()}
-              </p>
+          )}
+          <div className="min-w-0 flex-1">
+            <h3 className={`font-bold text-base text-foreground leading-tight truncate ${!selectMode && "group-hover:text-primary transition-colors"}`}>
+              {animal.name}
+            </h3>
+            {animal.tagNumber && (
+              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                #{animal.tagNumber}
+              </span>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+        </div>
+        <div className="mt-auto space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
+            {animal.breed && (
+              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
+            )}
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
+            {animal.dateOfBirth ? (
+              <span>{new Date(animal.dateOfBirth).toLocaleDateString()}</span>
+            ) : <span />}
+            <span>{formatAge(animal.dateOfBirth)}</span>
+          </div>
+          {animal.sex === "Female" && animal.expectedDueDate && (
+            <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
+              Due: {new Date(animal.expectedDueDate).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
+
+  if (selectMode) {
+    return <div onClick={() => toggleSelect(animal.id)}>{cardInner}</div>;
+  }
+  return <Link href={`/animals/${animal.id}`}>{cardInner}</Link>;
 }
 
 // ─── Guest Animal Card ─────────────────────────────────────────────────────────
@@ -423,9 +460,12 @@ function SpeciesFolder({
   animals: Animal[];
   initialOpen?: boolean;
 }) {
+  const { selectMode } = React.useContext(SelectContext);
   const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(species));
+  const isOpen = selectMode || open;
 
   function toggle() {
+    if (selectMode) return;
     setOpen(o => {
       const next = !o;
       setFolderOpen(species, next);
@@ -445,7 +485,7 @@ function SpeciesFolder({
       >
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
-        {!open && (
+        {!isOpen && !selectMode && (
           <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
             Click Here
           </span>
@@ -464,15 +504,15 @@ function SpeciesFolder({
               {medCount} watch
             </span>
           )}
-          {open
+          {!selectMode && (isOpen
             ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
             : <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          }
+          )}
         </div>
       </button>
 
       {/* Animals grid */}
-      {open && (
+      {isOpen && (
         <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {animals.map(animal => (
             <AnimalCard key={animal.id} animal={animal} />
@@ -494,10 +534,13 @@ function LocationFolder({
   animals: Animal[];
   initialOpen?: boolean;
 }) {
+  const { selectMode } = React.useContext(SelectContext);
   const folderKey = locationId != null ? `loc:${locationId}` : "loc:unassigned";
   const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(folderKey));
+  const isOpen = selectMode || open;
 
   function toggle() {
+    if (selectMode) return;
     setOpen(o => {
       const next = !o;
       setFolderOpen(folderKey, next);
@@ -528,7 +571,7 @@ function LocationFolder({
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">
           {isUnassigned ? "Unassigned" : locationName}
         </span>
-        {!open && (
+        {!isOpen && !selectMode && (
           <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
             Click Here
           </span>
@@ -547,14 +590,14 @@ function LocationFolder({
               {medCount} watch
             </span>
           )}
-          {open
+          {!selectMode && (isOpen
             ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
             : <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          }
+          )}
         </div>
       </button>
 
-      {open && (
+      {isOpen && (
         <div className="p-4 space-y-3">
           {bySpecies.map(([species, speciesAnimals]) => (
             <SpeciesFolder
@@ -581,9 +624,15 @@ export default function AnimalList() {
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { isAuthenticated, role } = useAuth();
+  const deleteMutation = useDeleteAnimal();
+  const { toast } = useToast();
 
   // After signup: carry out the pending action (navigate to add form)
   useEffect(() => {
@@ -695,6 +744,38 @@ export default function AnimalList() {
     if (dueSoonFilter) setLocation("/animals");
   }
 
+  function toggleSelect(id: number) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  async function handleBulkDelete() {
+    setDeleting(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map(id =>
+          deleteMutation.mutateAsync({ animalId: id })
+        )
+      );
+      queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+      toast({ title: `${selectedIds.size} ${selectedIds.size === 1 ? "animal" : "animals"} deleted` });
+      exitSelectMode();
+    } catch {
+      toast({ title: "Delete failed", description: "Some animals could not be deleted. Please try again.", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+      setConfirmDeleteOpen(false);
+    }
+  }
+
   const grouped = React.useMemo(() => {
     const map: Record<string, Animal[]> = {};
     for (const animal of filteredAnimals) {
@@ -719,6 +800,7 @@ export default function AnimalList() {
   }, [filteredAnimals]);
 
   return (
+    <SelectContext.Provider value={{ selectMode, selectedIds, toggleSelect }}>
     <div className="space-y-5">
       {/* Hidden file input */}
       <input
@@ -777,7 +859,32 @@ export default function AnimalList() {
                 <TooltipContent>Upload your herd from a csv file here</TooltipContent>
               </Tooltip>
             )}
-            {role !== "viewer" && (
+            {role !== "viewer" && !selectMode && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectMode(true)}
+                    className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
+                    aria-label="Select animals to delete"
+                  >
+                    <Trash2 className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Select</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Select animals to delete</TooltipContent>
+              </Tooltip>
+            )}
+            {selectMode && (
+              <Button
+                variant="outline"
+                onClick={exitSelectMode}
+                className="h-10 px-4 rounded-xl font-semibold text-sm"
+              >
+                Cancel
+              </Button>
+            )}
+            {role !== "viewer" && !selectMode && (
               <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Animal
@@ -946,5 +1053,44 @@ export default function AnimalList() {
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
     </div>
+
+    {/* Sticky bulk-delete bar */}
+    {selectMode && (
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 px-5 py-4 bg-card border-t border-border shadow-lg">
+        <span className="text-sm font-semibold text-foreground">
+          {selectedIds.size} {selectedIds.size === 1 ? "animal" : "animals"} selected
+        </span>
+        <Button
+          variant="destructive"
+          disabled={selectedIds.size === 0 || deleting}
+          onClick={() => setConfirmDeleteOpen(true)}
+          className="gap-2"
+        >
+          {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          Delete
+        </Button>
+      </div>
+    )}
+
+    {/* Confirm delete dialog */}
+    <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete {selectedIds.size} {selectedIds.size === 1 ? "animal" : "animals"}?</DialogTitle>
+          <DialogDescription>
+            This will permanently delete {selectedIds.size === 1 ? "this animal" : `these ${selectedIds.size} animals`} and all associated records. This cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setConfirmDeleteOpen(false)} disabled={deleting}>Cancel</Button>
+          <Button variant="destructive" onClick={handleBulkDelete} disabled={deleting} className="gap-2">
+            {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+            {deleting ? "Deleting…" : "Delete"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    </SelectContext.Provider>
   );
 }
