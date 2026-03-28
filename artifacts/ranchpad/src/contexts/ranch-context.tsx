@@ -17,7 +17,7 @@ interface RanchContextType {
   isLoadingRanches: boolean;
   setActiveRanch: (id: number) => void;
   refreshRanches: () => void;
-  createPersonalRanch: (data: { name: string; locationCity?: string; locationState?: string; lat?: number | null; lon?: number | null }) => Promise<RanchInfo>;
+  createPersonalRanch: (data: { name: string; locationCity?: string; locationState?: string; lat?: number | null; lon?: number | null; pastures?: string[] }) => Promise<RanchInfo>;
 }
 
 const RanchContext = createContext<RanchContextType | undefined>(undefined);
@@ -98,6 +98,7 @@ export function RanchProvider({ children }: { children: React.ReactNode }) {
     locationState?: string;
     lat?: number | null;
     lon?: number | null;
+    pastures?: string[];
   }): Promise<RanchInfo> => {
     const res = await fetch("/api/ranch/create-personal", {
       method: "POST",

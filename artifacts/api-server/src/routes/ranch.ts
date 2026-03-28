@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, ranchesTable, ranchUsersTable, usersTable } from "@workspace/db";
+import { db, ranchesTable, ranchUsersTable, usersTable, pastureLocationsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, requireOwner } from "../middlewares/auth.js";
 import { z } from "zod";
@@ -74,6 +74,7 @@ const createPersonalRanchSchema = z.object({
   locationState: z.string().nullable().optional(),
   lat: z.number().nullable().optional(),
   lon: z.number().nullable().optional(),
+  pastures: z.array(z.string()).optional(),
 });
 
 // Create a personal ranch for a user who joined via invite (has no personal ranch yet)
@@ -118,6 +119,12 @@ router.post("/ranch/create-personal", requireAuth, async (req, res): Promise<voi
       userId,
       role: "owner",
     });
+
+    if (parsed.data.pastures?.length) {
+      await tx.insert(pastureLocationsTable).values(
+        parsed.data.pastures.map(name => ({ ranchId: newRanch.id, name }))
+      );
+    }
 
     return newRanch;
   });

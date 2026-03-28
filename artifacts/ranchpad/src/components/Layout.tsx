@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse, Users,
-  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor, UserCog
+  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor, UserCog, X, FolderOpen
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -195,10 +195,16 @@ function MyRanchSetupDialog({
 }) {
   const { createPersonalRanch } = useRanch();
   const { toast } = useToast();
+
+  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Address geocoding state (same pattern as signup)
+  // Pastures (step 2)
+  const [pastures, setPastures] = useState<string[]>([]);
+  const [newPastureName, setNewPastureName] = useState("");
+
+  // Address geocoding state
   const [address, setAddress] = useState("");
   const [geocodedLat, setGeocodedLat] = useState<number | null>(null);
   const [geocodedLon, setGeocodedLon] = useState<number | null>(null);
@@ -234,8 +240,16 @@ function MyRanchSetupDialog({
     setShowSuggestions(false);
   }
 
+  function addPasture() {
+    const trimmed = newPastureName.trim();
+    if (trimmed) { setPastures(prev => [...prev, trimmed]); setNewPastureName(""); }
+  }
+
   function resetForm() {
+    setStep(1);
     setName("");
+    setPastures([]);
+    setNewPastureName("");
     setAddress("");
     setGeocodedLat(null);
     setGeocodedLon(null);
@@ -244,15 +258,23 @@ function MyRanchSetupDialog({
     setShowSuggestions(false);
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  function handleAdvanceToPastures(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      toast({ title: "Ranch name required", variant: "destructive" });
+      return;
+    }
     if (geocodedLat === null || geocodedLon === null) {
       toast({ title: "Location required", description: "Enter your ranch address and select a suggestion.", variant: "destructive" });
       return;
     }
+    setStep(2);
+  }
+
+  async function handleCreate(finalPastures: string[]) {
     setIsSaving(true);
     try {
-      const ranch = await createPersonalRanch({ name, lat: geocodedLat, lon: geocodedLon });
+      const ranch = await createPersonalRanch({ name, lat: geocodedLat, lon: geocodedLon, pastures: finalPastures });
       toast({ title: "Ranch created!", description: `${name} is ready.` });
       onCreated(ranch);
       onOpenChange(false);
@@ -262,73 +284,129 @@ function MyRanchSetupDialog({
     } finally {
       setIsSaving(false);
     }
-  };
+  }
 
   return (
     <SimpleDialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) resetForm(); }} title="Set Up My Ranch">
-      <p className="text-sm text-muted-foreground mb-4">
-        Create your own personal ranch to track your own livestock, separate from the ranches you work on.
-      </p>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <Label>Ranch Name</Label>
-          <Input required placeholder="e.g. Sunrise Acres" value={name} onChange={e => setName(e.target.value)} />
-        </div>
-
-        <div className="space-y-1.5 pt-2 border-t border-border">
-          <div className="flex items-center gap-1.5 pt-2 mb-1">
-            <Tractor className="w-4 h-4 text-primary" />
-            <Label className="text-primary font-semibold text-xs uppercase tracking-wide">Ranch Location</Label>
-          </div>
-          <div className="relative">
-            <Input
-              placeholder="Start typing your address…"
-              value={address}
-              onChange={e => handleAddressChange(e.target.value)}
-              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-              autoComplete="off"
-            />
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0"
-                    onMouseDown={() => selectSuggestion(s)}
-                  >
-                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                    <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {geocodedLat !== null && geocodedLon !== null && (
-            <div className="rounded-lg border bg-green-50/60 border-green-200 p-2.5">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  {geocodeLabel && <p className="text-xs text-muted-foreground truncate mb-0.5">{geocodeLabel}</p>}
-                  <p className="text-xs font-mono text-foreground">{geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
-                  className="p-0.5 rounded hover:bg-muted text-muted-foreground shrink-0"
-                >
-                  <XCircle className="w-3.5 h-3.5" />
-                </button>
-              </div>
+      {step === 1 ? (
+        <>
+          <p className="text-sm text-muted-foreground mb-4">
+            Create your own personal ranch to track your own livestock, separate from the ranches you work on.
+          </p>
+          <form onSubmit={handleAdvanceToPastures} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Ranch Name</Label>
+              <Input required placeholder="e.g. Sunrise Acres" value={name} onChange={e => setName(e.target.value)} />
             </div>
-          )}
-        </div>
 
-        <Button type="submit" className="w-full" isLoading={isSaving}>
-          <MapPin className="w-4 h-4 mr-2" /> Create My Ranch
-        </Button>
-      </form>
+            <div className="space-y-1.5 pt-2 border-t border-border">
+              <div className="flex items-center gap-1.5 pt-2 mb-1">
+                <Tractor className="w-4 h-4 text-primary" />
+                <Label className="text-primary font-semibold text-xs uppercase tracking-wide">Ranch Location</Label>
+              </div>
+              <div className="relative">
+                <Input
+                  placeholder="Start typing your address…"
+                  value={address}
+                  onChange={e => handleAddressChange(e.target.value)}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  autoComplete="off"
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                    {suggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0"
+                        onMouseDown={() => selectSuggestion(s)}
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {geocodedLat !== null && geocodedLon !== null && (
+                <div className="rounded-lg border bg-green-50/60 border-green-200 p-2.5">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      {geocodeLabel && <p className="text-xs text-muted-foreground truncate mb-0.5">{geocodeLabel}</p>}
+                      <p className="text-xs font-mono text-foreground">{geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
+                      className="p-0.5 rounded hover:bg-muted text-muted-foreground shrink-0"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Button type="submit" className="w-full">
+              Next: Set Up Pastures
+            </Button>
+          </form>
+        </>
+      ) : (
+        <>
+          <h2 className="text-base font-semibold text-foreground mb-1">Set up your pastures</h2>
+          <p className="text-sm text-muted-foreground mb-5">
+            Add the pastures, pens, or areas on your ranch. You can always manage these later in Settings.
+          </p>
+
+          {pastures.length > 0 && (
+            <ul className="rounded-xl border border-border divide-y divide-border overflow-hidden mb-3">
+              {pastures.map((loc, idx) => (
+                <li key={idx} className="flex items-center gap-2.5 px-3 py-2.5">
+                  <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="flex-1 text-sm font-medium text-foreground">{loc}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPastures(prev => prev.filter((_, i) => i !== idx))}
+                    className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+                    aria-label="Remove"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex gap-2 mb-5">
+            <Input
+              placeholder="e.g. South Pasture, Barn, Lot A"
+              value={newPastureName}
+              onChange={e => setNewPastureName(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPasture(); } }}
+              className="flex-1"
+              autoFocus
+            />
+            <Button type="button" onClick={addPasture} disabled={!newPastureName.trim()} className="shrink-0 gap-1">
+              <Plus className="w-4 h-4" /> Add
+            </Button>
+          </div>
+
+          <Button className="w-full mb-3" onClick={() => handleCreate(pastures)} isLoading={isSaving}>
+            <FolderOpen className="w-4 h-4 mr-1.5" /> Create My Ranch
+          </Button>
+          <button
+            type="button"
+            onClick={() => handleCreate([])}
+            disabled={isSaving}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-center block disabled:opacity-50"
+          >
+            Skip for now
+          </button>
+        </>
+      )}
     </SimpleDialog>
   );
 }
