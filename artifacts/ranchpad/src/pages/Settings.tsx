@@ -152,6 +152,18 @@ export default function Settings() {
     }
   }, [isAuthenticated, role, setLocation]);
 
+  const updateMutation = useUpdateRanch({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/ranch"] });
+        toast({ title: "Settings saved", description: "Your ranch profile has been updated." });
+      },
+      onError: () => {
+        toast({ title: "Save failed", description: "Something went wrong. Try again.", variant: "destructive" });
+      },
+    },
+  });
+
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
@@ -200,18 +212,6 @@ export default function Settings() {
       setIsGeocoding(false);
     }
   }
-
-  const updateMutation = useUpdateRanch({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/ranch"] });
-        toast({ title: "Settings saved", description: "Your ranch profile has been updated." });
-      },
-      onError: () => {
-        toast({ title: "Save failed", description: "Something went wrong. Try again.", variant: "destructive" });
-      },
-    },
-  });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
