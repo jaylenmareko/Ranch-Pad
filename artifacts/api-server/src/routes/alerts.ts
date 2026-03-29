@@ -231,6 +231,11 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
 
   if (!ranch || ranch.lat == null || ranch.lon == null) return 0;
 
+  const animals = await db
+    .select()
+    .from(animalsTable)
+    .where(eq(animalsTable.ranchId, ranchId));
+
   try {
     // Fetch forecast from OpenWeatherMap
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${ranch.lat}&lon=${ranch.lon}&appid=${OPENWEATHERMAP_API_KEY}&units=imperial&cnt=40`;
@@ -247,7 +252,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       }>;
     };
 
-    // Build structured weather summary for Claude
+    // Build daily weather buckets
     const days: Record<string, { temps: number[]; humidity: number[]; wind: number[]; rain: number; desc: string[] }> = {};
     for (const entry of forecastData.list) {
       const date = entry.dt_txt.split(" ")[0];
@@ -259,39 +264,109 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       days[date].desc.push(entry.weather[0]?.description ?? "");
     }
 
-    const summary = Object.entries(days).slice(0, 5).map(([date, d]) => ({
+    const rawDays = Object.entries(days).slice(0, 5).map(([date, d]) => ({
       date,
-      tempHigh: Math.max(...d.temps).toFixed(1),
-      tempLow: Math.min(...d.temps).toFixed(1),
+      tempHigh: parseFloat(Math.max(...d.temps).toFixed(1)),
+      tempLow: parseFloat(Math.min(...d.temps).toFixed(1)),
       avgHumidity: Math.round(d.humidity.reduce((a, b) => a + b, 0) / d.humidity.length),
-      maxWind: Math.max(...d.wind).toFixed(1),
-      totalRain: d.rain.toFixed(2),
+      maxWind: parseFloat(Math.max(...d.wind).toFixed(1)),
+      totalRain: parseFloat(d.rain.toFixed(2)),
       conditions: [...new Set(d.desc)].join(", "),
     }));
+
+    // Add day-over-day temperature deltas so Claude can detect sudden swings
+    const summary = rawDays.map((day, i) => {
+      if (i === 0) return { ...day, tempHighChange: null as number | null, tempLowChange: null as number | null };
+      return {
+        ...day,
+        tempHighChange: parseFloat((day.tempHigh - rawDays[i - 1].tempHigh).toFixed(1)),
+        tempLowChange: parseFloat((day.tempLow - rawDays[i - 1].tempLow).toFixed(1)),
+      };
+    });
+
+    // Build animal inventory context grouped by species
+    const today = new Date();
+    const speciesMap: Record<string, {
+      total: number;
+      females: number;
+      males: number;
+      youngCount: number;
+      dueSoon: string[];
+    }> = {};
+
+    for (const animal of animals) {
+      if (!speciesMap[animal.species]) {
+        speciesMap[animal.species] = { total: 0, females: 0, males: 0, youngCount: 0, dueSoon: [] };
+      }
+      const g = speciesMap[animal.species];
+      g.total++;
+      if (animal.sex === "Female") g.females++;
+      else if (animal.sex === "Male") g.males++;
+
+      if (animal.dateOfBirth) {
+        const ageMonths = (today.getTime() - new Date(animal.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+        if (ageMonths < 6) g.youngCount++;
+      }
+
+      if (animal.expectedDueDate) {
+        const daysUntil = Math.floor(
+          (new Date(animal.expectedDueDate + "T12:00:00").getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysUntil >= 0 && daysUntil <= 30) {
+          g.dueSoon.push(`${animal.name} (due in ${daysUntil} days)`);
+        }
+      }
+    }
+
+    const animalLines = Object.entries(speciesMap).map(([species, g]) => {
+      let line = `- ${g.total} ${species}: ${g.females} female, ${g.males} male`;
+      if (g.youngCount > 0) line += `, ${g.youngCount} under 6 months old`;
+      if (g.dueSoon.length > 0) line += `, pregnant/due soon: ${g.dueSoon.join("; ")}`;
+      return line;
+    });
+
+    const animalContext = animalLines.length > 0 ? animalLines.join("\n") : "No animals currently on record.";
 
     // Ask Claude for livestock risk analysis
     const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
-    const prompt = `You are an expert livestock health advisor for small farmers and ranchers. 
-Analyze the following 5-day weather forecast and identify any health risks for livestock.
+    const prompt = `You are an expert livestock health advisor for small farmers and ranchers.
+Analyze the 5-day weather forecast and the ranch's specific animal inventory to generate targeted disease risk alerts.
 
-Weather forecast for ${ranch.name} (${ranch.locationCity ?? ""}, ${ranch.locationState ?? ""}):
+RANCH: ${ranch.name} (${ranch.locationCity ?? ""}, ${ranch.locationState ?? ""})
+
+HERD INVENTORY (${animals.length} total animals):
+${animalContext}
+
+5-DAY WEATHER FORECAST (tempHighChange/tempLowChange = degrees vs previous day):
 ${JSON.stringify(summary, null, 2)}
 
-Assess risk for:
-- Barber pole worm and parasite pressure (warm + wet conditions favor larvae)
-- Respiratory illness (cold + wet + windy conditions)
-- Foot rot (wet + muddy conditions)
-- Heat stress (high temperatures + humidity)
-- Hypothermia risk for young animals (cold + wet)
+SPECIES-SPECIFIC DISEASE KNOWLEDGE — only apply to species present in the inventory above:
+- Cattle: Cold + wet + wind → Bovine Respiratory Disease (BRD/pneumonia), especially dangerous for calves under 6 months. A sudden high temperature drop >15°F across consecutive forecast days is a high-risk BRD trigger. Wet muddy conditions → foot rot risk.
+- Goats & Sheep: Warm + humid (humidity >75%, temps >50°F) + rain → barber pole worm (Haemonchus contortus) larval surge on pasture — a leading cause of death in small ruminants. Cold + wet → pneumonia, especially kids/lambs. Goats are more cold-sensitive than cattle.
+- Swine: Heat >80°F + high humidity → heat stress, reduced feed intake. Cold drafts + wet → PRRS and respiratory illness.
+- All species: Temperature swings >20°F between consecutive forecast days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease.
+- Pregnant/due animals: Any cold, wet, or high-stress forecast conditions during the 30-day pre-calving/kidding window elevate dystocia and neonatal mortality risk substantially. Name these animals in the alert.
+
+ALERT GENERATION RULES:
+1. Only generate alerts for species present in the herd inventory — do not mention species not listed.
+2. Use the actual animal counts in your message (e.g. "Your 8 cattle" or "3 of your goats"). For large groups, mention the financial scale of the risk.
+3. Name individual animals in alerts when they face elevated personal risk (pregnant animals, young animals).
+4. Flag temperature trend alerts explicitly when tempHighChange or tempLowChange shows a drop of 15°F or more.
+5. Only generate alerts for genuine risks — no noise for mild or unremarkable conditions.
+
+Severity:
+- "low": Worth monitoring, no immediate action needed
+- "medium": Take precautions this week, check animals daily
+- "high": Act now — meaningful risk of illness or loss given forecast conditions
 
 Return a JSON array of alerts (may be empty if no significant risks). Each alert must have:
 - "alertType": "weather"
-- "message": plain English message a farmer would understand (be specific about the risk and what to watch for)
-- "severity": one of "low", "medium", or "high"
-- "alertKey": a unique string key for this alert (e.g., "weather_respiratory_2024-01-15")
+- "message": plain English, specific to this ranch's animals and actual forecast trends. A rancher should know exactly which animals to check and why.
+- "severity": "low", "medium", or "high"
+- "alertKey": unique string key (e.g., "weather_brd_cattle_2024-01-15")
 
-Only generate alerts for genuine risks based on the forecast data. Return valid JSON only, no extra text.`;
+Return valid JSON only, no extra text.`;
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
