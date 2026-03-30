@@ -32,8 +32,6 @@ function GuestDashboard() {
   const [animals, setAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
-  const [scanOpen, setScanOpen] = useState(false);
-
   useEffect(() => {
     const refresh = () => setAnimals(getGuestAnimals());
     window.addEventListener("guest-save", refresh);
@@ -105,15 +103,6 @@ function GuestDashboard() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
-
-      {animals.length === 0 ? (
-        <EmptyHerdOverlay
-          onScan={() => setScanOpen(true)}
-          onImportClick={() => fileInputRef.current?.click()}
-        />
-      ) : (
-      <>
 
       {/* Action Banner */}
       <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -297,8 +286,6 @@ function GuestDashboard() {
         </CardContent>
       </Card>
 
-      </>
-      )}
     </div>
   );
 }

@@ -260,7 +260,6 @@ function GuestAnimalList() {
   const [readingFile, setReadingFile] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [saveHerdOpen, setSaveHerdOpen] = useState(false);
-  const [scanOpen, setScanOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -322,16 +321,8 @@ function GuestAnimalList() {
         onSignup={handleSignup}
         onLogin={handleLogin}
       />
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
 
-      {guestAnimals.length === 0 ? (
-        <EmptyHerdOverlay
-          onScan={() => setScanOpen(true)}
-          onImportClick={() => fileInputRef.current?.click()}
-        />
-      ) : (
-        <>
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
               <p className="text-muted-foreground font-medium mt-1">{guestAnimals.length} animals</p>
@@ -383,8 +374,6 @@ function GuestAnimalList() {
               to sync your herd across devices.
             </p>
           </div>
-        </>
-      )}
     </div>
   );
 }
