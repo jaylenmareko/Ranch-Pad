@@ -710,7 +710,7 @@ export default function AnimalList() {
     return [...assigned, ...unassigned] as Array<[number | null, { name: string | null; animals: Animal[] }]>;
   }, [filteredAnimals]);
 
-  const hasNoAnimals = isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0;
+  const hasNoAnimals = isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0 && search.length <= 2;
 
   return (
     <div className="space-y-5">
