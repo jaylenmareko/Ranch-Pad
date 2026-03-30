@@ -100,6 +100,13 @@ function GuestDashboard() {
     <div className="space-y-8">
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
 
+      {animals.length === 0 && (
+        <EmptyHerdOverlay
+          onScan={() => setScanOpen(true)}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      )}
+
       {/* Action Banner */}
       <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1 min-w-0">

@@ -260,6 +260,7 @@ function GuestAnimalList() {
   const [readingFile, setReadingFile] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [saveHerdOpen, setSaveHerdOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -314,6 +315,13 @@ function GuestAnimalList() {
 
   return (
     <div className="space-y-5">
+      {guestAnimals.length === 0 && (
+        <EmptyHerdOverlay
+          onScan={() => setScanOpen(true)}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      )}
+
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
 
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -358,20 +366,7 @@ function GuestAnimalList() {
         </div>
       )}
 
-      {guestAnimals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
-            <span className="text-4xl leading-none">🐄</span>
-          </div>
-          <h2 className="font-bold text-xl text-foreground mb-2">No animals yet</h2>
-          <p className="text-muted-foreground text-sm max-w-xs mb-6 leading-relaxed">
-            Add your first animal to get started. Create a free account to save your herd across devices.
-          </p>
-          <Button onClick={handleAddAnimal} className="h-11 px-6 rounded-xl font-semibold bg-primary text-primary-foreground hover:-translate-y-0.5 transition-transform shadow-md shadow-primary/20">
-            <Plus className="w-4 h-4 mr-2" /> Add Your First Animal
-          </Button>
-        </div>
-      ) : (
+      {guestAnimals.length > 0 && (
         <div className="space-y-4">
           {Object.entries(bySpecies).map(([species, animals]) => (
             <GuestSpeciesFolder key={species} species={species} animals={animals} />
@@ -390,6 +385,8 @@ function GuestAnimalList() {
         onSignup={handleSignup}
         onLogin={handleLogin}
       />
+
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
     </div>
   );
 }
