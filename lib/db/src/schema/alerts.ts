@@ -7,7 +7,7 @@ import { animalsTable } from "./animals";
 export const alertsTable = pgTable("alerts", {
   id: serial("id").primaryKey(),
   ranchId: integer("ranch_id").notNull().references(() => ranchesTable.id),
-  animalId: integer("animal_id").references(() => animalsTable.id),
+  animalId: integer("animal_id").references(() => animalsTable.id, { onDelete: "set null" }),
   alertType: text("alert_type").notNull(),
   alertKey: text("alert_key").notNull(), // deterministic key for idempotency
   message: text("message").notNull(),

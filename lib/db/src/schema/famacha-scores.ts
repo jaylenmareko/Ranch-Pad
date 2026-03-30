@@ -6,7 +6,7 @@ import { animalsTable } from "./animals";
 
 export const famachaScoresTable = pgTable("famacha_scores", {
   id: serial("id").primaryKey(),
-  animalId: integer("animal_id").notNull().references(() => animalsTable.id),
+  animalId: integer("animal_id").notNull().references(() => animalsTable.id, { onDelete: "cascade" }),
   ranchId: integer("ranch_id").notNull().references(() => ranchesTable.id),
   score: integer("score").notNull(), // 1-5
   recordedDate: text("recorded_date").notNull(),

@@ -6,7 +6,7 @@ import { animalsTable } from "./animals";
 export const animalAssignmentsTable = pgTable("animal_assignments", {
   id: serial("id").primaryKey(),
   ranchId: integer("ranch_id").notNull().references(() => ranchesTable.id),
-  animalId: integer("animal_id").notNull().references(() => animalsTable.id),
+  animalId: integer("animal_id").notNull().references(() => animalsTable.id, { onDelete: "cascade" }),
   viewerUserId: integer("viewer_user_id").notNull().references(() => usersTable.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

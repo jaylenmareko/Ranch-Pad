@@ -6,7 +6,7 @@ import { animalsTable } from "./animals";
 
 export const healthEventsTable = pgTable("health_events", {
   id: serial("id").primaryKey(),
-  animalId: integer("animal_id").notNull().references(() => animalsTable.id),
+  animalId: integer("animal_id").notNull().references(() => animalsTable.id, { onDelete: "cascade" }),
   ranchId: integer("ranch_id").notNull().references(() => ranchesTable.id),
   description: text("description").notNull(),
   eventDate: text("event_date").notNull(),
