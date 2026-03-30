@@ -30,7 +30,7 @@ export function EmptyHerdOverlay({ onScan, onImportClick }: EmptyHerdOverlayProp
           <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-3 group-hover:bg-primary/30 transition-colors">
             <ScanLine className="w-6 h-6 text-primary" />
           </div>
-          <p className="font-bold text-sm text-foreground">Scan Paper Records</p>
+          <p className="font-bold text-sm text-foreground">Snap a Photo</p>
           <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
             Snap a photo of your records and we'll convert them automatically
           </p>
