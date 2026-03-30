@@ -4,10 +4,11 @@ import { HoofIcon } from "@/components/HoofIcon";
 import { useNavigation } from "@/contexts/navigation-context";
 
 const BULLETS = [
-  "Simple herd log for animals, treatments, and health.",
+  "Your whole team sees the same live records — from the field, the office, or across the state.",
   "Get early warnings when local conditions raise disease risk.",
-  "Get reminders so you never miss shots or treatments.",
-  "First 2 Weeks Free.",
+  "AI spots patterns in your herd you'd never catch flipping through a notebook.",
+  "Snap a photo of your paper records and AI converts them instantly.",
+  "Your records don't just sit there — AI flags problems, spots patterns, and warns you before things go wrong.",
 ];
 
 export default function Landing() {
