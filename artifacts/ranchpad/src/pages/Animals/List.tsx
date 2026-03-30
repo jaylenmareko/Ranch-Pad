@@ -15,6 +15,7 @@ import { getGuestAnimals, clearGuestAnimals, type GuestAnimal, setPostSignupActi
 import { SimpleDialog } from "@/components/ui/dialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
+import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
 
@@ -714,8 +715,17 @@ export default function AnimalList() {
     return [...assigned, ...unassigned] as Array<[number | null, { name: string | null; animals: Animal[] }]>;
   }, [filteredAnimals]);
 
+  const hasNoAnimals = isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0;
+
   return (
     <div className="space-y-5">
+      {hasNoAnimals && (
+        <EmptyHerdOverlay
+          onScan={() => setScanOpen(true)}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      )}
+
       {/* Hidden file input */}
       <input
         ref={fileInputRef}

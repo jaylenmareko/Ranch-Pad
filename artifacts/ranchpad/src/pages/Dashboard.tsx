@@ -12,6 +12,7 @@ import { useAuthModal } from "@/contexts/auth-modal-context";
 import { getGuestAnimals, importCsvToGuestStore, clearGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
+import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
@@ -422,8 +423,17 @@ function AuthDashboard() {
     }
   }
 
+  const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
+
   return (
     <div className="space-y-8">
+      {hasNoAnimals && (
+        <EmptyHerdOverlay
+          onScan={() => setScanOpen(true)}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      )}
+
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
 
       {/* Action Banner */}
