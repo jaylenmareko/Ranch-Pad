@@ -315,78 +315,76 @@ function GuestAnimalList() {
 
   return (
     <div className="space-y-5">
-      {guestAnimals.length === 0 && (
-        <EmptyHerdOverlay
-          onScan={() => setScanOpen(true)}
-          onImportClick={() => fileInputRef.current?.click()}
-        />
-      )}
-
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
-
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
-          <p className="text-muted-foreground font-medium mt-1">{guestAnimals.length} animals</p>
-        </div>
-        <TooltipProvider delayDuration={300}>
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" onClick={downloadTemplate} className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Download CSV template">
-                  <Download className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Download Template</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Download CSV template</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={readingFile} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file here">
-                  {readingFile
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Reading…</>
-                    : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
-                  }
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Upload your herd from a csv file here</TooltipContent>
-            </Tooltip>
-            <Button onClick={handleAddAnimal} className="h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
-              <Plus className="w-4 h-4 mr-2" /> Add Animal
-            </Button>
-          </div>
-        </TooltipProvider>
-      </div>
-
-      {importError && (
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-          <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
-          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss"><XCircle className="w-4 h-4" /></button>
-        </div>
-      )}
-
-      {guestAnimals.length > 0 && (
-        <div className="space-y-4">
-          {Object.entries(bySpecies).map(([species, animals]) => (
-            <GuestSpeciesFolder key={species} species={species} animals={animals} />
-          ))}
-          <p className="text-xs text-muted-foreground text-center pt-2">
-            You're using RanchPad as a guest.{" "}
-            <button onClick={openSignup} className="underline text-primary font-semibold">Sign up</button>{" "}
-            to sync your herd across devices.
-          </p>
-        </div>
-      )}
-
       <SaveHerdDialog
         open={saveHerdOpen}
         onOpenChange={open => { if (!open) handleDismiss(); else setSaveHerdOpen(true); }}
         onSignup={handleSignup}
         onLogin={handleLogin}
       />
-
       <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
+
+      {guestAnimals.length === 0 ? (
+        <EmptyHerdOverlay
+          onScan={() => setScanOpen(true)}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      ) : (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
+              <p className="text-muted-foreground font-medium mt-1">{guestAnimals.length} animals</p>
+            </div>
+            <TooltipProvider delayDuration={300}>
+              <div className="flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" onClick={downloadTemplate} className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Download CSV template">
+                      <Download className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Download Template</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download CSV template</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={readingFile} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file here">
+                      {readingFile
+                        ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Reading…</>
+                        : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
+                      }
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Upload your herd from a csv file here</TooltipContent>
+                </Tooltip>
+                <Button onClick={handleAddAnimal} className="h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
+                  <Plus className="w-4 h-4 mr-2" /> Add Animal
+                </Button>
+              </div>
+            </TooltipProvider>
+          </div>
+
+          {importError && (
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+              <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+              <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
+              <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss"><XCircle className="w-4 h-4" /></button>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {Object.entries(bySpecies).map(([species, animals]) => (
+              <GuestSpeciesFolder key={species} species={species} animals={animals} />
+            ))}
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              You're using RanchPad as a guest.{" "}
+              <button onClick={openSignup} className="underline text-primary font-semibold">Sign up</button>{" "}
+              to sync your herd across devices.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -716,21 +714,23 @@ export default function AnimalList() {
 
   return (
     <div className="space-y-5">
-      {hasNoAnimals && (
+      {/* Always-present hidden inputs and dialogs */}
+      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
+
+      {hasNoAnimals ? (
         <EmptyHerdOverlay
           onScan={() => setScanOpen(true)}
           onImportClick={() => fileInputRef.current?.click()}
         />
-      )}
-
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv,text/csv"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      ) : (
+      <>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -958,14 +958,8 @@ export default function AnimalList() {
         </div>
       )}
 
-      <ImportModeDialog
-        open={modeDialogOpen}
-        onOpenChange={setModeDialogOpen}
-        onAdd={() => pendingFile && doImport(pendingFile, false)}
-        onReplace={() => pendingFile && doImport(pendingFile, true)}
-      />
-
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
+      </>
+      )}
     </div>
   );
 }

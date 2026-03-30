@@ -99,13 +99,21 @@ function GuestDashboard() {
   return (
     <div className="space-y-8">
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
 
-      {animals.length === 0 && (
+      {animals.length === 0 ? (
         <EmptyHerdOverlay
           onScan={() => setScanOpen(true)}
           onImportClick={() => fileInputRef.current?.click()}
         />
-      )}
+      ) : (
+      <>
 
       {/* Action Banner */}
       <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -289,14 +297,8 @@ function GuestDashboard() {
         </CardContent>
       </Card>
 
-      <ImportModeDialog
-        open={modeDialogOpen}
-        onOpenChange={setModeDialogOpen}
-        onAdd={() => pendingFile && doImport(pendingFile, false)}
-        onReplace={() => pendingFile && doImport(pendingFile, true)}
-      />
-
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
+      </>
+      )}
     </div>
   );
 }
@@ -435,14 +437,21 @@ function AuthDashboard() {
 
   return (
     <div className="space-y-8">
-      {hasNoAnimals && (
+      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
+
+      {hasNoAnimals ? (
         <EmptyHerdOverlay
           onScan={() => setScanOpen(true)}
           onImportClick={() => fileInputRef.current?.click()}
         />
-      )}
-
-      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+      ) : (
+      <>
 
       {/* Action Banner */}
       <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -759,12 +768,8 @@ function AuthDashboard() {
         </CardContent>
       </Card>
 
-      <ImportModeDialog
-        open={modeDialogOpen}
-        onOpenChange={setModeDialogOpen}
-        onAdd={() => pendingFile && doImport(pendingFile, false)}
-        onReplace={() => pendingFile && doImport(pendingFile, true)}
-      />
+      </>
+      )}
     </div>
   );
 }
