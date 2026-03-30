@@ -586,7 +586,7 @@ export default function AnimalList() {
   }, [isAuthenticated]);
 
   const { data: animals, isLoading } = useListAnimals(
-    { search: search.length > 2 ? search : undefined },
+    { search: search.length > 0 ? search : undefined },
     { query: { enabled: isAuthenticated } },
   );
 
