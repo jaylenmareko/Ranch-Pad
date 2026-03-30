@@ -783,10 +783,10 @@ export default function AnimalList() {
                     aria-label="Scan record book to add animals"
                   >
                     <ScanLine className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Scan Records</span>
+                    <span className="hidden sm:inline">Add from Photo</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Add animals by scanning a photo of your record book</TooltipContent>
+                <TooltipContent>Take a photo of your record book — Claude reads it and adds your animals automatically</TooltipContent>
               </Tooltip>
             )}
             {role !== "viewer" && (

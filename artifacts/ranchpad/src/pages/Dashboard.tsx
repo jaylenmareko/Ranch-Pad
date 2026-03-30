@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudRain, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudRain, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { getGuestAnimals, importCsvToGuestStore, clearGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
+import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
@@ -285,6 +286,8 @@ function GuestDashboard() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
+
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
     </div>
   );
 }
@@ -307,6 +310,7 @@ function AuthDashboard() {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
 
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading } = useListAlerts();
@@ -438,6 +442,13 @@ function AuthDashboard() {
               ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
               : <><Upload className="w-4 h-4 shrink-0" />Upload CSV</>
             }
+          </button>
+          <button
+            onClick={() => setScanOpen(true)}
+            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors whitespace-nowrap shrink-0"
+          >
+            <ScanLine className="w-4 h-4 shrink-0" />
+            Add from Photo
           </button>
           <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30 whitespace-nowrap shrink-0">
             <PlusCircle className="w-4 h-4" />
