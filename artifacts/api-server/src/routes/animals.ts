@@ -452,8 +452,9 @@ const photoUpload = multer({
 });
 
 router.post("/animals/scan-photo", requireAuth, requireNotViewer, photoUpload.single("photo"), async (req, res): Promise<void> => {
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (!ANTHROPIC_API_KEY) {
+  const apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+  const baseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+  if (!apiKey) {
     res.status(500).json({ error: true, message: "AI features not configured" });
     return;
   }
@@ -466,10 +467,10 @@ router.post("/animals/scan-photo", requireAuth, requireNotViewer, photoUpload.si
   const mimeType = req.file.mimetype as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
   try {
-    const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+    const anthropic = new Anthropic({ apiKey, ...(baseURL ? { baseURL } : {}) });
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: "claude-sonnet-4-6",
       max_tokens: 2048,
       messages: [
         {
