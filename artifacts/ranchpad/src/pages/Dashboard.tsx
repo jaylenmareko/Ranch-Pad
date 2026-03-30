@@ -32,6 +32,7 @@ function GuestDashboard() {
   const [animals, setAnimals] = useState<GuestAnimal[]>(() => getGuestAnimals());
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
 
   useEffect(() => {
     const refresh = () => setAnimals(getGuestAnimals());
