@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
-import { db, fieldNotesTable, animalsTable } from "@workspace/db";
+import { db, fieldNotesTable, animalsTable, animalAssignmentsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -25,12 +25,22 @@ async function verifyAnimalOwnership(animalId: number, ranchId: number) {
 
 router.get("/animals/:animalId/notes", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
   const animalId = parseId(req.params.animalId);
 
   const animal = await verifyAnimalOwnership(animalId, ranchId);
   if (!animal) {
     res.status(404).json({ error: true, message: "Animal not found" });
     return;
+  }
+
+  if (role === "viewer") {
+    const [assignment] = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId), eq(animalAssignmentsTable.animalId, animalId)))
+      .limit(1);
+    if (!assignment) { res.status(403).json({ error: true, message: "Access denied" }); return; }
   }
 
   const notes = await db
@@ -42,7 +52,7 @@ router.get("/animals/:animalId/notes", requireAuth, async (req, res): Promise<vo
   res.json(notes);
 });
 
-router.post("/animals/:animalId/notes", requireAuth, async (req, res): Promise<void> => {
+router.post("/animals/:animalId/notes", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
 
@@ -101,7 +111,7 @@ router.patch("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): 
   res.json(updated);
 });
 
-router.delete("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): Promise<void> => {
+router.delete("/animals/:animalId/notes/:noteId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
   const noteId = parseId(req.params.noteId);

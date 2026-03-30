@@ -7,10 +7,14 @@ import { AlertTriangle, CloudLightning, Info, CheckCircle2, RefreshCw, PawPrint 
 import { useListAlerts, useDismissAlert, useGenerateAlerts, type Alert } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 
 export default function AlertsList() {
+  const { isAuthenticated } = useAuth();
+  const { openLogin, openSignup } = useAuthModal();
   const queryClient = useQueryClient();
-  const { data: alerts, isLoading } = useListAlerts();
+  const { data: alerts, isLoading } = useListAlerts({ query: { enabled: isAuthenticated } });
   
   const generateMutation = useGenerateAlerts({
     mutation: {
@@ -32,14 +36,40 @@ export default function AlertsList() {
   const getSeverityIcon = (sev: string) => {
     if (sev === 'high') return <AlertTriangle className="w-5 h-5 text-destructive" />;
     if (sev === 'medium') return <Info className="w-5 h-5 text-yellow-500" />;
-    return <Info className="w-5 h-5 text-blue-500" />;
+    return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
   };
 
   const getSeverityColor = (sev: string) => {
     if (sev === 'high') return "bg-destructive/10 border-destructive/20 text-destructive";
     if (sev === 'medium') return "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400";
-    return "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400";
+    return "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400";
   };
+
+  // Guest users see an empty state with a sign-up prompt
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alerts</h1>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
+            <AlertTriangle className="w-10 h-10 text-primary/50" />
+          </div>
+          <h2 className="font-bold text-xl text-foreground mb-2">Weather &amp; health alerts</h2>
+          <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
+            Sign up to get automatic alerts when local weather conditions increase disease risk for your herd, or when medications are coming due.
+          </p>
+          <div className="flex gap-3">
+            <button onClick={openSignup} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              Create Free Account
+            </button>
+            <button onClick={openLogin} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-medium border border-border text-foreground hover:bg-muted transition-colors">
+              Log In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const AlertRow = ({ alert }: { alert: Alert }) => (
     <div className={`p-4 md:p-5 flex flex-col md:flex-row gap-4 md:items-center rounded-2xl border transition-all ${getSeverityColor(alert.severity)}`}>
@@ -64,7 +94,7 @@ export default function AlertsList() {
       <Button 
         variant="outline" 
         size="sm" 
-        className="shrink-0 bg-background/50 hover:bg-background border-transparent shadow-none w-full md:w-auto"
+        className="shrink-0 bg-background/50 hover:bg-background border-transparent shadow-none w-full md:w-auto min-h-[44px]"
         onClick={() => dismissMutation.mutate({ alertId: alert.id })}
       >
         <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Resolved
@@ -76,7 +106,7 @@ export default function AlertsList() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-foreground">Action Center</h1>
+          <h1 className="text-xl font-black text-foreground whitespace-nowrap">Action Center</h1>
           <p className="text-muted-foreground font-medium mt-1">AI-powered insights and urgent tasks.</p>
         </div>
         <Button 

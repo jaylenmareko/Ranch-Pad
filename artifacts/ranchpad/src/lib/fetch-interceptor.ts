@@ -1,7 +1,6 @@
 /**
  * Monkey-patches the global fetch to automatically inject the JWT token
- * into requests destined for our /api. This ensures generated hooks from
- * @workspace/api-client-react inherently use auth without modification.
+ * and active ranch context into requests destined for our /api.
  */
 const originalFetch = window.fetch;
 
@@ -20,6 +19,12 @@ window.fetch = async (...args) => {
       if (!headers.has("Authorization")) {
         headers.set("Authorization", `Bearer ${token}`);
       }
+
+      // Inject active ranch context for multi-ranch switching
+      const activeRanchId = localStorage.getItem("ranchpad_active_ranch");
+      if (activeRanchId && !headers.has("X-Ranch-Id")) {
+        headers.set("X-Ranch-Id", activeRanchId);
+      }
       
       newInit.headers = headers;
       args[1] = newInit;
@@ -28,10 +33,13 @@ window.fetch = async (...args) => {
 
   const response = await originalFetch(...args);
 
-  // If we hit a 401 on an API route, auto-logout
+  // If we hit a 401 on an API route AND we had a token, auto-logout.
   if (response.status === 401 && url.includes("/api/") && !url.includes("/api/auth/login")) {
-    localStorage.removeItem("ranchpad_token");
-    window.dispatchEvent(new Event("auth-expired"));
+    const hadToken = !!localStorage.getItem("ranchpad_token");
+    if (hadToken) {
+      localStorage.removeItem("ranchpad_token");
+      window.dispatchEvent(new Event("auth-expired"));
+    }
   }
 
   return response;

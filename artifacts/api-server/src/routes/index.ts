@@ -9,6 +9,12 @@ import famachaRouter from "./famacha.js";
 import fieldNotesRouter from "./field-notes.js";
 import alertsRouter from "./alerts.js";
 import weatherRouter from "./weather.js";
+import upcomingRouter from "./upcoming.js";
+import billingRouter from "./billing.js";
+import teamRouter from "./team.js";
+import locationsRouter from "./locations.js";
+import storageRouter from "./storage.js";
+import photosRouter from "./photos.js";
 
 const router: IRouter = Router();
 
@@ -22,5 +28,11 @@ router.use(famachaRouter);
 router.use(fieldNotesRouter);
 router.use(alertsRouter);
 router.use(weatherRouter);
+router.use(upcomingRouter);
+router.use(billingRouter);
+router.use(teamRouter);
+router.use(locationsRouter);
+router.use(storageRouter);
+router.use(photosRouter);
 
 export default router;

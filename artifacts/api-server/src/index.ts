@@ -22,7 +22,6 @@ async function start() {
   app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 
-    // Non-blocking startup alert generation
     generateAlertsForAllRanches()
       .then(() => console.log("Startup alert generation complete"))
       .catch((err: Error) => console.error("Startup alert generation failed:", err.message));

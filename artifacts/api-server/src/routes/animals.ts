@@ -1,8 +1,12 @@
 import { Router, type IRouter } from "express";
-import { db, animalsTable, healthEventsTable } from "@workspace/db";
-import { eq, and, or, ilike, inArray } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import multer from "multer";
+import { parse as parseCsv } from "csv-parse/sync";
+import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable, pastureLocationsTable } from "@workspace/db";
+import { eq, and, or, inArray, getTableColumns } from "drizzle-orm";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const router: IRouter = Router();
 
@@ -14,8 +18,11 @@ const createAnimalSchema = z.object({
   sex: z.string().min(1),
   dateOfBirth: z.string().nullable().optional(),
   damId: z.number().int().nullable().optional(),
+  damName: z.string().nullable().optional(),
   sireId: z.number().int().nullable().optional(),
+  sireName: z.string().nullable().optional(),
   expectedDueDate: z.string().nullable().optional(),
+  locationId: z.number().int().nullable().optional(),
 });
 
 // Compute health dot color from events in last 7 days
@@ -46,8 +53,12 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   const { species, sex, breed, search } = req.query as Record<string, string>;
 
   let animals = await db
-    .select()
+    .select({
+      ...getTableColumns(animalsTable),
+      locationName: pastureLocationsTable.name,
+    })
     .from(animalsTable)
+    .leftJoin(pastureLocationsTable, eq(animalsTable.locationId, pastureLocationsTable.id))
     .where(eq(animalsTable.ranchId, ranchId))
     .orderBy(animalsTable.createdAt);
 
@@ -62,6 +73,17 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
       a.tagNumber?.toLowerCase().includes(s) ||
       a.breed?.toLowerCase().includes(s)
     );
+  }
+
+  // Viewer: filter to assigned animals only
+  const { userId, role } = req.user!;
+  if (role === "viewer") {
+    const assignments = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId)));
+    const assignedIds = new Set(assignments.map(a => a.animalId));
+    animals = animals.filter(a => assignedIds.has(a.id));
   }
 
   const result = await Promise.all(
@@ -86,7 +108,7 @@ async function validateLineageOwnership(damId: number | null | undefined, sireId
   return null;
 }
 
-router.post("/animals", requireAuth, async (req, res): Promise<void> => {
+router.post("/animals", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const parsed = createAnimalSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -110,6 +132,7 @@ router.post("/animals", requireAuth, async (req, res): Promise<void> => {
 
 router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
   const animalId = parseInt(raw, 10);
 
@@ -122,6 +145,23 @@ router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   if (!animal) {
     res.status(404).json({ error: true, message: "Animal not found" });
     return;
+  }
+
+  // Viewer: only allow access to assigned animals
+  if (role === "viewer") {
+    const [assignment] = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(
+        eq(animalAssignmentsTable.ranchId, ranchId),
+        eq(animalAssignmentsTable.viewerUserId, userId),
+        eq(animalAssignmentsTable.animalId, animalId)
+      ))
+      .limit(1);
+    if (!assignment) {
+      res.status(403).json({ error: true, message: "Access denied" });
+      return;
+    }
   }
 
   // Get dam, sire, babies
@@ -161,7 +201,7 @@ router.get("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   res.json({ ...animal, dam, sire, babies, latestHealthSeverity });
 });
 
-router.put("/animals/:animalId", requireAuth, async (req, res): Promise<void> => {
+router.put("/animals/:animalId", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
   const animalId = parseInt(raw, 10);
@@ -192,7 +232,35 @@ router.put("/animals/:animalId", requireAuth, async (req, res): Promise<void> =>
   res.json({ ...animal, latestHealthSeverity: null });
 });
 
-router.delete("/animals/:animalId", requireAuth, async (req, res): Promise<void> => {
+router.patch("/animals/location", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const { ranchId } = req.user!;
+  const { locationId, animalIds } = req.body;
+
+  if (typeof locationId !== "number" || !Number.isInteger(locationId)) {
+    res.status(400).json({ error: true, message: "locationId must be an integer" });
+    return;
+  }
+  if (!Array.isArray(animalIds) || !animalIds.every(id => typeof id === "number")) {
+    res.status(400).json({ error: true, message: "animalIds must be an array of integers" });
+    return;
+  }
+
+  // Remove existing assignments for this location
+  await db.update(animalsTable)
+    .set({ locationId: null })
+    .where(and(eq(animalsTable.ranchId, ranchId), eq(animalsTable.locationId, locationId)));
+
+  // Apply new assignments
+  if (animalIds.length > 0) {
+    await db.update(animalsTable)
+      .set({ locationId })
+      .where(and(eq(animalsTable.ranchId, ranchId), inArray(animalsTable.id, animalIds)));
+  }
+
+  res.json({ updated: animalIds.length });
+});
+
+router.delete("/animals/:animalId", requireAuth, requireOwner, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
   const animalId = parseInt(raw, 10);
@@ -208,6 +276,167 @@ router.delete("/animals/:animalId", requireAuth, async (req, res): Promise<void>
   }
 
   res.sendStatus(204);
+});
+
+// ─── CSV Import ───────────────────────────────────────────────────────────────
+
+const CSV_HEADERS = [
+  "name", "tag_number", "species", "breed", "sex", "date_of_birth",
+  "health_event_description", "health_event_date", "health_event_severity",
+  "medication_name", "dosage", "date_given", "next_due_date",
+] as const;
+
+const VALID_SEVERITIES = new Set(["low", "medium", "high"]);
+
+interface ImportSkip {
+  row: number;
+  reason: string;
+}
+
+interface ImportSummary {
+  animalsCreated: number;
+  healthEventsCreated: number;
+  medicationRecordsCreated: number;
+  skipped: ImportSkip[];
+}
+
+router.post("/animals/import-csv", requireAuth, requireNotViewer, upload.single("file"), async (req, res): Promise<void> => {
+  if (!req.file) {
+    res.status(400).json({ error: true, message: "No file uploaded" });
+    return;
+  }
+
+  const ranchId = req.user!.ranchId;
+  const shouldReplace = req.query.replace === "true";
+
+  let rows: Record<string, string>[];
+  try {
+    rows = parseCsv(req.file.buffer.toString("utf-8"), {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    }) as Record<string, string>[];
+  } catch {
+    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
+    return;
+  }
+
+  if (rows.length === 0) {
+    res.status(400).json({ error: true, errorType: "EMPTY_FILE", message: "This file appears to be empty. Please fill in the template and try again." });
+    return;
+  }
+
+  // Verify the file uses RanchPad's column headers (at least name or species must be present)
+  const fileHeaders = new Set(Object.keys(rows[0]).map(k => k.toLowerCase().trim()));
+  const hasValidHeaders = CSV_HEADERS.some(h => fileHeaders.has(h));
+  if (!hasValidHeaders) {
+    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
+    return;
+  }
+
+  // If replacing, wipe all existing animals for this ranch first
+  if (shouldReplace) {
+    await db.delete(animalsTable).where(eq(animalsTable.ranchId, ranchId));
+  }
+
+  // Pre-load existing tag numbers for this ranch to detect duplicates efficiently
+  const existingAnimals = await db
+    .select({ tagNumber: animalsTable.tagNumber })
+    .from(animalsTable)
+    .where(eq(animalsTable.ranchId, ranchId));
+  const existingTags = new Set(
+    existingAnimals.map(a => a.tagNumber?.trim().toLowerCase()).filter(Boolean)
+  );
+
+  // Track tags we've seen in this import batch to catch intra-file duplicates
+  const seenTagsThisImport = new Set<string>();
+
+  const summary: ImportSummary = { animalsCreated: 0, healthEventsCreated: 0, medicationRecordsCreated: 0, skipped: [] };
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNum = i + 2; // 1-indexed + header row
+
+    const name = (row["name"] ?? "").trim();
+    const species = (row["species"] ?? "").trim();
+
+    if (!name || !species) {
+      summary.skipped.push({ row: rowNum, reason: "Missing required field: name and species are required" });
+      continue;
+    }
+
+    const tagNumber = (row["tag_number"] ?? "").trim() || null;
+
+    if (tagNumber) {
+      const tagLower = tagNumber.toLowerCase();
+      if (existingTags.has(tagLower)) {
+        summary.skipped.push({ row: rowNum, reason: `Duplicate tag number "${tagNumber}" already exists in your herd` });
+        continue;
+      }
+      if (seenTagsThisImport.has(tagLower)) {
+        summary.skipped.push({ row: rowNum, reason: `Duplicate tag number "${tagNumber}" appears more than once in this file` });
+        continue;
+      }
+      seenTagsThisImport.add(tagLower);
+    }
+
+    const sex = (row["sex"] ?? "").trim() || "Unknown";
+    const breed = (row["breed"] ?? "").trim() || null;
+    const dateOfBirth = (row["date_of_birth"] ?? "").trim() || null;
+
+    // Health event — only created when all three fields are present and severity is valid.
+    // Partial or invalid fields do not block animal creation; the health event is simply omitted.
+    const heDesc = (row["health_event_description"] ?? "").trim();
+    const heDate = (row["health_event_date"] ?? "").trim();
+    const heSev = (row["health_event_severity"] ?? "").trim().toLowerCase();
+    const includeHealth = !!(heDesc && heDate && VALID_SEVERITIES.has(heSev));
+
+    // Medication record — only created when medication_name and date_given are both present.
+    const medName = (row["medication_name"] ?? "").trim();
+    const dateGiven = (row["date_given"] ?? "").trim();
+    const includeMed = !!(medName && dateGiven);
+
+    // All inserts for this row in one transaction — any failure rolls back everything
+    try {
+      await db.transaction(async (tx) => {
+        const [newAnimal] = await tx
+          .insert(animalsTable)
+          .values({ ranchId, name, species, sex, tagNumber, breed, dateOfBirth })
+          .returning();
+
+        if (includeHealth) {
+          await tx.insert(healthEventsTable).values({
+            animalId: newAnimal.id,
+            ranchId,
+            description: heDesc,
+            eventDate: heDate,
+            severity: heSev,
+          });
+        }
+
+        if (includeMed) {
+          await tx.insert(medicationRecordsTable).values({
+            animalId: newAnimal.id,
+            ranchId,
+            medicationName: medName,
+            dosage: (row["dosage"] ?? "").trim() || null,
+            dateGiven,
+            nextDueDate: (row["next_due_date"] ?? "").trim() || null,
+          });
+        }
+      });
+
+      summary.animalsCreated++;
+      if (includeHealth) summary.healthEventsCreated++;
+      if (includeMed) summary.medicationRecordsCreated++;
+      if (tagNumber) existingTags.add(tagNumber.toLowerCase());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown database error";
+      summary.skipped.push({ row: rowNum, reason: `Database error: ${message}` });
+    }
+  }
+
+  res.json(summary);
 });
 
 export default router;

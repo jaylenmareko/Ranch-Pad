@@ -22,7 +22,12 @@ export interface SignupBody {
   ranchCity?: string;
   ranchState?: string;
   /** @nullable */
+  lat?: number | null;
+  /** @nullable */
+  lon?: number | null;
+  /** @nullable */
   joinRanchName?: string | null;
+  pastures?: string[];
 }
 
 export interface LoginBody {
@@ -84,9 +89,17 @@ export interface Animal {
   /** @nullable */
   damId?: number | null;
   /** @nullable */
+  damName?: string | null;
+  /** @nullable */
   sireId?: number | null;
   /** @nullable */
+  sireName?: string | null;
+  /** @nullable */
   expectedDueDate?: string | null;
+  /** @nullable */
+  locationId?: number | null;
+  /** @nullable */
+  locationName?: string | null;
   createdAt: string;
   /** @nullable */
   latestHealthSeverity?: string | null;
@@ -115,7 +128,11 @@ export interface AnimalDetail {
   /** @nullable */
   damId?: number | null;
   /** @nullable */
+  damName?: string | null;
+  /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  sireName?: string | null;
   /** @nullable */
   expectedDueDate?: string | null;
   dam?: AnimalRef;
@@ -139,7 +156,11 @@ export interface CreateAnimalBody {
   /** @nullable */
   damId?: number | null;
   /** @nullable */
+  damName?: string | null;
+  /** @nullable */
   sireId?: number | null;
+  /** @nullable */
+  sireName?: string | null;
   /** @nullable */
   expectedDueDate?: string | null;
 }
@@ -305,3 +326,26 @@ export type ListAnimalsParams = {
   breed?: string;
   search?: string;
 };
+
+export interface UpcomingMedication {
+  id: number;
+  animalId: number;
+  animalName: string;
+  medicationName: string;
+  nextDueDate: string;
+  isOverdue: boolean;
+}
+
+export interface UpcomingPregnancy {
+  animalId: number;
+  animalName: string;
+  species: string;
+  expectedDueDate: string;
+}
+
+export interface UpcomingData {
+  medications: UpcomingMedication[];
+  pregnancies: UpcomingPregnancy[];
+  overdueMedsCount: number;
+  dueSoonCount: number;
+}

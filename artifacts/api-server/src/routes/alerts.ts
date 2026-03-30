@@ -7,9 +7,10 @@ import {
   healthEventsTable,
   famachaScoresTable,
   ranchesTable,
+  animalAssignmentsTable,
 } from "@workspace/db";
 import { eq, and, gte, lte, isNull, sql, desc } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireNotViewer } from "../middlewares/auth.js";
 import Anthropic from "@anthropic-ai/sdk";
 
 const router: IRouter = Router();
@@ -182,14 +183,14 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
     }
   }
 
-  // 5. Calving/kidding due-date alerts (2 weeks before and on due date)
+  // 5. Calving/kidding due-date alerts (30 days before and on due date)
   for (const animal of animals) {
     if (!animal.expectedDueDate) continue;
     const dueDate = new Date(animal.expectedDueDate + "T12:00:00");
     const daysUntil = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Alert 14 days before
-    if (daysUntil >= 12 && daysUntil <= 14) {
+    // Alert 30 days before
+    if (daysUntil >= 28 && daysUntil <= 30) {
       const key = makeKey("calving_soon", animal.id, animal.expectedDueDate);
       const wasCreated = await upsertAlert({
         ranchId, animalId: animal.id, alertType: "record",
@@ -345,7 +346,7 @@ SPECIES-SPECIFIC DISEASE KNOWLEDGE — only apply to species present in the inve
 - Cattle: Cold + wet + wind → Bovine Respiratory Disease (BRD/pneumonia), especially dangerous for calves under 6 months. A sudden high temperature drop >15°F across consecutive forecast days is a high-risk BRD trigger. Wet muddy conditions → foot rot risk.
 - Goats & Sheep: Warm + humid (humidity >75%, temps >50°F) + rain → barber pole worm (Haemonchus contortus) larval surge on pasture — a leading cause of death in small ruminants. Cold + wet → pneumonia, especially kids/lambs. Goats are more cold-sensitive than cattle.
 - Swine: Heat >80°F + high humidity → heat stress, reduced feed intake. Cold drafts + wet → PRRS and respiratory illness.
-- All species: Temperature swings >20°F between consecutive forecast days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease.
+- All species: Temperature swings >20°F between consecutive forecast days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease. Bright sunny + dry + dusty + windy conditions with temps above 55°F → pink eye (Infectious Keratoconjunctivitis); UV exposure, dust, and fly activity all increase transmission risk.
 - Pregnant/due animals: Any cold, wet, or high-stress forecast conditions during the 30-day pre-calving/kidding window elevate dystocia and neonatal mortality risk substantially. Name these animals in the alert.
 
 ALERT GENERATION RULES:
@@ -417,6 +418,7 @@ Return valid JSON only, no extra text.`;
 
 router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
 
   const alerts = await db
     .select()
@@ -425,7 +427,7 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
     .orderBy(alertsTable.generatedAt);
 
   // Attach animal names
-  const result = await Promise.all(
+  let result = await Promise.all(
     alerts.map(async alert => {
       let animalName: string | null = null;
       if (alert.animalId) {
@@ -439,6 +441,16 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
       return { ...alert, animalName };
     })
   );
+
+  // Viewer: only show alerts tied to their assigned animals (no weather/global alerts)
+  if (role === "viewer") {
+    const assignments = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId)));
+    const assignedIds = new Set(assignments.map(a => a.animalId));
+    result = result.filter(a => a.animalId !== null && assignedIds.has(a.animalId));
+  }
 
   // Sort by severity: high -> medium -> low
   const severityOrder = { high: 0, medium: 1, low: 2 };
@@ -459,7 +471,7 @@ router.post("/alerts/generate", requireAuth, async (req, res): Promise<void> => 
   res.json({ created, message: `Generated ${created} new alert(s)` });
 });
 
-router.post("/alerts/:alertId/dismiss", requireAuth, async (req, res): Promise<void> => {
+router.post("/alerts/:alertId/dismiss", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const alertId = parseId(req.params.alertId);
 

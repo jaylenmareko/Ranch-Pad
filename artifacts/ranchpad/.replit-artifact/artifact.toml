@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "RanchPad"
+title = "Ranch Pad"
 version = "1.0.0"
 id = "artifacts/ranchpad"
 router = "path"

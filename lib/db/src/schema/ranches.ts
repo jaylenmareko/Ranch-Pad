@@ -10,6 +10,11 @@ export const ranchesTable = pgTable("ranches", {
   lat: doublePrecision("lat"),
   lon: doublePrecision("lon"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Billing
+  trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: text("subscription_status"), // trialing | active | past_due | canceled | null
 });
 
 export const insertRanchSchema = createInsertSchema(ranchesTable).omit({ id: true, createdAt: true });
