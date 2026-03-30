@@ -5,6 +5,7 @@ import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssi
 import { eq, and, or, inArray, getTableColumns } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
+import Anthropic from "@anthropic-ai/sdk";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
@@ -437,6 +438,109 @@ router.post("/animals/import-csv", requireAuth, requireNotViewer, upload.single(
   }
 
   res.json(summary);
+});
+
+// ─── Photo scan: extract animal records from an image ─────────────────────────
+
+const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed"));
+  },
+});
+
+router.post("/animals/scan-photo", requireAuth, requireNotViewer, photoUpload.single("photo"), async (req, res): Promise<void> => {
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+  if (!ANTHROPIC_API_KEY) {
+    res.status(500).json({ error: true, message: "AI features not configured" });
+    return;
+  }
+  if (!req.file) {
+    res.status(400).json({ error: true, message: "No image file provided" });
+    return;
+  }
+
+  const base64 = req.file.buffer.toString("base64");
+  const mimeType = req.file.mimetype as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
+  try {
+    const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-5",
+      max_tokens: 2048,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: { type: "base64", media_type: mimeType, data: base64 },
+            },
+            {
+              type: "text",
+              text: `You are reading a livestock record book, farm register, ear tag list, or handwritten notes page.
+
+Extract every individual animal record you can find in this image.
+
+For each animal return a JSON object with these fields:
+- "name": animal name, or use the tag number as name if no name is given (e.g. "A-101")
+- "tagNumber": ear tag number, ID number, or registration number if visible (string or null)
+- "species": must be exactly one of: Cattle, Sheep, Goat, Pig, Horse, Other
+- "breed": breed name if mentioned, otherwise null
+- "sex": use exact terms — Cattle: Heifer/Cow/Bull/Steer, Sheep: Ewe/Ram/Wether, Goat: Doe/Buck/Wether, Pig: Gilt/Sow/Boar/Barrow, Horse: Filly/Mare/Stallion/Gelding, Other: Female/Male
+- "dateOfBirth": YYYY-MM-DD format if a birth date is visible, otherwise null
+- "notes": any health notes, vaccination records, or other comments for this animal (string or null)
+
+Rules:
+- Default to "Cattle" if species cannot be determined from context.
+- If sex is unclear, use "Heifer" for cattle, "Ewe" for sheep, "Doe" for goats.
+- If only a tag number is visible with no separate name, use the tag number as the name.
+- Return a JSON array only. No explanation, no markdown, no code blocks — just the raw JSON array.
+- If no animals are found, return: []`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const content = response.content[0];
+    if (content.type !== "text") {
+      res.json({ animals: [] });
+      return;
+    }
+
+    let extracted: unknown[];
+    try {
+      const jsonMatch = content.text.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) { res.json({ animals: [] }); return; }
+      extracted = JSON.parse(jsonMatch[0]);
+    } catch {
+      res.json({ animals: [] });
+      return;
+    }
+
+    const validSpecies = new Set(["Cattle", "Sheep", "Goat", "Pig", "Horse", "Other"]);
+    const animals = (extracted as Record<string, unknown>[])
+      .filter(a => a && typeof a === "object")
+      .map(a => ({
+        name: String(a.name ?? "").trim().slice(0, 100) || null,
+        tagNumber: a.tagNumber ? String(a.tagNumber).trim().slice(0, 50) : null,
+        species: validSpecies.has(String(a.species)) ? String(a.species) : "Cattle",
+        breed: a.breed ? String(a.breed).trim().slice(0, 100) : null,
+        sex: a.sex ? String(a.sex).trim().slice(0, 50) : null,
+        dateOfBirth: a.dateOfBirth ? String(a.dateOfBirth) : null,
+        notes: a.notes ? String(a.notes).trim().slice(0, 500) : null,
+      }))
+      .filter(a => a.name);
+
+    res.json({ animals });
+  } catch (err) {
+    console.error("Photo scan failed:", err);
+    res.status(500).json({ error: true, message: "Photo scan failed. Please try again." });
+  }
 });
 
 export default router;

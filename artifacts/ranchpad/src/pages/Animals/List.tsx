@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
@@ -14,6 +14,7 @@ import { useAuthModal } from "@/contexts/auth-modal-context";
 import { getGuestAnimals, clearGuestAnimals, type GuestAnimal, setPostSignupAction, setPostSignupCsv, getPostSignupAction, clearPostSignupState } from "@/lib/guest-store";
 import { SimpleDialog } from "@/components/ui/dialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
+import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
 
@@ -575,6 +576,7 @@ export default function AnimalList() {
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { isAuthenticated, role } = useAuth();
@@ -772,6 +774,22 @@ export default function AnimalList() {
               </Tooltip>
             )}
             {role !== "viewer" && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => setScanOpen(true)}
+                    className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
+                    aria-label="Scan record book to add animals"
+                  >
+                    <ScanLine className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Scan Records</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Add animals by scanning a photo of your record book</TooltipContent>
+              </Tooltip>
+            )}
+            {role !== "viewer" && (
               <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Animal
@@ -939,6 +957,8 @@ export default function AnimalList() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
+
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
     </div>
   );
 }
