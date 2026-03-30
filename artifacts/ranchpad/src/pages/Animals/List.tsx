@@ -766,16 +766,16 @@ export default function AnimalList() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={importing}
                     className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
-                    aria-label="Upload your herd from a csv file here"
+                    aria-label="Upload CSV"
                   >
                     {importing ? (
                       <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
                     ) : (
-                      <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
+                      <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload CSV</>
                     )}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Upload your herd from a csv file here</TooltipContent>
+                <TooltipContent>Upload CSV</TooltipContent>
               </Tooltip>
             )}
             {role !== "viewer" && (
@@ -787,8 +787,8 @@ export default function AnimalList() {
                     className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
                     aria-label="Scan record book to add animals"
                   >
-                    <ScanLine className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Add from Photo</span>
+                    <ScanLine className="w-4 h-4 mr-2" />
+                    Add from Photo
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Take a photo of your record book — Claude reads it and adds your animals automatically</TooltipContent>
