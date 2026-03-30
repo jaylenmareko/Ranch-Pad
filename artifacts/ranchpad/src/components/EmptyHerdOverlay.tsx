@@ -9,7 +9,7 @@ interface EmptyHerdOverlayProps {
 
 export function EmptyHerdOverlay({ onScan, onImportClick }: EmptyHerdOverlayProps) {
   return (
-    <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-3 backdrop-blur-md bg-[#162E2A]/60 p-6">
+    <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-4 backdrop-blur-md bg-[#162E2A]/60 p-6">
 
       {/* Primary — Scan Paper Records */}
       <button
@@ -30,7 +30,7 @@ export function EmptyHerdOverlay({ onScan, onImportClick }: EmptyHerdOverlayProp
       {/* Add Animal */}
       <Link
         href="/animals/new"
-        className="w-full max-w-sm flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-left"
+        className="w-full max-w-sm flex items-center gap-4 px-2 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"
       >
         <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
           <PlusCircle className="w-5 h-5 text-foreground" />
@@ -46,7 +46,7 @@ export function EmptyHerdOverlay({ onScan, onImportClick }: EmptyHerdOverlayProp
       {/* Import from Spreadsheet */}
       <button
         onClick={onImportClick}
-        className="w-full max-w-sm flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-left"
+        className="w-full max-w-sm flex items-center gap-4 px-2 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"
       >
         <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
           <FileSpreadsheet className="w-5 h-5 text-foreground" />
