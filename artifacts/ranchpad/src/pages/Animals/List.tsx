@@ -322,6 +322,13 @@ function GuestAnimalList() {
         onLogin={handleLogin}
       />
 
+      {guestAnimals.length === 0 ? (
+        <EmptyHerdOverlay
+          onScan={() => handleAddAnimal()}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      ) : (
+      <>
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
@@ -374,6 +381,8 @@ function GuestAnimalList() {
               to sync your herd across devices.
             </p>
           </div>
+      </>
+      )}
     </div>
   );
 }

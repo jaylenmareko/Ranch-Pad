@@ -104,6 +104,14 @@ function GuestDashboard() {
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
 
+      {animals.length === 0 ? (
+        <EmptyHerdOverlay
+          onScan={() => openSignup()}
+          onImportClick={() => fileInputRef.current?.click()}
+        />
+      ) : (
+      <>
+
       {/* Action Banner */}
       <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1 min-w-0">
@@ -286,6 +294,8 @@ function GuestDashboard() {
         </CardContent>
       </Card>
 
+      </>
+      )}
     </div>
   );
 }
@@ -431,6 +441,7 @@ function AuthDashboard() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
 
       {hasNoAnimals ? (
         <EmptyHerdOverlay
