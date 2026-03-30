@@ -311,6 +311,7 @@ export default function Dashboard() {
 }
 
 function AuthDashboard() {
+  const { role } = useAuth();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -447,6 +448,7 @@ function AuthDashboard() {
         <EmptyHerdOverlay
           onScan={() => setScanOpen(true)}
           onImportClick={() => fileInputRef.current?.click()}
+          role={role}
         />
       ) : (
       <>
