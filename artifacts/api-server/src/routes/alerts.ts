@@ -420,6 +420,17 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const { userId, role } = req.user!;
 
+  // No animals → no alerts
+  const [hasAnimal] = await db
+    .select({ id: animalsTable.id })
+    .from(animalsTable)
+    .where(eq(animalsTable.ranchId, ranchId))
+    .limit(1);
+  if (!hasAnimal) {
+    res.json([]);
+    return;
+  }
+
   const alerts = await db
     .select()
     .from(alertsTable)
@@ -461,6 +472,17 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
 
 router.post("/alerts/generate", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+
+  // No animals → skip generation entirely
+  const [hasAnimal] = await db
+    .select({ id: animalsTable.id })
+    .from(animalsTable)
+    .where(eq(animalsTable.ranchId, ranchId))
+    .limit(1);
+  if (!hasAnimal) {
+    res.json({ created: 0, message: "No animals in herd — no alerts generated" });
+    return;
+  }
 
   const [recordCount, weatherCount] = await Promise.all([
     generateRecordAlerts(ranchId),
