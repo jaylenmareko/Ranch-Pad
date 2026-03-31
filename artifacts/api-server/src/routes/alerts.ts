@@ -492,60 +492,67 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
     // Ask Claude for livestock risk analysis
     const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
-    const prompt = `You are an expert livestock health advisor for small farmers and ranchers.
-Analyze the weather trend and each animal's individual health history to generate hyper-specific disease risk alerts.
+    const location = [ranch.locationCity, ranch.locationState].filter(Boolean).join(", ") || `lat ${ranch.lat}, lon ${ranch.lon}`;
 
-RANCH: ${ranch.name} (${ranch.locationCity ?? ""}, ${ranch.locationState ?? ""})
+    const prompt = `You are a livestock health advisor generating predictive disease-risk alerts for a working rancher.
 
-HERD INVENTORY (${animals.length} total animals):
+DATA YOU HAVE:
+- "observed_today": the actual current weather conditions at the ranch RIGHT NOW
+- Remaining entries: 5-day FORECAST (what's coming). tempHighChange/tempLowChange = change vs prior day (negative = cooling)
+- Each animal's individual health history, medications, and FAMACHA scores from the past 30–90 days
+
+YOUR MISSION: Issue specific, actionable warnings so the rancher knows which animals to watch, what to prepare, and exactly why — before problems happen.
+
+RANCH: ${ranch.name} — ${location}
+
+HERD INVENTORY (${animals.length} total):
 ${animalContext}
 
-INDIVIDUAL ANIMAL RISK PROFILES (cross-reference against weather to identify animals at elevated personal risk):
-${animalProfiles}
+INDIVIDUAL ANIMAL RISK PROFILES:
+${animalProfiles === "No individual health records on file for any animal in the last 30–90 days." ? animalProfiles : `${animalProfiles}
 
-WEATHER TREND — "observed_today" is actual current conditions; remaining entries are forecast.
-tempHighChange/tempLowChange = change vs the prior day (negative = cooling, positive = warming):
+MANDATORY RULE: For EVERY animal listed above whose recent health history matches a forecast disease risk below, you MUST generate a separate individual-level alert naming that animal by tag and name with the specific clinical reason.`}
+
+CURRENT + FORECAST WEATHER (JSON):
 ${JSON.stringify(summary, null, 2)}
 
-SPECIES-SPECIFIC DISEASE KNOWLEDGE — only apply to species present in the inventory above:
-- Cattle: Cold + wet + wind → Bovine Respiratory Disease (BRD/pneumonia), especially dangerous for calves under 6 months. A sudden high temperature drop >15°F is a high-risk BRD trigger. Wet muddy conditions → foot rot risk.
-- Goats & Sheep: Warm + humid (humidity >75%, temps >50°F) + rain → barber pole worm (Haemonchus contortus) larval surge — a leading cause of death in small ruminants. FAMACHA score ≥3 signals active worm burden; score 4–5 is an emergency. Cold + wet → pneumonia, especially kids/lambs.
-- Swine: Heat >80°F + high humidity → heat stress, reduced feed intake. Cold drafts + wet → PRRS and respiratory illness.
-- Horses: Sustained wet + cold + mud → Mud Fever (Pastern Dermatitis) and Rain Rot, especially in horses with white legs or compromised immunity. Heat >90°F + humidity → anhidrosis and heat exhaustion risk.
-- All species: Temperature swings >20°F between consecutive days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease. Bright sunny + dry + dusty + windy conditions with temps above 55°F → pink eye (Infectious Keratoconjunctivitis).
-- Pregnant/due animals: Cold, wet, or high-stress forecast conditions in the 60-day pre-calving/kidding window elevate dystocia and neonatal mortality risk substantially.
+SPECIES-SPECIFIC DISEASE TRIGGERS — apply ONLY to species present in the inventory:
+- Cattle: Temps dropping >15°F between days + wet/wind → BRD/pneumonia. Risk is CRITICAL for calves under 6 months or any animal treated for respiratory illness in the past 30 days. Wet mud → foot rot. Dusty/windy days above 55°F → pinkeye.
+- Sheep & Goats: Forecast temps >45°F + humidity >70% + any rain = barber pole worm (Haemonchus contortus) larval activation — a leading killer of small ruminants. Animals with FAMACHA ≥3 or recent worm treatment are at HIGH or CRITICAL individual risk. Cold + wet nights → pneumonia in lambs/kids. Wet pasture → foot scald and foot rot.
+- Horses: Sustained wet fetlocks → Mud Fever (Pastern Dermatitis). Prolonged humidity + warmth → Rain Rot. Reference any animal recently treated for either condition.
+- Swine: Heat >80°F + humidity → heat stress. Cold + wet drafts → respiratory illness (PRRS).
+- All species: Temp swing >20°F between consecutive forecast days = significant immune suppression trigger for any animal. Mention it explicitly with the actual °F numbers.
 
-ALERT GENERATION RULES:
-1. Only generate alerts for species present in the herd inventory — do not mention species not listed.
-2. Use the actual animal counts in your message (e.g. "Your 8 cattle" or "3 of your goats").
-3. Cross-reference EVERY animal's individual risk profile against the weather trend. If an animal had a respiratory illness in the last 30 days, mention them by name and tag when BRD conditions are forecast. If a FAMACHA score is worsening and barber pole worm conditions are forecast, name that animal explicitly.
-4. Generate a SEPARATE alert for any animal at elevated individual risk beyond the herd-level warning. Call them out by tag number and name with the exact clinical reason (e.g. "Tag #A-112 (Daisy) — treated for pneumonia 10 days ago, now facing another cold+wet system").
-5. Flag temperature trend alerts explicitly when tempHighChange or tempLowChange shows a drop of 15°F or more — reference the exact numbers (e.g. "temperature dropping 22°F over 48 hours").
-6. Only generate alerts for genuine risks — no noise for mild or unremarkable conditions.
-7. Use "critical" only when the forecast poses an imminent, life-threatening risk; do not inflate severity.
+ALERT RULES:
+1. Generate one herd-level alert per disease risk that is present in the forecast for any species in your inventory.
+2. Generate a SEPARATE individual alert for every at-risk animal whose history matches a forecast condition. Use exact tag numbers and names. Quote the specific health event (e.g. "treated for respiratory illness on 2026-03-18") and the exact forecast trigger (e.g. "temps forecast to drop from 68°F to 41°F on April 2nd").
+3. Reference actual weather numbers — temperatures, humidity percentages, wind speeds, rain totals — from the data above.
+4. Severity:
+   - "low": Worth watching, no immediate action
+   - "moderate": Take precautions this week, check animals daily
+   - "high": Act within 24 hours — meaningful risk of illness given current animal health + forecast
+   - "critical": Imminent life-threatening risk — name the specific animal
+5. Do NOT generate empty output. If the herd has animals with recent health histories and any forecast condition is relevant, issue alerts.
+6. alertKey must be stable (no dates) so repeated runs don't duplicate — e.g. "brd_cattle_herd", "brd_individual_hank_ksc001", "barber_pole_sheep_woolsworth_kss001".
 
-Severity:
-- "low": Worth monitoring, no immediate action needed
-- "moderate": Take precautions this week, check animals daily
-- "high": Act now — meaningful risk of illness or loss given forecast conditions
-- "critical": Drop everything — imminent risk of death or severe herd loss; name specific animals at risk
+Return ONLY a valid JSON array. No markdown, no explanation. Example format:
+[{"alertType":"weather","message":"...","severity":"high","alertKey":"brd_cattle_herd"}]`;
 
-Return a JSON array of alerts (may be empty if no significant risks). Each alert must have:
-- "alertType": "weather"
-- "message": plain English, specific to this ranch's animals and actual weather numbers. A rancher should know exactly which animals to check and exactly why.
-- "severity": "low", "moderate", "high", or "critical"
-- "alertKey": unique string key (e.g., "weather_brd_cattle_2024-01-15" or "weather_brd_daisy_a112_2024-01-15" for individual animal alerts)
-
-Return valid JSON only, no extra text.`;
+    console.log(`[weather-alerts] Calling Claude for ranch ${ranchId} (${location}) — ${animals.length} animals, ${profileLines.length} with health history`);
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 2048,
+      model: "claude-sonnet-4-6",
+      max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     });
 
     const content = response.content[0];
-    if (content.type !== "text") return 0;
+    if (content.type !== "text") {
+      console.error(`[weather-alerts] Unexpected response type from Claude: ${content.type}`);
+      return 0;
+    }
+
+    console.log(`[weather-alerts] Claude raw response (${content.text.length} chars):`, content.text.slice(0, 500));
 
     let parsedAlerts: Array<{
       alertType: string;
@@ -557,9 +564,14 @@ Return valid JSON only, no extra text.`;
     try {
       // Extract JSON from response (Claude may wrap in code blocks)
       const jsonMatch = content.text.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) return 0;
+      if (!jsonMatch) {
+        console.error("[weather-alerts] No JSON array found in Claude response:", content.text.slice(0, 300));
+        return 0;
+      }
       parsedAlerts = JSON.parse(jsonMatch[0]);
-    } catch {
+      console.log(`[weather-alerts] Parsed ${parsedAlerts.length} alert(s) from Claude`);
+    } catch (parseErr) {
+      console.error("[weather-alerts] JSON parse failed:", parseErr, "Raw:", content.text.slice(0, 300));
       return 0;
     }
 
