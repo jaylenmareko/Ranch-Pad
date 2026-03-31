@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudRain, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudLightning, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -241,41 +241,22 @@ function GuestDashboard() {
         })()}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Alerts teaser */}
-        <Card className="flex flex-col shadow-sm">
-          <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-              <AlertTriangle className="w-5 h-5 text-amber-500" /> Recent Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-8 flex flex-col items-center text-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-              <Lock className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Health alerts require an account</p>
-            <p className="text-xs text-muted-foreground max-w-xs">Get automatic alerts when weather raises disease risk or medications are due.</p>
-            <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
-          </CardContent>
-        </Card>
-
-        {/* Weather teaser */}
-        <Card className="flex flex-col shadow-sm">
-          <CardHeader className="pb-4 border-b border-border">
-            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-              <CloudRain className="w-5 h-5 text-blue-500" /> Ranch Weather
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-8 flex flex-col items-center text-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-              <Lock className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Weather alerts for your ranch</p>
-            <p className="text-xs text-muted-foreground max-w-xs">Sign up to see local conditions and get automatic disease-risk alerts based on weather.</p>
-            <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Herd Health Forecast teaser */}
+      <Card className="flex flex-col shadow-sm">
+        <CardHeader className="border-b border-border pb-4">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <CloudLightning className="w-5 h-5 text-primary" /> Herd Health Forecast
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8 flex flex-col items-center text-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            <Lock className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">AI-powered herd risk alerts</p>
+          <p className="text-xs text-muted-foreground max-w-xs">Sign up to see local weather conditions and get AI-generated disease risk alerts specific to your cattle, goats, and sheep.</p>
+          <button onClick={openSignup} className="mt-1 text-sm font-bold text-primary hover:underline">Sign up free →</button>
+        </CardContent>
+      </Card>
 
       {/* Upcoming teaser — full width */}
       <Card className="shadow-sm">
@@ -599,109 +580,72 @@ function AuthDashboard() {
         )}
       </div>
 
-      {/* Alerts + Weather — side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Alerts */}
-        <Card className="flex flex-col shadow-sm">
-          <CardHeader className="border-b border-border pb-4">
-            <div className="flex items-center justify-between">
+      {/* Herd Health Forecast — full width */}
+      <Card className="flex flex-col shadow-sm">
+        <CardHeader className="border-b border-border pb-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-                <AlertTriangle className="w-5 h-5 text-amber-500" /> Recent Alerts
+                <CloudLightning className="w-5 h-5 text-primary" /> Herd Health Forecast
               </CardTitle>
               <Badge variant="outline" className="font-bold">{activeAlerts.length}</Badge>
             </div>
-          </CardHeader>
-          <CardContent className="flex-1 p-0 flex flex-col">
-            {alertsLoading ? (
-              <div className="p-6 space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-xl" />)}</div>
-            ) : sortedAlerts.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" /></div>
-                <h3 className="font-bold text-lg text-foreground">All clear!</h3>
-                <p className="text-muted-foreground text-sm mt-1">No active alerts right now.</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-border/50 overflow-y-auto max-h-[400px]">
-                {sortedAlerts.map(alert => (
-                  <div key={alert.id} className="p-5 flex gap-4 hover:bg-muted/30 transition-colors group">
-                    <div className="mt-0.5"><div className={`w-3 h-3 rounded-full ${alert.severity === 'high' ? 'bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]' : alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`} /></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground leading-tight">
-                        {alert.animalName ? <Link href={`/animals/${alert.animalId}`} className="text-primary hover:underline">{alert.animalName}</Link> : null}
-                        {alert.animalName ? ' - ' : ''}{alert.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">{alert.alertType.replace(/_/g, ' ')}</p>
-                    </div>
-                    <button onClick={() => dismissMutation.mutate({ alertId: alert.id })} className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all shrink-0 self-start flex items-center justify-center" aria-label="Dismiss alert">
-                      <X className="w-4 h-4" />
-                    </button>
+            <button
+              onClick={() => generateMutation.mutate()}
+              disabled={generateMutation.isPending}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50 shrink-0"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${generateMutation.isPending ? "animate-spin" : ""}`} />
+              Run Analysis
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="flex-1 p-0 flex flex-col">
+          {/* Slim weather context row */}
+          {!weatherLoading && weather && (
+            <div className="px-5 py-2.5 bg-muted/20 border-b border-border/40 flex items-center gap-2.5 flex-wrap text-xs text-muted-foreground">
+              <img src={`https://openweathermap.org/img/wn/${weather.current.icon}.png`} alt="" className="w-5 h-5 opacity-70 -ml-0.5" />
+              <span className="font-bold text-foreground text-sm">{Math.round(weather.current.temp)}°F</span>
+              <span className="capitalize">{weather.current.description}</span>
+              <span className="opacity-40">·</span>
+              <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.current.humidity}%</span>
+              <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{Math.round(weather.current.windSpeed)} mph</span>
+            </div>
+          )}
+          {alertsLoading ? (
+            <div className="p-6 space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-xl" />)}</div>
+          ) : sortedAlerts.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" /></div>
+              <h3 className="font-bold text-lg text-foreground">All clear!</h3>
+              <p className="text-muted-foreground text-sm mt-1">No active alerts right now.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50 overflow-y-auto max-h-[400px]">
+              {sortedAlerts.map(alert => (
+                <div key={alert.id} className="p-5 flex gap-4 hover:bg-muted/30 transition-colors group">
+                  <div className="mt-0.5"><div className={`w-3 h-3 rounded-full ${alert.severity === 'critical' ? 'bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.6)]' : alert.severity === 'high' ? 'bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]' : alert.severity === 'moderate' || alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`} /></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground leading-tight">
+                      {alert.animalName ? <Link href={`/animals/${alert.animalId}`} className="text-primary hover:underline">{alert.animalName}</Link> : null}
+                      {alert.animalName ? ' — ' : ''}{alert.message}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">{alert.alertType.replace(/_/g, ' ')}</p>
                   </div>
-                ))}
-              </div>
-            )}
-            {activeAlerts.length > 5 && (
-              <div className="p-4 border-t border-border/50 bg-muted/10 text-center">
-                <Link href="/alerts" className="text-sm font-bold text-primary hover:underline flex items-center justify-center">View all {activeAlerts.length} alerts <ChevronRight className="w-4 h-4 ml-1" /></Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Weather */}
-        <Card className="overflow-hidden shadow-sm">
-          <CardHeader className="pb-2 border-b border-border">
-            <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-              <CloudRain className="w-5 h-5 text-blue-500" /> Ranch Weather
-              <button onClick={() => refetchWeather()} disabled={weatherFetching} className="ml-auto p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50" aria-label="Refresh weather">
-                <RefreshCw className={`w-4 h-4 ${weatherFetching ? "animate-spin" : ""}`} />
-              </button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {weatherLoading ? (
-              <div className="h-32 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" /></div>
-            ) : !weather ? (
-              <div className="py-6 text-center text-muted-foreground bg-muted/30 rounded-xl">
-                <p>Weather data not available.</p>
-                <p className="text-sm mt-1">Check your ranch profile location settings.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex flex-col md:flex-row gap-8 items-center">
-                  <div className="flex items-center gap-6">
-                    <img src={`https://openweathermap.org/img/wn/${weather.current.icon}@4x.png`} alt="Weather icon" className="w-24 h-24 drop-shadow-md" />
-                    <div>
-                      <div className="text-5xl font-black font-display text-foreground">{Math.round(weather.current.temp)}°</div>
-                      <p className="text-lg font-medium text-muted-foreground capitalize">{weather.current.description}</p>
-                    </div>
-                  </div>
-                  <div className="h-px w-full md:w-px md:h-16 bg-border/50" />
-                  <div className="flex gap-6 w-full justify-around md:justify-start">
-                    <div className="text-center"><Droplets className="w-5 h-5 text-blue-400 mx-auto mb-1" /><p className="text-sm font-bold text-foreground">{weather.current.humidity}%</p><p className="text-xs text-muted-foreground">Humidity</p></div>
-                    <div className="text-center"><Wind className="w-5 h-5 text-gray-400 mx-auto mb-1" /><p className="text-sm font-bold text-foreground">{Math.round(weather.current.windSpeed)} mph</p><p className="text-xs text-muted-foreground">Wind</p></div>
-                  </div>
+                  <button onClick={() => dismissMutation.mutate({ alertId: alert.id })} className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all shrink-0 self-start flex items-center justify-center" aria-label="Dismiss alert">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                {weather.forecast && weather.forecast.length > 0 && (
-                  <>
-                    <div className="h-px bg-border/40" />
-                    <div className="grid grid-cols-3 gap-3">
-                      {weather.forecast.slice(0, 3).map((day) => (
-                        <div key={day.date} className="text-center bg-muted/30 rounded-xl p-3">
-                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">{new Date(day.date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                          <img src={`https://openweathermap.org/img/wn/${day.icon}@2x.png`} alt={day.description} className="w-10 h-10 mx-auto" />
-                          <p className="text-xs font-medium capitalize text-muted-foreground mb-1">{day.description}</p>
-                          <p className="text-sm font-black text-foreground">{Math.round(day.tempHigh)}° / {Math.round(day.tempLow)}°</p>
-                          <div className="flex justify-center gap-2 mt-1"><span className="text-xs text-blue-400">{day.humidity}%</span></div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              ))}
+            </div>
+          )}
+          {activeAlerts.length > 5 && (
+            <div className="p-4 border-t border-border/50 bg-muted/10 text-center">
+              <Link href="/alerts" className="text-sm font-bold text-primary hover:underline flex items-center justify-center">View all {activeAlerts.length} alerts <ChevronRight className="w-4 h-4 ml-1" /></Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Upcoming — full width */}
       <Card className="flex flex-col shadow-sm">
