@@ -413,7 +413,7 @@ export default function AccountSettings() {
                   )}
                 </div>
 
-                {(billing.status === "active" || billing.status === "trialing") && (
+                {billing.status === "active" && (
                   <Button
                     variant="secondary"
                     className="gap-2"
@@ -425,7 +425,7 @@ export default function AccountSettings() {
                   </Button>
                 )}
 
-                {(billing.status === "canceled" || billing.status === "none" || billing.status === "past_due") && (
+                {(billing.status === "trialing" || billing.status === "canceled" || billing.status === "none" || billing.status === "past_due") && (
                   <Button
                     className="gap-2"
                     isLoading={isBillingRedirecting}
