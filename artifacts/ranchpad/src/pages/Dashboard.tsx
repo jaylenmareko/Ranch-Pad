@@ -351,9 +351,10 @@ function AuthDashboard() {
   const maleCount = React.useMemo(() => animals?.filter(a => a.sex === "Male").length ?? 0, [animals]);
 
   const activeAlerts = alerts?.filter(a => !a.isDismissed) || [];
-  const sortedAlerts = [...activeAlerts].sort((a, b) => {
-    const weights = { high: 3, medium: 2, low: 1 };
-    return weights[b.severity as keyof typeof weights] - weights[a.severity as keyof typeof weights];
+  const weatherAlerts = activeAlerts.filter(a => a.alertType === 'weather_forecast');
+  const sortedWeatherAlerts = [...weatherAlerts].sort((a, b) => {
+    const weights: Record<string, number> = { critical: 4, high: 3, moderate: 2, medium: 2, low: 1 };
+    return (weights[b.severity] ?? 0) - (weights[a.severity] ?? 0);
   }).slice(0, 5);
 
   const totalAnimals = animals?.length ?? 0;
@@ -592,7 +593,7 @@ function AuthDashboard() {
               <CardTitle className="text-xl flex items-center gap-2 text-foreground">
                 <CloudLightning className="w-5 h-5 text-primary" /> Herd Health Forecast
               </CardTitle>
-              <Badge variant="outline" className="font-bold">{activeAlerts.length}</Badge>
+              <Badge variant="outline" className="font-bold">{weatherAlerts.length}</Badge>
             </div>
             <button
               onClick={() => generateMutation.mutate()}
@@ -618,7 +619,7 @@ function AuthDashboard() {
           )}
           {alertsLoading ? (
             <div className="p-6 space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-xl" />)}</div>
-          ) : sortedAlerts.length === 0 ? (
+          ) : sortedWeatherAlerts.length === 0 ? (
             <div className="flex flex-col">
               <div className="flex flex-col items-center justify-center pt-7 pb-4 text-center">
                 <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3"><CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" /></div>
@@ -653,7 +654,7 @@ function AuthDashboard() {
             </div>
           ) : (
             <div className="divide-y divide-border/50 overflow-y-auto max-h-[400px]">
-              {sortedAlerts.map(alert => (
+              {sortedWeatherAlerts.map(alert => (
                 <div key={alert.id} className="p-5 flex gap-4 hover:bg-muted/30 transition-colors group">
                   <div className="mt-0.5"><div className={`w-3 h-3 rounded-full ${alert.severity === 'critical' ? 'bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.6)]' : alert.severity === 'high' ? 'bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]' : alert.severity === 'moderate' || alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`} /></div>
                   <div className="flex-1">
@@ -670,9 +671,9 @@ function AuthDashboard() {
               ))}
             </div>
           )}
-          {activeAlerts.length > 5 && (
+          {weatherAlerts.length > 5 && (
             <div className="p-4 border-t border-border/50 bg-muted/10 text-center">
-              <Link href="/alerts" className="text-sm font-bold text-primary hover:underline flex items-center justify-center">View all {activeAlerts.length} alerts <ChevronRight className="w-4 h-4 ml-1" /></Link>
+              <Link href="/alerts" className="text-sm font-bold text-primary hover:underline flex items-center justify-center">View all {weatherAlerts.length} weather alerts <ChevronRight className="w-4 h-4 ml-1" /></Link>
             </div>
           )}
         </CardContent>
