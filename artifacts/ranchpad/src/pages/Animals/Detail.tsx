@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle } from "lucide-react";
+import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown } from "lucide-react";
 import { 
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
   useListHealthEvents, useCreateHealthEvent, useDeleteHealthEvent, useUpdateHealthEvent,
   useListFamachaScores, useCreateFamachaScore, useDeleteFamachaScore, useUpdateFamachaScore,
-  type AnimalDetail, type HealthEvent, type MedicationRecord, type FamachaScore
+  useListFieldNotes,
+  type AnimalDetail, type HealthEvent, type MedicationRecord, type FamachaScore, type FieldNote
 } from "@workspace/api-client-react";
+import { useRanch } from "@/contexts/ranch-context";
+import { generateAnimalPDF } from "@/lib/export-pdf";
 import { formatAge, formatDate } from "@/lib/utils";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -244,11 +247,85 @@ export default function AnimalDetail() {
   const params = useParams();
   const animalId = parseInt(params.id || "0", 10);
   const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha">("health");
+  const [isExporting, setIsExporting] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { role } = useAuth();
+  const { activeRanch } = useRanch();
 
   const { data: animal, isLoading } = useGetAnimal(animalId);
+
+  // ── Data for PDF export (queries are cached — no extra network cost) ────────
+  const { data: pdfHealthEvents } = useListHealthEvents(animalId);
+  const { data: pdfMedications }  = useListMedications(animalId);
+  const { data: pdfFamacha }      = useListFamachaScores(animalId);
+  const { data: pdfFieldNotes }   = useListFieldNotes(animalId);
+  const { data: pdfHealthPhotos } = useQuery({
+    queryKey: [`/api/animals/${animalId}/health-events/photos`],
+    queryFn: async () => {
+      const res = await fetch(`/api/animals/${animalId}/health-events/photos`);
+      if (!res.ok) return {} as Record<string, SavedPhoto[]>;
+      return res.json() as Promise<Record<string, SavedPhoto[]>>;
+    },
+  });
+  const { data: pdfMedPhotos } = useQuery({
+    queryKey: [`/api/animals/${animalId}/medications/photos`],
+    queryFn: async () => {
+      const res = await fetch(`/api/animals/${animalId}/medications/photos`);
+      if (!res.ok) return {} as Record<string, SavedPhoto[]>;
+      return res.json() as Promise<Record<string, SavedPhoto[]>>;
+    },
+  });
+
+  async function exportPDF() {
+    if (!animal) return;
+    setIsExporting(true);
+    try {
+      await generateAnimalPDF({
+        ranchName: activeRanch?.name || "My Ranch",
+        name: animal.name,
+        tagNumber: animal.tagNumber,
+        species: animal.species,
+        breed: animal.breed,
+        sex: animal.sex,
+        dateOfBirth: animal.dateOfBirth,
+        locationName: (animal as any).locationName ?? null,
+        damName: animal.damName ?? null,
+        dam: animal.dam ?? null,
+        sireName: animal.sireName ?? null,
+        sire: animal.sire ?? null,
+        babies: animal.babies ?? [],
+        healthEvents: (pdfHealthEvents || []).map(ev => ({
+          id: ev.id,
+          description: ev.description,
+          eventDate: ev.eventDate,
+          severity: ev.severity,
+        })),
+        medications: (pdfMedications || []).map(m => ({
+          id: m.id,
+          medicationName: m.medicationName,
+          dosage: m.dosage,
+          dateGiven: m.dateGiven,
+          nextDueDate: m.nextDueDate,
+        })),
+        famachaScores: (pdfFamacha || []).map(s => ({
+          score: s.score,
+          recordedDate: s.recordedDate,
+        })),
+        fieldNotes: (pdfFieldNotes || []).map(n => ({
+          noteText: n.noteText,
+          createdAt: n.createdAt,
+        })),
+        healthPhotos: pdfHealthPhotos || {},
+        medPhotos: pdfMedPhotos || {},
+      });
+    } catch {
+      toast({ title: "Export failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   const deleteMutation = useDeleteAnimal({
     mutation: {
       onSuccess: () => {
@@ -291,6 +368,17 @@ export default function AnimalDetail() {
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Herd
         </Link>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-card min-h-[44px]"
+            onClick={exportPDF}
+            isLoading={isExporting}
+            aria-label="Export animal record as PDF"
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            Export PDF
+          </Button>
           {role !== "viewer" && (
             <Link href={`/animals/${animal.id}/edit`}>
               <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
