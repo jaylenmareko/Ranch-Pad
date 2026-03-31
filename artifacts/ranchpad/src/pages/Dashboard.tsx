@@ -615,10 +615,37 @@ function AuthDashboard() {
           {alertsLoading ? (
             <div className="p-6 space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-xl" />)}</div>
           ) : sortedAlerts.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" /></div>
-              <h3 className="font-bold text-lg text-foreground">All clear!</h3>
-              <p className="text-muted-foreground text-sm mt-1">No active alerts right now.</p>
+            <div className="flex flex-col">
+              <div className="flex flex-col items-center justify-center pt-7 pb-4 text-center">
+                <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3"><CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" /></div>
+                <h3 className="font-bold text-base text-foreground">All clear!</h3>
+                <p className="text-muted-foreground text-sm mt-1">No active alerts. Hit <span className="font-semibold text-foreground">Run Analysis</span> to check for risks.</p>
+              </div>
+              <div className="mx-5 border-t border-dashed border-border/60" />
+              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-5 pt-3 pb-1">Example alerts</p>
+              <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
+                <div className="p-4 flex gap-4">
+                  <div className="mt-0.5 shrink-0"><div className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" /></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground leading-tight">Clyde (TXS-010) — Bottle jaw and FAMACHA 5 recorded 3 days ago. Barber pole worm burden likely critical given heavy rain forecast.</p>
+                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">weather alert</p>
+                  </div>
+                </div>
+                <div className="p-4 flex gap-4">
+                  <div className="mt-0.5 shrink-0"><div className="w-3 h-3 rounded-full bg-destructive shadow-[0_0_8px_rgba(255,0,0,0.4)]" /></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground leading-tight">High humidity and warm temps — ideal conditions for barber pole worm larvae. Check FAMACHA scores on all sheep and goats.</p>
+                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">weather alert</p>
+                  </div>
+                </div>
+                <div className="p-4 flex gap-4">
+                  <div className="mt-0.5 shrink-0"><div className="w-3 h-3 rounded-full bg-yellow-500" /></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground leading-tight">Magnolia (TXS-008) — Penicillin due today.</p>
+                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">medication due</p>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="divide-y divide-border/50 overflow-y-auto max-h-[400px]">
