@@ -66,7 +66,11 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
     .from(animalsTable)
     .where(eq(animalsTable.ranchId, ranchId));
 
-  // 1. Overdue medications
+  // 1. Overdue medications + due soon (within 7 days)
+  const sevenDaysFromNow = new Date(today);
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  const sevenDaysFromNowStr = sevenDaysFromNow.toISOString().split("T")[0];
+
   for (const animal of animals) {
     const medications = await db
       .select()
@@ -74,18 +78,66 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
       .where(eq(medicationRecordsTable.animalId, animal.id));
 
     for (const med of medications) {
-      if (med.nextDueDate && med.nextDueDate < todayStr) {
+      if (!med.nextDueDate) continue;
+
+      if (med.nextDueDate < todayStr) {
+        // Strictly overdue
         const key = makeKey("overdue_med", animal.id, med.id);
         const wasCreated = await upsertAlert({
           ranchId,
           animalId: animal.id,
           alertType: "record",
           alertKey: key,
-          message: `${animal.name} is overdue for ${med.medicationName} (due ${med.nextDueDate})`,
-          severity: "medium",
+          message: `${animal.name} is overdue for ${med.medicationName} (was due ${med.nextDueDate})`,
+          severity: "high",
+        });
+        if (wasCreated) created++;
+      } else if (med.nextDueDate <= sevenDaysFromNowStr) {
+        // Due today or within 7 days
+        const daysUntil = Math.round((new Date(med.nextDueDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const when = daysUntil === 0 ? "today" : daysUntil === 1 ? "tomorrow" : `in ${daysUntil} days`;
+        const key = makeKey("due_soon_med", animal.id, med.id, med.nextDueDate);
+        const wasCreated = await upsertAlert({
+          ranchId,
+          animalId: animal.id,
+          alertType: "record",
+          alertKey: key,
+          message: `${animal.name} is due for ${med.medicationName} ${when} (${med.nextDueDate})`,
+          severity: daysUntil === 0 ? "medium" : "low",
         });
         if (wasCreated) created++;
       }
+    }
+  }
+
+  // 1b. Recent high-severity health events (last 14 days)
+  const fourteenDaysAgo = new Date(today);
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+  const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split("T")[0];
+
+  for (const animal of animals) {
+    const severeEvents = await db
+      .select()
+      .from(healthEventsTable)
+      .where(
+        and(
+          eq(healthEventsTable.animalId, animal.id),
+          gte(healthEventsTable.eventDate, fourteenDaysAgoStr),
+          sql`LOWER(${healthEventsTable.severity}) IN ('high', 'critical')`
+        )
+      );
+
+    for (const event of severeEvents) {
+      const key = makeKey("severe_health_event", animal.id, event.id);
+      const wasCreated = await upsertAlert({
+        ranchId,
+        animalId: animal.id,
+        alertType: "record",
+        alertKey: key,
+        message: `${animal.name} had a high-severity health event on ${event.eventDate}: ${event.description}`,
+        severity: "high",
+      });
+      if (wasCreated) created++;
     }
   }
 
