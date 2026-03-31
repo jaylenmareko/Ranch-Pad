@@ -1,0 +1,547 @@
+RanchPad
+
+My Ranch
+Dashboard
+🐄
+Animals
+Alerts
+Ranch Settings
+Team
+Account Settings
+J
+Jay
+
+Sign Out
+Action Center
+AI-powered insights and urgent tasks.
+
+Run Analysis
+Herd Health & Tasks
+record
+•
+03-31-2026
+•
+High
+Lone Star had a high-severity health event on 2026-03-25: Foot rot — right rear hoof
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pepper had a high-severity health event on 2026-03-18: FAMACHA score 4 — treated for barber pole worm
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pebbles had a high-severity health event on 2026-03-22: Respiratory symptoms — coughing after rainfall
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Buttercup had a high-severity health event on 2026-03-19: Pneumonia — labored breathing after wet cold snap
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Clyde had a high-severity health event on 2026-03-28: Bottle jaw — severe — FAMACHA 5
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Big Red is overdue for Penicillin (was due 2026-03-29)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Miss Texas is overdue for Enrofloxacin (was due 2026-03-25)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Huckleberry is overdue for SafeGuard (was due 2026-03-28)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pebbles is overdue for Excenel (was due 2026-03-29)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Woolsworth is overdue for Levamisole (was due 2026-03-28)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Daisy Mae had a high-severity health event on 2026-03-20: Respiratory illness — coughing and nasal discharge treated with antibiotic
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Big Red had a high-severity health event on 2026-03-22: Foot rot — right rear hoof debrided and treated
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Miss Texas had a high-severity health event on 2026-03-18: Pneumonia — labored breathing treated with injectable antibiotic
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pepper had a high-severity health event on 2026-03-19: FAMACHA score 4 — barber pole worm burden confirmed — treated with anthelmintic
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pebbles had a high-severity health event on 2026-03-22: Respiratory symptoms — coughing and nasal discharge after heavy rainfall
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Woolsworth had a high-severity health event on 2026-03-21: FAMACHA score 4 — early bottle jaw developing — anthelmintic treatment
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Magnolia had a high-severity health event on 2026-03-24: Foot scald — limping right front leg — cleaned and treated
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Buttercup had a high-severity health event on 2026-03-19: Pneumonia — labored breathing after cold wet weather — treated
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Clyde had a high-severity health event on 2026-03-28: Bottle jaw — severe — FAMACHA score 5 — emergency anthelmintic dose
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Thunder had a high-severity health event on 2026-03-25: Mud fever — active lesions on both fetlocks — bandaged and medicated
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Hank is overdue for Draxxin (was due 2026-03-25)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Lady Bird is overdue for LA-200 Oxytetracycline (was due 2026-03-29)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Magnolia is overdue for Penicillin (was due 2026-03-24)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Huckleberry is overdue for SafeGuard (was due 2026-03-28)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Woolsworth is overdue for Levamisole (was due 2026-03-28)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Hank had a high-severity health event on 2026-03-18: BRD — severe coughing and nasal discharge following 25-degree overnight temperature drop
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Lady Bird had a high-severity health event on 2026-03-22: Pinkeye — right eye — wind and debris exposure suspected cause
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Duke had a high-severity health event on 2026-03-25: BRD — relapse after initial treatment — temp dropped from 72F to 38F overnight
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Ranger had a high-severity health event on 2026-03-28: Scours — watery diarrhea — young calf — weather stress after cold rain
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Rosie had a high-severity health event on 2026-03-20: Pinkeye — left eye — recurring — second case this season — wind-blown grass seed
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pepper had a high-severity health event on 2026-03-19: FAMACHA score 4 — bottle jaw beginning — barber pole worm burden — treated
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Pebbles had a high-severity health event on 2026-03-21: Respiratory symptoms — coughing after spring storm brought sustained rain and 40F temps
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Clementine had a high-severity health event on 2026-03-24: FAMACHA score 4 — worm pressure confirmed — spring warmth and moisture elevating risk
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Woolsworth had a high-severity health event on 2026-03-21: FAMACHA score 5 — severe bottle jaw — emergency anthelmintic — spring parasite surge
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Buttercup had a high-severity health event on 2026-03-19: Foot scald — both front hooves — wet pasture after extended spring rain
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Magnolia had a high-severity health event on 2026-03-22: Pneumonia — labored breathing after overnight low dropped to 34F following a warm 68F day
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Clyde had a high-severity health event on 2026-03-25: Foot rot — right rear hoof — foul odor — interdigital tissue affected — wet spring ground
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+High
+Thunder had a high-severity health event on 2026-03-25: Mud fever — active lesions on both pasterns — sustained wet ground from spring rain
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Medium
+Lone Star is due for Penicillin today (2026-04-01)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Medium
+Thunder is due for Penicillin today (2026-04-01)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Medium
+Duke is due for Enrofloxacin today (2026-04-01)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Medium
+Clyde is due for Penicillin today (2026-04-01)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Medium
+Thunder is due for Penicillin + Nolvasan scrub today (2026-04-01)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Dot is due for Pyramid 5 in 4 days (2026-04-05)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Magnolia is due for Penicillin in -1 days (2026-03-31)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Clyde is due for Levamisole in 3 days (2026-04-04)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Daisy Mae is due for Draxxin in 2 days (2026-04-03)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Lone Star is due for Pyramid 5 in 4 days (2026-04-05)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Rosie is due for Ivermectin pour-on in 6 days (2026-04-07)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Clover is due for Dectomax pour-on in 2 days (2026-04-03)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Billy is due for Cydectin tomorrow (2026-04-02)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Magnolia is due for Penicillin in -1 days (2026-03-31)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Buttercup is due for Draxxin in 4 days (2026-04-05)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Clyde is due for Levamisole in 3 days (2026-04-04)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Fern is due for Ivermectin in 5 days (2026-04-06)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Luna is due for Nolvasan scrub in 2 days (2026-04-03)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Ranger is due for Oral electrolytes + Draxxin in 3 days (2026-04-04)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Dixie is due for Pyramid 5 in 4 days (2026-04-05)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Rosie is due for Vetericyn eye spray + LA-200 in 2 days (2026-04-03)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Clover is due for Inforce 3 intranasal in 5 days (2026-04-06)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Pebbles is due for Excenel in 3 days (2026-04-04)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Clementine is due for Levamisole in 6 days (2026-04-07)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Buttercup is due for Zinc sulfate footbath + Penicillin tomorrow (2026-04-02)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Magnolia is due for Draxxin in 4 days (2026-04-05)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Fern is due for CDT vaccine in 6 days (2026-04-07)
+
+Mark Resolved
+record
+•
+03-31-2026
+•
+Low
+Luna is due for Nolvasan scrub in 2 days (2026-04-03)
+
+Mark Resolved

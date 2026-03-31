@@ -485,8 +485,22 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       profileLines.push(profile);
     }
 
-    const animalProfiles = profileLines.length > 0
-      ? profileLines.join("\n")
+    // Prioritize the most critical animals first, cap at 30 to avoid token overflow
+    // Priority: FAMACHA ≥ 3 first, then high-severity events, then due-soon, then rest
+    profileLines.sort((a) => {
+      const hasCriticalFamacha = /FAMACHA scores:.*[45]/.test(a);
+      const hasHighEvent = /\[.*high\]/.test(a);
+      if (hasCriticalFamacha) return -1;
+      if (hasHighEvent) return -1;
+      return 0;
+    });
+    const cappedProfiles = profileLines.slice(0, 30);
+    if (profileLines.length > 30) {
+      cappedProfiles.push(`... and ${profileLines.length - 30} more animals with health records (shown above are the highest-priority).`);
+    }
+
+    const animalProfiles = cappedProfiles.length > 0
+      ? cappedProfiles.join("\n")
       : "No individual health records on file for any animal in the last 30–90 days.";
 
     // Ask Claude for livestock risk analysis
@@ -542,7 +556,7 @@ Return ONLY a valid JSON array. No markdown, no explanation. Example format:
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -562,13 +576,27 @@ Return ONLY a valid JSON array. No markdown, no explanation. Example format:
     }>;
 
     try {
-      // Extract JSON from response (Claude may wrap in code blocks)
-      const jsonMatch = content.text.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) {
+      // Strip code fence lines (lines that are only ```json or ```) so the regex finds the array
+      const rawText = content.text
+        .split("\n")
+        .filter(line => !/^`{3}(?:json|js|javascript)?\s*$/.test(line.trim()))
+        .join("\n");
+
+      // Extract the JSON array — handle truncated responses by recovering partial JSON
+      let jsonStr = rawText.match(/\[[\s\S]*\]/)?.[0] ?? null;
+      if (!jsonStr && rawText.trimStart().startsWith("[")) {
+        // Response was truncated before closing ]. Recover completed objects up to the last '}'
+        const lastBrace = rawText.lastIndexOf("}");
+        if (lastBrace > 0) {
+          jsonStr = rawText.slice(rawText.indexOf("["), lastBrace + 1) + "]";
+          console.warn("[weather-alerts] Response was truncated — recovering partial JSON");
+        }
+      }
+      if (!jsonStr) {
         console.error("[weather-alerts] No JSON array found in Claude response:", content.text.slice(0, 300));
         return 0;
       }
-      parsedAlerts = JSON.parse(jsonMatch[0]);
+      parsedAlerts = JSON.parse(jsonStr);
       console.log(`[weather-alerts] Parsed ${parsedAlerts.length} alert(s) from Claude`);
     } catch (parseErr) {
       console.error("[weather-alerts] JSON parse failed:", parseErr, "Raw:", content.text.slice(0, 300));
