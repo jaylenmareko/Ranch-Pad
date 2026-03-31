@@ -1,21 +1,21 @@
 name,tag_number,species,breed,sex,date_of_birth,health_event_description,health_event_date,health_event_severity,medication_name,dosage,date_given,next_due_date
-Daisy Mae,TXC-001,Cattle,Hereford,Heifer,2022-03-12,Respiratory illness — coughing and nasal discharge treated,2026-03-10,high,Draxxin,2.5ml,2026-03-10,
-Big Red,TXC-002,Cattle,Simmental,Bull,2020-07-28,Pinkeye — left eye treated with antibiotic,2026-03-20,medium,Terramycin ointment,applied twice daily,2026-03-20,
-Dot,TXC-003,Cattle,Angus,Heifer,2024-02-14,Routine vaccination (BVD + IBR),2025-11-05,low,Pyramid 5,2ml,2025-11-05,2026-04-05
-Lone Star,TXC-004,Cattle,Angus,Bull,2019-05-15,Foot rot — right rear hoof,2026-03-25,high,Penicillin,10ml,2026-03-25,2026-04-01
-Miss Texas,TXC-005,Cattle,Hereford,Heifer,2023-08-04,Pneumonia — responded slowly to treatment,2026-03-01,high,Enrofloxacin,5ml,2026-03-01,
-Blaze,TXC-006,Cattle,Limousin,Male,2021-11-22,Weight loss noted — body condition score 2.5,2026-03-15,medium,,,, 
-Rosie,TXC-007,Cattle,Angus,Heifer,2022-06-18,,,,Ivermectin pour-on,10ml,2026-02-01,2026-08-01
-Cody,TXC-008,Cattle,Simmental,Bull,2020-03-01,Annual Coggins and health check — all clear,2025-09-10,low,Pyramid 5,2ml,2025-09-10,2026-09-10
-Pepper,TXG-010,Goat,Boer,Female,2023-05-01,FAMACHA score 4 — treated for barber pole worm,2026-03-18,high,Cydectin,4ml,2026-03-18,2026-06-18
-Huckleberry,TXG-011,Goat,Nubian,Male,2022-05-01,FAMACHA score 3 — borderline,2026-02-28,medium,,,, 
-Pebbles,TXG-012,Goat,Kiko,Female,2022-08-09,Respiratory symptoms — coughing after rainfall,2026-03-22,high,Excenel,2ml,2026-03-22,
-Clover,TXG-013,Goat,LaMancha,Female,2023-01-15,FAMACHA score 2 — normal,2026-03-05,low,SafeGuard,5ml,2026-03-05,2026-09-05
-Billy,TXG-014,Goat,Boer,Male,2021-07-04,Lice infestation — treated with pour-on,2026-03-12,medium,Dectomax pour-on,applied topically,2026-03-12,
-Woolsworth,TXS-007,Sheep,Dorper,Wether,2021-09-18,FAMACHA score 3 — monitored,2026-03-10,low,SafeGuard,5ml,2026-03-10,2026-09-10
-Magnolia,TXS-008,Sheep,Katahdin,Female,2022-01-30,Limping — right front leg — foot scald suspected,2026-03-24,medium,Penicillin,3ml,2026-03-24,2026-03-31
-Buttercup,TXS-009,Sheep,Merino,Female,2023-04-10,Pneumonia — labored breathing after wet cold snap,2026-03-19,high,Draxxin,1.5ml,2026-03-19,
-Clyde,TXS-010,Sheep,Rambouillet,Male,2020-11-08,Bottle jaw — severe — FAMACHA 5,2026-03-28,high,Levamisole,8ml,2026-03-28,2026-04-04
-Sprout,TXS-011,Sheep,Dorper,Female,2025-01-05,Routine health check — normal,2026-02-15,low,,,, 
-Thunder,TXH-001,Horse,Quarter Horse,Male,2018-11-03,Mud fever — fetlock sores — bandaged and treated,2026-03-16,medium,Penicillin,10ml,2026-03-16,
-Luna,TXH-002,Horse,Paint,Female,2015-06-22,Rain rot on back and hindquarters — active lesions,2026-03-25,medium,Nolvasan scrub,applied topically,2026-03-25,
+Daisy Mae,TXC-001,Cattle,Angus,Heifer,2022-03-12,Respiratory illness — coughing and nasal discharge treated with antibiotic,2026-03-20,high,Draxxin,2.5ml,2026-03-20,2026-04-03
+Big Red,TXC-002,Cattle,Simmental,Bull,2020-07-28,Foot rot — right rear hoof debrided and treated,2026-03-22,high,Penicillin,10ml,2026-03-22,2026-03-29
+Miss Texas,TXC-003,Cattle,Hereford,Heifer,2023-04-18,Pneumonia — labored breathing treated with injectable antibiotic,2026-03-18,high,Enrofloxacin,5ml,2026-03-18,2026-03-25
+Lone Star,TXC-004,Cattle,Angus,Bull,2019-05-15,Annual BVD-IBR vaccination,2025-10-01,low,Pyramid 5,2ml,2025-10-01,2026-04-05
+Rosie,TXC-005,Cattle,Hereford,Heifer,2024-01-15,Routine health check — normal,2026-02-15,low,Ivermectin pour-on,15ml,2026-02-15,2026-04-07
+Blaze,TXC-006,Cattle,Limousin,Male,2021-11-22,Significant weight loss noted — BCS dropped to 2.5 — cause unknown,2026-03-24,medium,,,, 
+Pepper,TXG-010,Goat,Boer,Female,2023-05-01,FAMACHA score 4 — barber pole worm burden confirmed — treated with anthelmintic,2026-03-19,high,Cydectin,4ml,2026-03-19,2026-04-19
+Huckleberry,TXG-011,Goat,Nubian,Male,2022-05-01,FAMACHA score 3 — borderline — preventive wormer given,2026-03-25,medium,SafeGuard,5ml,2026-03-25,2026-03-28
+Pebbles,TXG-012,Goat,Kiko,Female,2022-08-09,Respiratory symptoms — coughing and nasal discharge after heavy rainfall,2026-03-22,high,Excenel,2ml,2026-03-22,2026-03-29
+Clover,TXG-013,Goat,LaMancha,Female,2023-01-15,Lice infestation — treated with topical pour-on,2026-03-20,medium,Dectomax pour-on,applied topically,2026-03-20,2026-04-03
+Billy,TXG-014,Goat,Boer,Male,2021-07-04,Routine preventive worming — FAMACHA 2 normal,2026-01-10,low,Cydectin,4ml,2026-01-10,2026-04-02
+Woolsworth,TXS-007,Sheep,Dorper,Wether,2021-09-18,FAMACHA score 4 — early bottle jaw developing — anthelmintic treatment,2026-03-21,high,Levamisole,8ml,2026-03-21,2026-03-28
+Magnolia,TXS-008,Sheep,Katahdin,Female,2022-01-30,Foot scald — limping right front leg — cleaned and treated,2026-03-24,high,Penicillin,3ml,2026-03-24,2026-03-31
+Buttercup,TXS-009,Sheep,Merino,Female,2023-04-10,Pneumonia — labored breathing after cold wet weather — treated,2026-03-19,high,Draxxin,1.5ml,2026-03-19,2026-04-05
+Clyde,TXS-010,Sheep,Rambouillet,Male,2020-11-08,Bottle jaw — severe — FAMACHA score 5 — emergency anthelmintic dose,2026-03-28,high,Levamisole,8ml,2026-03-28,2026-04-04
+Sprout,TXS-011,Sheep,Dorper,Female,2025-01-10,Routine health check — normal — gaining weight well,2026-03-15,low,SafeGuard,5ml,2026-03-15,2026-09-15
+Fern,TXS-012,Sheep,Katahdin,Female,2024-03-05,First FAMACHA check — score 2 — healthy,2026-03-10,low,Ivermectin,3ml,2026-03-10,2026-04-06
+Thunder,TXH-001,Horse,Quarter Horse,Male,2018-11-03,Mud fever — active lesions on both fetlocks — bandaged and medicated,2026-03-25,high,Penicillin,10ml,2026-03-25,2026-04-01
+Luna,TXH-002,Horse,Paint,Female,2015-06-22,Rain rot — active lesions on back and hindquarters — scrubbed and treated,2026-03-27,medium,Nolvasan scrub,applied topically,2026-03-27,2026-04-03
+Scramble,TXP-001,Pig,Duroc,Male,2023-12-01,Routine weight check — 210 lbs — healthy,2026-03-01,low,,,, 
