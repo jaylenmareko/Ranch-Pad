@@ -401,7 +401,9 @@ export default function AccountSettings() {
                   )}
                   {billing.status === "trialing" && (
                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                      Trial — ends {billing.trialEnd ? new Date(billing.trialEnd).toLocaleDateString() : "soon"}
+                      {billing.trialDaysLeft != null
+                        ? `Trial — ${billing.trialDaysLeft} ${billing.trialDaysLeft === 1 ? "day" : "days"} left`
+                        : "Trial"}
                     </span>
                   )}
                   {(billing.status === "canceled" || billing.status === "past_due" || billing.status === "none") && (
