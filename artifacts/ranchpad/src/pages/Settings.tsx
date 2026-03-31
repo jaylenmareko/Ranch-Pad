@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { MapPin, Building2, Save, Search, CheckCircle2, XCircle, Cog, Loader2, FolderOpen, Plus, Pencil, Trash2, ListChecks } from "lucide-react";
+import { MapPin, Building2, Save, CheckCircle2, XCircle, Cog, Loader2, FolderOpen, Plus, Pencil, Trash2, ListChecks } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -26,8 +26,10 @@ export default function Settings() {
   const [lon, setLon] = useState<number | null>(null);
 
   const [address, setAddress] = useState("");
-  const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [locations, setLocations] = useState<PastureLocation[]>([]);
   const [newLocName, setNewLocName] = useState("");
@@ -190,27 +192,31 @@ export default function Settings() {
     );
   }
 
-  async function handleGeocode() {
-    if (!address.trim()) return;
-    setIsGeocoding(true);
-    setGeocodeLabel(null);
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
-      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
-      const results = await res.json();
-      if (!results || results.length === 0) {
-        toast({ title: "Address not found", description: "Try a more specific address or check for typos.", variant: "destructive" });
-        return;
-      }
-      const { lat: foundLat, lon: foundLon, display_name } = results[0];
-      setLat(parseFloat(parseFloat(foundLat).toFixed(6)));
-      setLon(parseFloat(parseFloat(foundLon).toFixed(6)));
-      setGeocodeLabel(display_name);
-    } catch {
-      toast({ title: "Geocode failed", description: "Could not reach the location service. Try again.", variant: "destructive" });
-    } finally {
-      setIsGeocoding(false);
-    }
+  function handleAddressChange(value: string) {
+    setAddress(value);
+    if (lat !== null) { setLat(null); setLon(null); setGeocodeLabel(null); }
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (value.trim().length < 3) { setSuggestions([]); setShowSuggestions(false); return; }
+    suggestTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5`,
+          { headers: { "Accept-Language": "en" } }
+        );
+        const results: Array<{ display_name: string; lat: string; lon: string }> = await res.json();
+        setSuggestions(results ?? []);
+        setShowSuggestions((results ?? []).length > 0);
+      } catch { setSuggestions([]); setShowSuggestions(false); }
+    }, 350);
+  }
+
+  function selectSuggestion(s: { display_name: string; lat: string; lon: string }) {
+    setAddress(s.display_name);
+    setLat(parseFloat(parseFloat(s.lat).toFixed(6)));
+    setLon(parseFloat(parseFloat(s.lon).toFixed(6)));
+    setGeocodeLabel(s.display_name);
+    setSuggestions([]);
+    setShowSuggestions(false);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -286,27 +292,32 @@ export default function Settings() {
               Enter your ranch address to automatically find coordinates. These are used for weather data and AI alerts.
             </p>
 
-            <div className="flex gap-2">
+            <div className="relative">
               <Input
                 value={address}
-                onChange={e => setAddress(e.target.value)}
-                placeholder="e.g. 1234 County Road, Wichita, KS 67202"
-                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleGeocode(); } }}
+                onChange={e => handleAddressChange(e.target.value)}
+                placeholder="Start typing your address…"
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                autoComplete="off"
               />
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleGeocode}
-                isLoading={isGeocoding}
-                className="shrink-0"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Find
-              </Button>
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-lg overflow-hidden">
+                  {suggestions.map((s, i) => (
+                    <li
+                      key={i}
+                      onMouseDown={() => selectSuggestion(s)}
+                      className="px-4 py-2.5 text-sm cursor-pointer hover:bg-muted text-foreground truncate border-b border-border last:border-0"
+                    >
+                      {s.display_name}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {lat !== null && lon !== null && (
-              <div className={`rounded-xl border p-4 space-y-2 ${geocodeLabel ? "bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800" : "bg-muted/40 border-border"}`}>
+              <div className="rounded-xl border p-4 space-y-2 bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -319,7 +330,7 @@ export default function Settings() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); }}
+                    onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
                     className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                     title="Clear coordinates"
                     aria-label="Clear coordinates"
@@ -332,7 +343,7 @@ export default function Settings() {
 
             {lat === null && lon === null && (
               <p className="text-xs text-muted-foreground font-medium">
-                No coordinates set — weather data won't be available until you search for your location.
+                No coordinates set — weather data won't be available until you select your location above.
               </p>
             )}
           </CardContent>

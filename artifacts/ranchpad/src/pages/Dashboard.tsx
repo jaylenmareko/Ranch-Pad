@@ -303,13 +303,16 @@ function AuthDashboard() {
   const [scanOpen, setScanOpen] = useState(false);
 
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
-  const { data: alerts, isLoading: alertsLoading } = useListAlerts();
+  const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useListAlerts();
   const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
   const { data: upcoming, isLoading: upcomingLoading } = useGetUpcoming();
 
   const generateMutation = useGenerateAlerts({
     mutation: {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/alerts"] })
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
+        refetchAlerts();
+      }
     }
   });
 
@@ -386,6 +389,7 @@ function AuthDashboard() {
       } else {
         setImportSummary(data as ImportSummary);
         queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+        generateMutation.mutate();
       }
     } catch {
       setImportError("Something went wrong connecting to the server. Please try again.");
