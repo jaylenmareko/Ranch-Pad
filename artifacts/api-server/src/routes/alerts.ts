@@ -237,6 +237,20 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
     .from(animalsTable)
     .where(eq(animalsTable.ranchId, ranchId));
 
+  // Fetch individual health records for all animals on this ranch in parallel
+  const cutoffBase = new Date();
+  const thirtyDaysAgo = new Date(cutoffBase.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const ninetyDaysAgo  = new Date(cutoffBase.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  const [recentHealthEvents, recentMeds, recentFamacha] = await Promise.all([
+    db.select().from(healthEventsTable)
+      .where(and(eq(healthEventsTable.ranchId, ranchId), gte(healthEventsTable.eventDate, thirtyDaysAgo))),
+    db.select().from(medicationRecordsTable)
+      .where(and(eq(medicationRecordsTable.ranchId, ranchId), gte(medicationRecordsTable.dateGiven, thirtyDaysAgo))),
+    db.select().from(famachaScoresTable)
+      .where(and(eq(famachaScoresTable.ranchId, ranchId), gte(famachaScoresTable.recordedDate, ninetyDaysAgo))),
+  ]);
+
   try {
     // Fetch forecast + current observed conditions in parallel
     const [forecastResp, currentResp] = await Promise.all([
@@ -316,14 +330,10 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
     });
     const summary: WeatherDay[] = observedToday ? [observedToday, ...forecastWithDeltas] : forecastWithDeltas;
 
-    // Build animal inventory context grouped by species
+    // Build herd inventory summary grouped by species
     const today = new Date();
     const speciesMap: Record<string, {
-      total: number;
-      females: number;
-      males: number;
-      youngCount: number;
-      dueSoon: string[];
+      total: number; females: number; males: number; youngCount: number; dueSoon: string[];
     }> = {};
 
     for (const animal of animals) {
@@ -334,12 +344,10 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       g.total++;
       if (animal.sex === "Female") g.females++;
       else if (animal.sex === "Male") g.males++;
-
       if (animal.dateOfBirth) {
         const ageMonths = (today.getTime() - new Date(animal.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 30.44);
         if (ageMonths < 6) g.youngCount++;
       }
-
       if (animal.expectedDueDate) {
         const daysUntil = Math.floor(
           (new Date(animal.expectedDueDate + "T12:00:00").getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
@@ -356,39 +364,113 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       if (g.dueSoon.length > 0) line += `, pregnant/due soon: ${g.dueSoon.join("; ")}`;
       return line;
     });
-
     const animalContext = animalLines.length > 0 ? animalLines.join("\n") : "No animals currently on record.";
+
+    // Build per-animal risk profiles indexed by animal ID
+    const eventsByAnimal = new Map<number, typeof recentHealthEvents>();
+    for (const ev of recentHealthEvents) {
+      if (!eventsByAnimal.has(ev.animalId)) eventsByAnimal.set(ev.animalId, []);
+      eventsByAnimal.get(ev.animalId)!.push(ev);
+    }
+    const medsByAnimal = new Map<number, typeof recentMeds>();
+    for (const med of recentMeds) {
+      if (!medsByAnimal.has(med.animalId)) medsByAnimal.set(med.animalId, []);
+      medsByAnimal.get(med.animalId)!.push(med);
+    }
+    const famachaByAnimal = new Map<number, typeof recentFamacha>();
+    for (const fs of recentFamacha) {
+      if (!famachaByAnimal.has(fs.animalId)) famachaByAnimal.set(fs.animalId, []);
+      famachaByAnimal.get(fs.animalId)!.push(fs);
+    }
+
+    const profileLines: string[] = [];
+    for (const animal of animals) {
+      const events  = eventsByAnimal.get(animal.id) ?? [];
+      const meds    = medsByAnimal.get(animal.id) ?? [];
+      const famacha = (famachaByAnimal.get(animal.id) ?? [])
+        .sort((a, b) => a.recordedDate.localeCompare(b.recordedDate));
+
+      // Only include animals that have at least some health data
+      const hasFamacha = famacha.length > 0;
+      const hasEvents  = events.length > 0;
+      const hasMeds    = meds.length > 0;
+      const isDueSoon  = animal.expectedDueDate
+        ? Math.floor((new Date(animal.expectedDueDate + "T12:00:00").getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) <= 60
+        : false;
+
+      if (!hasEvents && !hasMeds && !hasFamacha && !isDueSoon) continue;
+
+      const tag = animal.tagNumber ? `Tag #${animal.tagNumber}` : "No tag";
+      const age = animal.dateOfBirth
+        ? `${Math.round((today.getTime() - new Date(animal.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 30.44))} months old`
+        : null;
+
+      let profile = `• ${tag} — ${animal.name} | ${animal.species}${animal.breed ? ` (${animal.breed})` : ""} | ${animal.sex}`;
+      if (age) profile += ` | ${age}`;
+      if (isDueSoon && animal.expectedDueDate) {
+        const daysUntil = Math.floor((new Date(animal.expectedDueDate + "T12:00:00").getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        profile += ` | DUE IN ${daysUntil} DAYS`;
+      }
+
+      if (hasEvents) {
+        const sorted = events.sort((a, b) => b.eventDate.localeCompare(a.eventDate));
+        profile += `\n  Health events (last 30d): ${sorted.map(e => `[${e.eventDate}, ${e.severity}] ${e.description}`).join(" | ")}`;
+      }
+
+      if (hasMeds) {
+        const sorted = meds.sort((a, b) => b.dateGiven.localeCompare(a.dateGiven));
+        profile += `\n  Medications: ${sorted.map(m => `${m.medicationName}${m.dosage ? " " + m.dosage : ""} (given ${m.dateGiven}${m.nextDueDate ? ", next due " + m.nextDueDate : ""})`).join(" | ")}`;
+      }
+
+      if (hasFamacha) {
+        const scores = famacha.map(f => f.score);
+        const trend = scores.length >= 2
+          ? scores[scores.length - 1] > scores[0] ? "worsening" : scores[scores.length - 1] < scores[0] ? "improving" : "stable"
+          : "single reading";
+        profile += `\n  FAMACHA scores: ${scores.join(" → ")} (${trend})`;
+      }
+
+      profileLines.push(profile);
+    }
+
+    const animalProfiles = profileLines.length > 0
+      ? profileLines.join("\n")
+      : "No individual health records on file for any animal in the last 30–90 days.";
 
     // Ask Claude for livestock risk analysis
     const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
     const prompt = `You are an expert livestock health advisor for small farmers and ranchers.
-Analyze the weather trend and the ranch's specific animal inventory to generate targeted disease risk alerts.
+Analyze the weather trend and each animal's individual health history to generate hyper-specific disease risk alerts.
 
 RANCH: ${ranch.name} (${ranch.locationCity ?? ""}, ${ranch.locationState ?? ""})
 
 HERD INVENTORY (${animals.length} total animals):
 ${animalContext}
 
+INDIVIDUAL ANIMAL RISK PROFILES (cross-reference against weather to identify animals at elevated personal risk):
+${animalProfiles}
+
 WEATHER TREND — "observed_today" is actual current conditions; remaining entries are forecast.
 tempHighChange/tempLowChange = change vs the prior day (negative = cooling, positive = warming):
 ${JSON.stringify(summary, null, 2)}
 
 SPECIES-SPECIFIC DISEASE KNOWLEDGE — only apply to species present in the inventory above:
-- Cattle: Cold + wet + wind → Bovine Respiratory Disease (BRD/pneumonia), especially dangerous for calves under 6 months. A sudden high temperature drop >15°F across consecutive forecast days is a high-risk BRD trigger. Wet muddy conditions → foot rot risk.
-- Goats & Sheep: Warm + humid (humidity >75%, temps >50°F) + rain → barber pole worm (Haemonchus contortus) larval surge on pasture — a leading cause of death in small ruminants. Cold + wet → pneumonia, especially kids/lambs. Goats are more cold-sensitive than cattle.
+- Cattle: Cold + wet + wind → Bovine Respiratory Disease (BRD/pneumonia), especially dangerous for calves under 6 months. A sudden high temperature drop >15°F is a high-risk BRD trigger. Wet muddy conditions → foot rot risk.
+- Goats & Sheep: Warm + humid (humidity >75%, temps >50°F) + rain → barber pole worm (Haemonchus contortus) larval surge — a leading cause of death in small ruminants. FAMACHA score ≥3 signals active worm burden; score 4–5 is an emergency. Cold + wet → pneumonia, especially kids/lambs.
 - Swine: Heat >80°F + high humidity → heat stress, reduced feed intake. Cold drafts + wet → PRRS and respiratory illness.
-- Horses: Sustained wet + cold + mud → Mud Fever (Pastern Dermatitis) and Rain Rot, especially in horses with white legs or compromised immunity. Heat >90°F combined with high humidity → anhidrosis and heat exhaustion risk.
-- All species: Temperature swings >20°F between consecutive days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease. Bright sunny + dry + dusty + windy conditions with temps above 55°F → pink eye (Infectious Keratoconjunctivitis); UV exposure, dust, and fly activity all increase transmission risk.
-- Pregnant/due animals: Any cold, wet, or high-stress forecast conditions during the 30-day pre-calving/kidding window elevate dystocia and neonatal mortality risk substantially. Name these animals in the alert.
+- Horses: Sustained wet + cold + mud → Mud Fever (Pastern Dermatitis) and Rain Rot, especially in horses with white legs or compromised immunity. Heat >90°F + humidity → anhidrosis and heat exhaustion risk.
+- All species: Temperature swings >20°F between consecutive days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease. Bright sunny + dry + dusty + windy conditions with temps above 55°F → pink eye (Infectious Keratoconjunctivitis).
+- Pregnant/due animals: Cold, wet, or high-stress forecast conditions in the 60-day pre-calving/kidding window elevate dystocia and neonatal mortality risk substantially.
 
 ALERT GENERATION RULES:
 1. Only generate alerts for species present in the herd inventory — do not mention species not listed.
-2. Use the actual animal counts in your message (e.g. "Your 8 cattle" or "3 of your goats"). For large groups, mention the financial scale of the risk.
-3. Name individual animals in alerts when they face elevated personal risk (pregnant animals, young animals).
-4. Flag temperature trend alerts explicitly when tempHighChange or tempLowChange shows a drop of 15°F or more.
-5. Only generate alerts for genuine risks — no noise for mild or unremarkable conditions.
-6. Use "critical" only when the forecast poses an imminent, life-threatening risk; do not inflate severity.
+2. Use the actual animal counts in your message (e.g. "Your 8 cattle" or "3 of your goats").
+3. Cross-reference EVERY animal's individual risk profile against the weather trend. If an animal had a respiratory illness in the last 30 days, mention them by name and tag when BRD conditions are forecast. If a FAMACHA score is worsening and barber pole worm conditions are forecast, name that animal explicitly.
+4. Generate a SEPARATE alert for any animal at elevated individual risk beyond the herd-level warning. Call them out by tag number and name with the exact clinical reason (e.g. "Tag #A-112 (Daisy) — treated for pneumonia 10 days ago, now facing another cold+wet system").
+5. Flag temperature trend alerts explicitly when tempHighChange or tempLowChange shows a drop of 15°F or more — reference the exact numbers (e.g. "temperature dropping 22°F over 48 hours").
+6. Only generate alerts for genuine risks — no noise for mild or unremarkable conditions.
+7. Use "critical" only when the forecast poses an imminent, life-threatening risk; do not inflate severity.
 
 Severity:
 - "low": Worth monitoring, no immediate action needed
@@ -398,15 +480,15 @@ Severity:
 
 Return a JSON array of alerts (may be empty if no significant risks). Each alert must have:
 - "alertType": "weather"
-- "message": plain English, specific to this ranch's animals and actual forecast trends. A rancher should know exactly which animals to check and why.
+- "message": plain English, specific to this ranch's animals and actual weather numbers. A rancher should know exactly which animals to check and exactly why.
 - "severity": "low", "moderate", "high", or "critical"
-- "alertKey": unique string key (e.g., "weather_brd_cattle_2024-01-15")
+- "alertKey": unique string key (e.g., "weather_brd_cattle_2024-01-15" or "weather_brd_daisy_a112_2024-01-15" for individual animal alerts)
 
 Return valid JSON only, no extra text.`;
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [{ role: "user", content: prompt }],
     });
 
