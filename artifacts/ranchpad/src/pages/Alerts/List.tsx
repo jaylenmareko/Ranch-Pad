@@ -34,16 +34,20 @@ export default function AlertsList() {
   const recordAlerts = activeAlerts.filter(a => a.alertType !== 'weather_forecast');
 
   const getSeverityIcon = (sev: string) => {
+    if (sev === 'critical') return <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />;
     if (sev === 'high') return <AlertTriangle className="w-5 h-5 text-destructive" />;
-    if (sev === 'medium') return <Info className="w-5 h-5 text-yellow-500" />;
+    if (sev === 'moderate' || sev === 'medium') return <Info className="w-5 h-5 text-yellow-500" />;
     return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
   };
 
   const getSeverityColor = (sev: string) => {
+    if (sev === 'critical') return "bg-red-600/15 border-red-600/25 text-red-700 dark:text-red-400";
     if (sev === 'high') return "bg-destructive/10 border-destructive/20 text-destructive";
-    if (sev === 'medium') return "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400";
+    if (sev === 'moderate' || sev === 'medium') return "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400";
     return "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400";
   };
+
+  const getSeverityLabel = (sev: string) => sev.charAt(0).toUpperCase() + sev.slice(1);
 
   // Guest users see an empty state with a sign-up prompt
   if (!isAuthenticated) {
@@ -82,6 +86,15 @@ export default function AlertsList() {
             <span className="font-bold text-xs uppercase tracking-wider opacity-80">{alert.alertType.replace('_', ' ')}</span>
             <span className="text-xs opacity-60">•</span>
             <span className="text-xs opacity-80">{formatDate(alert.generatedAt)}</span>
+            <span className="text-xs opacity-60">•</span>
+            <Badge variant="outline" className={`text-[10px] font-bold uppercase px-1.5 py-0 leading-4 border ${
+              alert.severity === 'critical' ? 'border-red-500/40 text-red-600 dark:text-red-400 bg-red-500/10' :
+              alert.severity === 'high' ? 'border-destructive/40 text-destructive bg-destructive/10' :
+              (alert.severity === 'moderate' || alert.severity === 'medium') ? 'border-yellow-500/40 text-yellow-600 dark:text-yellow-400 bg-yellow-500/10' :
+              'border-green-500/40 text-green-600 dark:text-green-400 bg-green-500/10'
+            }`}>
+              {getSeverityLabel(alert.severity)}
+            </Badge>
           </div>
           <p className="font-bold text-base md:text-lg leading-snug">
             {alert.animalName ? (

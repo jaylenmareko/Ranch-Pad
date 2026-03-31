@@ -238,9 +238,11 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
     .where(eq(animalsTable.ranchId, ranchId));
 
   try {
-    // Fetch forecast from OpenWeatherMap
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${ranch.lat}&lon=${ranch.lon}&appid=${OPENWEATHERMAP_API_KEY}&units=imperial&cnt=40`;
-    const forecastResp = await fetch(forecastUrl);
+    // Fetch forecast + current observed conditions in parallel
+    const [forecastResp, currentResp] = await Promise.all([
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${ranch.lat}&lon=${ranch.lon}&appid=${OPENWEATHERMAP_API_KEY}&units=imperial&cnt=40`),
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${ranch.lat}&lon=${ranch.lon}&appid=${OPENWEATHERMAP_API_KEY}&units=imperial`),
+    ]);
     if (!forecastResp.ok) return 0;
 
     const forecastData = (await forecastResp.json()) as {
@@ -253,7 +255,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       }>;
     };
 
-    // Build daily weather buckets
+    // Build daily weather buckets from the forecast
     const days: Record<string, { temps: number[]; humidity: number[]; wind: number[]; rain: number; desc: string[] }> = {};
     for (const entry of forecastData.list) {
       const date = entry.dt_txt.split(" ")[0];
@@ -275,15 +277,44 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       conditions: [...new Set(d.desc)].join(", "),
     }));
 
-    // Add day-over-day temperature deltas so Claude can detect sudden swings
-    const summary = rawDays.map((day, i) => {
-      if (i === 0) return { ...day, tempHighChange: null as number | null, tempLowChange: null as number | null };
+    // Parse current observed conditions to anchor the trend
+    type WeatherDay = {
+      date: string; label?: string;
+      tempHigh: number; tempLow: number; avgHumidity: number; maxWind: number; totalRain: number;
+      conditions: string; tempHighChange: number | null; tempLowChange: number | null;
+    };
+    let observedToday: WeatherDay | null = null;
+    if (currentResp.ok) {
+      const cw = await currentResp.json() as {
+        main: { temp: number; temp_max: number; temp_min: number; humidity: number };
+        wind: { speed: number };
+        weather: Array<{ description: string }>;
+        rain?: { "1h"?: number; "3h"?: number };
+      };
+      observedToday = {
+        date: new Date().toISOString().split("T")[0],
+        label: "observed_today",
+        tempHigh: parseFloat(cw.main.temp_max.toFixed(1)),
+        tempLow: parseFloat(cw.main.temp_min.toFixed(1)),
+        avgHumidity: cw.main.humidity,
+        maxWind: parseFloat(cw.wind.speed.toFixed(1)),
+        totalRain: parseFloat((cw.rain?.["1h"] ?? cw.rain?.["3h"] ?? 0).toFixed(2)),
+        conditions: cw.weather[0]?.description ?? "",
+        tempHighChange: null,
+        tempLowChange: null,
+      };
+    }
+
+    // Day-over-day deltas — forecast day 1 delta is vs. observed today (if available)
+    const forecastWithDeltas: WeatherDay[] = rawDays.map((day, i) => {
+      const prev = i === 0 ? observedToday : rawDays[i - 1];
       return {
         ...day,
-        tempHighChange: parseFloat((day.tempHigh - rawDays[i - 1].tempHigh).toFixed(1)),
-        tempLowChange: parseFloat((day.tempLow - rawDays[i - 1].tempLow).toFixed(1)),
+        tempHighChange: prev ? parseFloat((day.tempHigh - prev.tempHigh).toFixed(1)) : null,
+        tempLowChange:  prev ? parseFloat((day.tempLow  - prev.tempLow ).toFixed(1)) : null,
       };
     });
+    const summary: WeatherDay[] = observedToday ? [observedToday, ...forecastWithDeltas] : forecastWithDeltas;
 
     // Build animal inventory context grouped by species
     const today = new Date();
@@ -332,21 +363,23 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
     const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
     const prompt = `You are an expert livestock health advisor for small farmers and ranchers.
-Analyze the 5-day weather forecast and the ranch's specific animal inventory to generate targeted disease risk alerts.
+Analyze the weather trend and the ranch's specific animal inventory to generate targeted disease risk alerts.
 
 RANCH: ${ranch.name} (${ranch.locationCity ?? ""}, ${ranch.locationState ?? ""})
 
 HERD INVENTORY (${animals.length} total animals):
 ${animalContext}
 
-5-DAY WEATHER FORECAST (tempHighChange/tempLowChange = degrees vs previous day):
+WEATHER TREND — "observed_today" is actual current conditions; remaining entries are forecast.
+tempHighChange/tempLowChange = change vs the prior day (negative = cooling, positive = warming):
 ${JSON.stringify(summary, null, 2)}
 
 SPECIES-SPECIFIC DISEASE KNOWLEDGE — only apply to species present in the inventory above:
 - Cattle: Cold + wet + wind → Bovine Respiratory Disease (BRD/pneumonia), especially dangerous for calves under 6 months. A sudden high temperature drop >15°F across consecutive forecast days is a high-risk BRD trigger. Wet muddy conditions → foot rot risk.
 - Goats & Sheep: Warm + humid (humidity >75%, temps >50°F) + rain → barber pole worm (Haemonchus contortus) larval surge on pasture — a leading cause of death in small ruminants. Cold + wet → pneumonia, especially kids/lambs. Goats are more cold-sensitive than cattle.
 - Swine: Heat >80°F + high humidity → heat stress, reduced feed intake. Cold drafts + wet → PRRS and respiratory illness.
-- All species: Temperature swings >20°F between consecutive forecast days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease. Bright sunny + dry + dusty + windy conditions with temps above 55°F → pink eye (Infectious Keratoconjunctivitis); UV exposure, dust, and fly activity all increase transmission risk.
+- Horses: Sustained wet + cold + mud → Mud Fever (Pastern Dermatitis) and Rain Rot, especially in horses with white legs or compromised immunity. Heat >90°F combined with high humidity → anhidrosis and heat exhaustion risk.
+- All species: Temperature swings >20°F between consecutive days = significant immune stress trigger. Sustained rain + mud → foot rot and hoof disease. Bright sunny + dry + dusty + windy conditions with temps above 55°F → pink eye (Infectious Keratoconjunctivitis); UV exposure, dust, and fly activity all increase transmission risk.
 - Pregnant/due animals: Any cold, wet, or high-stress forecast conditions during the 30-day pre-calving/kidding window elevate dystocia and neonatal mortality risk substantially. Name these animals in the alert.
 
 ALERT GENERATION RULES:
@@ -355,16 +388,18 @@ ALERT GENERATION RULES:
 3. Name individual animals in alerts when they face elevated personal risk (pregnant animals, young animals).
 4. Flag temperature trend alerts explicitly when tempHighChange or tempLowChange shows a drop of 15°F or more.
 5. Only generate alerts for genuine risks — no noise for mild or unremarkable conditions.
+6. Use "critical" only when the forecast poses an imminent, life-threatening risk; do not inflate severity.
 
 Severity:
 - "low": Worth monitoring, no immediate action needed
-- "medium": Take precautions this week, check animals daily
+- "moderate": Take precautions this week, check animals daily
 - "high": Act now — meaningful risk of illness or loss given forecast conditions
+- "critical": Drop everything — imminent risk of death or severe herd loss; name specific animals at risk
 
 Return a JSON array of alerts (may be empty if no significant risks). Each alert must have:
 - "alertType": "weather"
 - "message": plain English, specific to this ranch's animals and actual forecast trends. A rancher should know exactly which animals to check and why.
-- "severity": "low", "medium", or "high"
+- "severity": "low", "moderate", "high", or "critical"
 - "alertKey": unique string key (e.g., "weather_brd_cattle_2024-01-15")
 
 Return valid JSON only, no extra text.`;
@@ -463,9 +498,9 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
     result = result.filter(a => a.animalId !== null && assignedIds.has(a.animalId));
   }
 
-  // Sort by severity: high -> medium -> low
-  const severityOrder = { high: 0, medium: 1, low: 2 };
-  result.sort((a, b) => (severityOrder[a.severity as keyof typeof severityOrder] ?? 3) - (severityOrder[b.severity as keyof typeof severityOrder] ?? 3));
+  // Sort by severity: critical -> high -> moderate/medium -> low
+  const severityOrder: Record<string, number> = { critical: 0, high: 1, moderate: 2, medium: 2, low: 3 };
+  result.sort((a, b) => (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4));
 
   res.json(result);
 });
