@@ -6,3 +6,9 @@ id = "URuYs0jkO-DE7lOjvQqae"
 uri = "file://.local/ranchpad-qr.png"
 type = "image"
 title = "RanchPad — Scan to open on your phone"
+
+[[outputs]]
+id = "DB3bw4KI_tfP4e34ZVFll"
+uri = "file://artifacts/ranchpad/public/test-herd.csv"
+type = "table"
+title = "test-herd.csv — 10 animals, mixed species"
