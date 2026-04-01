@@ -667,19 +667,23 @@ router.get("/alerts", requireAuth, async (req, res): Promise<void> => {
     .where(and(eq(alertsTable.ranchId, ranchId), eq(alertsTable.isDismissed, false)))
     .orderBy(alertsTable.generatedAt);
 
-  // Attach animal names
+  // Attach animal name, tag number, and species
   let result = await Promise.all(
     alerts.map(async alert => {
       let animalName: string | null = null;
+      let animalTagNumber: string | null = null;
+      let animalSpecies: string | null = null;
       if (alert.animalId) {
         const [animal] = await db
-          .select({ name: animalsTable.name })
+          .select({ name: animalsTable.name, tagNumber: animalsTable.tagNumber, species: animalsTable.species })
           .from(animalsTable)
           .where(eq(animalsTable.id, alert.animalId))
           .limit(1);
         animalName = animal?.name ?? null;
+        animalTagNumber = animal?.tagNumber ?? null;
+        animalSpecies = animal?.species ?? null;
       }
-      return { ...alert, animalName };
+      return { ...alert, animalName, animalTagNumber, animalSpecies };
     })
   );
 

@@ -283,6 +283,10 @@ export interface Alert {
   animalId?: number | null;
   /** @nullable */
   animalName?: string | null;
+  /** @nullable */
+  animalTagNumber?: string | null;
+  /** @nullable */
+  animalSpecies?: string | null;
   alertType: string;
   message: string;
   severity: AlertSeverity;
