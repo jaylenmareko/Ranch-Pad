@@ -631,7 +631,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Desktop Sidebar ──────────────────────────────────────────────── */}
       <aside
-        className="hidden md:flex w-56 shrink-0 flex-col border-r border-border z-10 h-full"
+        className={cn("hidden w-56 shrink-0 flex-col border-r border-border z-10 h-full", isLanding ? "" : "md:flex")}
         style={{ background: "hsl(var(--sidebar))" }}
       >
         <Link href="/" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity shrink-0">
@@ -686,7 +686,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className="md:hidden flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20" style={{ background: "hsl(var(--sidebar))" }}>
+        <header className={cn("flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20", isLanding ? "hidden" : "md:hidden")} style={{ background: "hsl(var(--sidebar))" }}>
           <button
             onClick={() => setMenuOpen(true)}
             className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0"
