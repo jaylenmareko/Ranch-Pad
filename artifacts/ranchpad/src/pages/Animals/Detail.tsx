@@ -1069,6 +1069,23 @@ function FamachaTab({ animalId }: { animalId: number }) {
           </Card>
         ))}
       </div>
+
+      {/* How alerts work */}
+      <div className="rounded-xl border border-border/50 bg-muted/30 px-4 py-3 space-y-1.5">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">How score alerts work</p>
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-yellow-500" />
+          <span>An alert fires in the Action Center when three consecutive readings are each worse than the last — for example, 2 → 3 → 4.</span>
+        </div>
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground/50" />
+          <span>Each score must be logged on a separate date. Scores are compared in chronological order.</span>
+        </div>
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground/50" />
+          <span>If you dismiss an alert and then log another worse score, a new alert will appear automatically.</span>
+        </div>
+      </div>
     </div>
   );
 }
