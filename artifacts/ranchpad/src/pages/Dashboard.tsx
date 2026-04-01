@@ -322,10 +322,6 @@ function AuthDashboard() {
     }
   });
 
-  useEffect(() => {
-    generateMutation.mutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const speciesCounts = React.useMemo(() => {
     if (!animals) return {};
