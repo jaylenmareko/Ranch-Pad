@@ -354,7 +354,8 @@ function AuthDashboard() {
   }).slice(0, 5);
 
   const totalAnimals = animals?.length ?? 0;
-  const activeAlertCount = activeAlerts.length;
+  // Stat tile links to Action Center which only shows non-weather alerts — count must match
+  const activeAlertCount = activeAlerts.filter(a => a.alertType !== 'weather_forecast').length;
   const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
   const dueSoonCount = upcoming?.dueSoonCount ?? 0;
 
