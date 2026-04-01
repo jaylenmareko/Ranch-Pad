@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudLightning, ChevronRight, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -666,11 +666,6 @@ function AuthDashboard() {
                   </button>
                 </div>
               ))}
-            </div>
-          )}
-          {weatherAlerts.length > 5 && (
-            <div className="p-4 border-t border-border/50 bg-muted/10 text-center">
-              <Link href="/alerts" className="text-sm font-bold text-primary hover:underline flex items-center justify-center">View all {weatherAlerts.length} weather alerts <ChevronRight className="w-4 h-4 ml-1" /></Link>
             </div>
           )}
         </CardContent>
