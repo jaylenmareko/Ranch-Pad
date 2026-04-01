@@ -31,7 +31,9 @@ async function upsertAlert(alert: {
   message: string;
   severity: string;
 }): Promise<boolean> {
-  // Check if a non-dismissed alert with this key already exists today
+  // Check if any alert with this key was already generated today (dismissed or not).
+  // Including dismissed alerts in the check prevents dismissed alerts from
+  // reappearing when analysis re-runs later the same day.
   const today = new Date().toISOString().split("T")[0];
   const existing = await db
     .select({ id: alertsTable.id })
@@ -40,13 +42,12 @@ async function upsertAlert(alert: {
       and(
         eq(alertsTable.ranchId, alert.ranchId),
         eq(alertsTable.alertKey, alert.alertKey),
-        eq(alertsTable.isDismissed, false),
         sql`DATE(${alertsTable.generatedAt}) = ${today}`
       )
     )
     .limit(1);
 
-  if (existing.length > 0) return false; // Already exists, skip
+  if (existing.length > 0) return false; // Already generated today, skip
 
   await db.insert(alertsTable).values({
     ...alert,

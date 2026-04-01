@@ -25,7 +25,6 @@ async function upsertAlert(alert: {
       and(
         eq(alertsTable.ranchId, alert.ranchId),
         eq(alertsTable.alertKey, alert.alertKey),
-        eq(alertsTable.isDismissed, false),
         sql`DATE(${alertsTable.generatedAt}) = ${today}`
       )
     )
