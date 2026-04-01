@@ -1,25 +1,83 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Info, CheckCircle2, PawPrint, ChevronDown } from "lucide-react";
-import { useListAlerts, useDismissAlert, type Alert } from "@workspace/api-client-react";
+import { useListAlerts, useDismissAlert, useListAnimals, useGenerateAlerts, type Alert, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
+import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
+import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
+import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 export default function AlertsList() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const { openLogin, openSignup } = useAuthModal();
   const queryClient = useQueryClient();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [scanOpen, setScanOpen] = useState(false);
+  const [modeDialogOpen, setModeDialogOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+
   const { data: alerts, isLoading } = useListAlerts({ query: { enabled: isAuthenticated } });
+  const { data: animals, isLoading: animalsLoading } = useListAnimals({ query: { enabled: isAuthenticated } });
+
+  const generateMutation = useGenerateAlerts({
+    mutation: {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/alerts"] })
+    }
+  });
 
   const dismissMutation = useDismissAlert({
     mutation: {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/alerts"] })
     }
   });
+
+  async function doImport(file: File, replace: boolean) {
+    setImporting(true);
+    setModeDialogOpen(false);
+    setPendingFile(null);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const url = replace ? "/api/animals/import-csv?replace=true" : "/api/animals/import-csv";
+      const res = await fetch(url, { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.message ?? "Import failed. Please check your file and try again.");
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+        generateMutation.mutate();
+      }
+    } catch {
+      setImportError("Something went wrong connecting to the server. Please try again.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImportError(null);
+    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
+    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty. Please fill in the template and try again."); return; }
+    const hasAnimals = animals && (animals as Animal[]).length > 0;
+    if (hasAnimals) {
+      setPendingFile(file);
+      setModeDialogOpen(true);
+    } else {
+      doImport(file, false);
+    }
+  }
 
   const activeAlerts = alerts?.filter(a => !a.isDismissed) || [];
   const recordAlerts = activeAlerts.filter(a => a.alertType !== 'weather_forecast');
@@ -40,13 +98,11 @@ export default function AlertsList() {
 
   const getSeverityLabel = (sev: string) => sev.charAt(0).toUpperCase() + sev.slice(1);
 
-  /** Return the first sentence of a message (split on ". " or end of string). */
   const getFirstSentence = (msg: string): string => {
     const match = msg.match(/^(.+?[.!?])(?:\s|$)/);
     return match ? match[1] : msg;
   };
 
-  /** Build the animal identifier string: "Mae (#T-105, Nubian Goat)" */
   const buildAnimalLabel = (alert: Alert): string | null => {
     if (!alert.animalName) return null;
     const parts: string[] = [];
@@ -55,7 +111,7 @@ export default function AlertsList() {
     return parts.length > 0 ? `${alert.animalName} (${parts.join(", ")})` : alert.animalName;
   };
 
-  // Guest users see an empty state with a sign-up prompt
+  // Guest users see a sign-up prompt
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
@@ -91,17 +147,12 @@ export default function AlertsList() {
 
     return (
       <div className={`rounded-2xl border transition-all ${getSeverityColor(alert.severity)}`}>
-        {/* Collapsed header — always visible */}
         <div className="p-4 md:p-5">
           <div className="flex items-start gap-4">
-            {/* Severity icon */}
             <div className="shrink-0 mt-0.5 bg-background rounded-full p-2 shadow-sm border border-border/50">
               {getSeverityIcon(alert.severity)}
             </div>
-
-            {/* Main content */}
             <div className="flex-1 min-w-0">
-              {/* Summary line */}
               <p className="font-semibold text-sm md:text-base leading-snug text-foreground">
                 <span className="font-bold uppercase tracking-wide mr-1.5">{severityLabel}</span>
                 {animalLabel ? (
@@ -128,8 +179,6 @@ export default function AlertsList() {
                 )}
               </p>
             </div>
-
-            {/* Right side: expand toggle + resolve button */}
             <div className="shrink-0 flex items-center gap-2">
               <Button
                 variant="outline"
@@ -150,8 +199,6 @@ export default function AlertsList() {
               )}
             </div>
           </div>
-
-          {/* Mobile resolve button */}
           <div className="mt-3 md:hidden">
             <Button
               variant="outline"
@@ -164,17 +211,12 @@ export default function AlertsList() {
           </div>
         </div>
 
-        {/* Expanded detail panel */}
         <div
           className="overflow-hidden transition-all duration-300 ease-in-out"
-          style={{
-            maxHeight: expanded ? '600px' : '0px',
-            opacity: expanded ? 1 : 0,
-          }}
+          style={{ maxHeight: expanded ? '600px' : '0px', opacity: expanded ? 1 : 0 }}
         >
           <div className="px-4 md:px-5 pb-4 md:pb-5 pt-0 border-t border-current/10">
             <div className="pt-3 space-y-3">
-              {/* Alert type + date metadata */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-bold uppercase tracking-wider opacity-60">
                   {alert.alertType.replace(/_/g, ' ')}
@@ -190,13 +232,9 @@ export default function AlertsList() {
                   {getSeverityLabel(alert.severity)}
                 </Badge>
               </div>
-
-              {/* Full message */}
               <p className="text-sm md:text-base leading-relaxed text-foreground/90 whitespace-pre-line">
                 {alert.message}
               </p>
-
-              {/* Resolve button in expanded state (desktop) */}
               <div className="pt-1 hidden md:block">
                 <Button
                   variant="outline"
@@ -214,36 +252,61 @@ export default function AlertsList() {
     );
   };
 
+  const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Action Center</h1>
-        <p className="text-muted-foreground font-medium mt-1">Herd health tasks and urgent alerts.</p>
-      </div>
+      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+      <ImportModeDialog
+        open={modeDialogOpen}
+        onOpenChange={setModeDialogOpen}
+        onAdd={() => pendingFile && doImport(pendingFile, false)}
+        onReplace={() => pendingFile && doImport(pendingFile, true)}
+      />
+      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
 
-      {isLoading ? (
-        <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-24 bg-card rounded-2xl animate-pulse" />)}
-        </div>
-      ) : recordAlerts.length === 0 ? (
-        <div className="text-center py-24 bg-card rounded-3xl border border-border">
-          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
-          </div>
-          <h3 className="text-2xl font-display font-bold text-foreground">You're all caught up!</h3>
-          <p className="text-muted-foreground mt-2 max-w-sm mx-auto font-medium">
-            No active alerts or pending tasks for your herd.
-          </p>
-        </div>
+      {hasNoAnimals ? (
+        <EmptyHerdOverlay
+          onScan={() => setScanOpen(true)}
+          onImportClick={() => fileInputRef.current?.click()}
+          role={role ?? undefined}
+        />
       ) : (
-        <div className="space-y-4">
-          <h3 className="font-display font-bold text-xl flex items-center gap-2">
-            <PawPrint className="w-5 h-5 text-accent" /> Herd Health &amp; Tasks
-          </h3>
-          <div className="grid gap-3">
-            {recordAlerts.map(a => <AlertRow key={a.id} alert={a} />)}
+        <>
+          <div>
+            <h1 className="text-xl font-black text-foreground whitespace-nowrap">Action Center</h1>
+            <p className="text-muted-foreground font-medium mt-1">Herd health tasks and urgent alerts.</p>
           </div>
-        </div>
+
+          {importError && (
+            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">{importError}</p>
+          )}
+
+          {isLoading || animalsLoading ? (
+            <div className="space-y-4">
+              {[1,2,3].map(i => <div key={i} className="h-24 bg-card rounded-2xl animate-pulse" />)}
+            </div>
+          ) : recordAlerts.length === 0 ? (
+            <div className="text-center py-24 bg-card rounded-3xl border border-border">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-2xl font-display font-bold text-foreground">You're all caught up!</h3>
+              <p className="text-muted-foreground mt-2 max-w-sm mx-auto font-medium">
+                No active alerts or pending tasks for your herd.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h3 className="font-display font-bold text-xl flex items-center gap-2">
+                <PawPrint className="w-5 h-5 text-accent" /> Herd Health &amp; Tasks
+              </h3>
+              <div className="grid gap-3">
+                {recordAlerts.map(a => <AlertRow key={a.id} alert={a} />)}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
