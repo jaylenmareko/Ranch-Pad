@@ -572,15 +572,15 @@ ALERT RULES:
 6. alertKey must be stable (no dates) so repeated runs don't duplicate — e.g. "brd_cattle_herd", "brd_individual_hank_ksc001", "barber_pole_sheep_woolsworth_kss001".
 
 STRICT LENGTH AND ACCURACY RULES — no exceptions:
-- summary: EXACTLY 1–2 sentences. Format: "SEVERITY — Animal Name (#tag, Species): [risk in plain language a working rancher would say]. [One action the rancher should take today]." Use only plain language. No jargon.
-- message: MAXIMUM 4 sentences of expanded detail. Include: (a) the exact forecast numbers that triggered this alert, (b) why THIS specific animal is at elevated risk — only reference what is explicitly stated in the logged health records provided, never infer or extrapolate anything not written there, (c) one clear action item. Count your sentences before writing. Stop at 4.
+- summary: EXACTLY 1–2 sentences. Lead with the action or the most urgent thing first. Format: "SEVERITY — Animal Name (#tag, Species): [action or most urgent thing]. [One supporting reason in plain language]." Use only plain language. No jargon.
+- message: MAXIMUM 4 sentences. ALWAYS start with the action the rancher needs to take — this is the first sentence. Then give the exact forecast numbers that make this urgent. Then state why this specific animal is at elevated risk using only what is explicitly in their logged health records — never infer or extrapolate. Count your sentences before writing. Stop at 4.
 - Never exceed 4 sentences in message.
 - Never state clinical details not present in the provided health logs. If it is not logged, do not say it.
 - One action item per alert maximum.
 - No medical jargon a working rancher would not understand.
 
 Return ONLY a valid JSON array. No markdown, no explanation. Each object must have these exact fields — summary and message are both required:
-[{"alertType":"weather","summary":"HIGH — Mae (#T-105, Nubian Goat): High Barber Pole Worm risk given recent treatment and incoming warm wet weather. Check her FAMACHA score today.","message":"Temps are forecast to reach 68°F with 85% humidity and 0.8 inches of rain Wednesday — conditions that activate barber pole worm larvae on pasture. Mae was treated for barber pole worm on March 15th, placing her at elevated risk of reinfection. Check her FAMACHA score today and consider retreatment if it is 3 or higher.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
+[{"alertType":"weather","summary":"HIGH — Mae (#T-105, Nubian Goat): Check her FAMACHA score today — she's at high risk for barber pole worm given her recent treatment and incoming warm wet weather.","message":"Check Mae's FAMACHA score today and consider retreatment if it is 3 or higher. Temps are forecast to reach 68°F with 85% humidity and 0.8 inches of rain Wednesday, which activates barber pole worm larvae on pasture. Mae was treated for barber pole worm on March 15th.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
 
     console.log(`[weather-alerts] Calling Claude for ranch ${ranchId} (${location}) — ${animals.length} animals, ${profileLines.length} with health history`);
 
