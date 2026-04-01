@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
@@ -16,6 +16,7 @@ import { SimpleDialog } from "@/components/ui/dialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
+import { useToast } from "@/hooks/use-toast";
 
 // ─── CSV Template ──────────────────────────────────────────────────────────────
 
@@ -53,26 +54,10 @@ interface ImportSummary {
 // ─── Species Icons ─────────────────────────────────────────────────────────────
 
 const SPECIES_ICONS: Record<string, string> = {
-  Cattle: "🐄",
-  Sheep: "🐑",
-  Goat: "🐐",
-  Goats: "🐐",
-  Pig: "🐷",
-  Pigs: "🐷",
-  Horse: "🐴",
-  Horses: "🐴",
-  Chicken: "🐔",
-  Chickens: "🐔",
-  Duck: "🦆",
-  Ducks: "🦆",
-  Turkey: "🦃",
-  Turkeys: "🦃",
-  Llama: "🦙",
-  Llamas: "🦙",
-  Alpaca: "🦙",
-  Alpacas: "🦙",
-  Rabbit: "🐰",
-  Rabbits: "🐰",
+  Cattle: "🐄", Sheep: "🐑", Goat: "🐐", Goats: "🐐", Pig: "🐷", Pigs: "🐷",
+  Horse: "🐴", Horses: "🐴", Chicken: "🐔", Chickens: "🐔", Duck: "🦆",
+  Ducks: "🦆", Turkey: "🦃", Turkeys: "🦃", Llama: "🦙", Llamas: "🦙",
+  Alpaca: "🦙", Alpacas: "🦙", Rabbit: "🐰", Rabbits: "🐰",
 };
 
 function speciesIcon(species: string): string {
@@ -87,49 +72,103 @@ function HealthDot({ severity }: { severity?: string | null }) {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full border ${colorClass} shrink-0`} title={`Health: ${severity || "Clear"}`} />;
 }
 
+// ─── Select Checkbox ───────────────────────────────────────────────────────────
+
+function SelectCheckbox({
+  checked,
+  indeterminate,
+  onClick,
+  className = "",
+}: {
+  checked: boolean;
+  indeterminate?: boolean;
+  onClick: (e: React.MouseEvent) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${
+        checked || indeterminate
+          ? "bg-primary border-primary"
+          : "bg-background border-border hover:border-primary/60"
+      } ${className}`}
+    >
+      {checked && <Check className="w-3 h-3 text-primary-foreground" />}
+      {!checked && indeterminate && <Minus className="w-3 h-3 text-primary-foreground" />}
+    </div>
+  );
+}
+
 // ─── Animal Card ────────────────────────────────────────────────────────────
 
-function AnimalCard({ animal }: { animal: Animal }) {
-  return (
-    <Link href={`/animals/${animal.id}`}>
-      <Card className="h-full transition-all duration-200 cursor-pointer group hover:shadow-md hover:border-primary/40">
-        <CardContent className="p-4 flex flex-col h-full">
-          <div className="flex items-start gap-2.5 mb-3">
-            <HealthDot severity={animal.latestHealthSeverity} />
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-base text-foreground leading-tight truncate group-hover:text-primary transition-colors">
-                {animal.name}
-              </h3>
-              {animal.tagNumber && (
-                <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
-                  #{animal.tagNumber}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="mt-auto space-y-1.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
-              {animal.breed && (
-                <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
-              )}
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-              {animal.dateOfBirth ? (
-                <span>{new Date(animal.dateOfBirth).toLocaleDateString()}</span>
-              ) : <span />}
-              <span>{formatAge(animal.dateOfBirth)}</span>
-            </div>
-            {animal.sex === "Female" && animal.expectedDueDate && (
-              <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
-                Due: {new Date(animal.expectedDueDate).toLocaleDateString()}
-              </p>
+function AnimalCard({
+  animal,
+  selectMode,
+  selected,
+  onToggle,
+}: {
+  animal: Animal;
+  selectMode?: boolean;
+  selected?: boolean;
+  onToggle?: () => void;
+}) {
+  const cardContent = (
+    <Card className={`h-full transition-all duration-200 cursor-pointer group hover:shadow-md hover:border-primary/40 ${
+      selected ? "ring-2 ring-primary border-primary/50" : ""
+    }`}>
+      <CardContent className="p-4 flex flex-col h-full">
+        <div className="flex items-start gap-2.5 mb-3">
+          <HealthDot severity={animal.latestHealthSeverity} />
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base text-foreground leading-tight truncate group-hover:text-primary transition-colors">
+              {animal.name}
+            </h3>
+            {animal.tagNumber && (
+              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                #{animal.tagNumber}
+              </span>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+        </div>
+        <div className="mt-auto space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
+            {animal.breed && (
+              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
+            )}
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
+            {animal.dateOfBirth ? (
+              <span>{new Date(animal.dateOfBirth).toLocaleDateString()}</span>
+            ) : <span />}
+            <span>{formatAge(animal.dateOfBirth)}</span>
+          </div>
+          {animal.sex === "Female" && animal.expectedDueDate && (
+            <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
+              Due: {new Date(animal.expectedDueDate).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
+
+  if (selectMode) {
+    return (
+      <div className="relative" onClick={onToggle}>
+        <div className="absolute top-2.5 left-2.5 z-10">
+          <SelectCheckbox
+            checked={!!selected}
+            onClick={(e) => { e.stopPropagation(); onToggle?.(); }}
+          />
+        </div>
+        {cardContent}
+      </div>
+    );
+  }
+
+  return <Link href={`/animals/${animal.id}`}>{cardContent}</Link>;
 }
 
 // ─── Guest Animal Card ─────────────────────────────────────────────────────────
@@ -411,14 +450,24 @@ function setFolderOpen(species: string, value: boolean): void {
   }
 }
 
+// ─── Species Folder ────────────────────────────────────────────────────────────
+
 function SpeciesFolder({
   species,
   animals,
   initialOpen,
+  selectMode,
+  selectedIds,
+  onToggleAnimal,
+  onToggleSpecies,
 }: {
   species: string;
   animals: Animal[];
   initialOpen?: boolean;
+  selectMode?: boolean;
+  selectedIds?: Set<number>;
+  onToggleAnimal?: (id: number) => void;
+  onToggleSpecies?: (ids: number[], allSelected: boolean) => void;
 }) {
   const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(species));
 
@@ -433,15 +482,30 @@ function SpeciesFolder({
   const highCount = animals.filter(a => a.latestHealthSeverity === "high").length;
   const medCount = animals.filter(a => a.latestHealthSeverity === "medium").length;
 
+  const animalIds = animals.map(a => a.id);
+  const selectedCount = selectMode && selectedIds ? animalIds.filter(id => selectedIds.has(id)).length : 0;
+  const allSelected = selectMode ? selectedCount === animals.length : false;
+  const someSelected = selectMode ? selectedCount > 0 && selectedCount < animals.length : false;
+
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <button
         onClick={toggle}
         className="relative w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
       >
+        {selectMode && (
+          <SelectCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSpecies?.(animalIds, allSelected);
+            }}
+          />
+        )}
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
-        {!open && (
+        {!open && !selectMode && (
           <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
             Click Here
           </span>
@@ -467,7 +531,13 @@ function SpeciesFolder({
       {open && (
         <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {animals.map(animal => (
-            <AnimalCard key={animal.id} animal={animal} />
+            <AnimalCard
+              key={animal.id}
+              animal={animal}
+              selectMode={selectMode}
+              selected={selectedIds?.has(animal.id)}
+              onToggle={() => onToggleAnimal?.(animal.id)}
+            />
           ))}
         </div>
       )}
@@ -475,16 +545,26 @@ function SpeciesFolder({
   );
 }
 
+// ─── Location Folder ───────────────────────────────────────────────────────────
+
 function LocationFolder({
   locationId,
   locationName,
   animals,
   initialOpen,
+  selectMode,
+  selectedIds,
+  onToggleAnimal,
+  onToggleSpecies,
 }: {
   locationId: number | null;
   locationName: string | null;
   animals: Animal[];
   initialOpen?: boolean;
+  selectMode?: boolean;
+  selectedIds?: Set<number>;
+  onToggleAnimal?: (id: number) => void;
+  onToggleSpecies?: (ids: number[], allSelected: boolean) => void;
 }) {
   const folderKey = locationId != null ? `loc:${locationId}` : "loc:unassigned";
   const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(folderKey));
@@ -510,17 +590,32 @@ function LocationFolder({
   const medCount = animals.filter(a => a.latestHealthSeverity === "medium").length;
   const isUnassigned = locationId == null;
 
+  const allIds = animals.map(a => a.id);
+  const selectedCount = selectMode && selectedIds ? allIds.filter(id => selectedIds.has(id)).length : 0;
+  const allSelected = selectMode ? selectedCount === animals.length : false;
+  const someSelected = selectMode ? selectedCount > 0 && selectedCount < animals.length : false;
+
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <button
         onClick={toggle}
         className="relative w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
       >
+        {selectMode && (
+          <SelectCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSpecies?.(allIds, allSelected);
+            }}
+          />
+        )}
         <MapPin className={`w-5 h-5 shrink-0 ${isUnassigned ? "text-muted-foreground/50" : "text-primary"}`} />
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">
           {isUnassigned ? "Unassigned" : locationName}
         </span>
-        {!open && (
+        {!open && !selectMode && (
           <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
             Click Here
           </span>
@@ -550,6 +645,10 @@ function LocationFolder({
               key={`${folderKey}-${species}`}
               species={species}
               animals={speciesAnimals}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggleAnimal={onToggleAnimal}
+              onToggleSpecies={onToggleSpecies}
             />
           ))}
         </div>
@@ -557,6 +656,8 @@ function LocationFolder({
     </div>
   );
 }
+
+// ─── Main Animal List ──────────────────────────────────────────────────────────
 
 export default function AnimalList() {
   const [location, setLocation] = useLocation();
@@ -574,6 +675,13 @@ export default function AnimalList() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { isAuthenticated, role } = useAuth();
+  const { toast } = useToast();
+
+  // ─── Bulk-delete state ─────────────────────────────────────────────────────
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // After signup: carry out the pending action (navigate to add form)
   useEffect(() => {
@@ -647,6 +755,76 @@ export default function AnimalList() {
     return reason;
   }
 
+  // ─── Selection handlers ────────────────────────────────────────────────────
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  function toggleAnimal(id: number) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleGroup(ids: number[], allSelected: boolean) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allSelected) {
+        ids.forEach(id => next.delete(id));
+      } else {
+        ids.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  }
+
+  function selectAll() {
+    setSelectedIds(new Set(filteredAnimals.map(a => a.id)));
+  }
+
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds);
+    const animalsToDelete = filteredAnimals.filter(a => ids.includes(a.id));
+    setBulkDeleting(true);
+    try {
+      if (role === "owner") {
+        await Promise.all(ids.map(id =>
+          fetch(`/api/animals/${id}`, { method: "DELETE" })
+        ));
+        queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+        toast({ title: `${ids.length} ${ids.length === 1 ? "animal" : "animals"} deleted` });
+      } else {
+        const results = await Promise.all(
+          animalsToDelete.map(a =>
+            fetch("/api/team/delete-requests", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ resourceType: "animal", resourceId: a.id, resourceName: a.name }),
+            })
+          )
+        );
+        const sent = results.filter(r => r.ok || r.status === 409).length;
+        toast({
+          title: "Deletion requests sent",
+          description: `${sent} request${sent === 1 ? "" : "s"} sent to the owner for approval.`,
+        });
+      }
+    } catch {
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setBulkDeleting(false);
+      setBulkDeleteOpen(false);
+      exitSelectMode();
+    }
+  }
+
+  // ─── Filtering & grouping ──────────────────────────────────────────────────
+
   const filteredAnimals = React.useMemo(() => {
     if (!animals) return [];
     let result = animals as Animal[];
@@ -710,6 +888,17 @@ export default function AnimalList() {
 
   const hasNoAnimals = isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0 && search.length === 0;
 
+  const isOwnerOrHand = role === "owner" || role === "ranch_hand";
+
+  // Confirmation dialog copy changes by role
+  const bulkDeleteTitle = role === "owner"
+    ? `Delete ${selectedIds.size} ${selectedIds.size === 1 ? "animal" : "animals"}?`
+    : `Request deletion of ${selectedIds.size} ${selectedIds.size === 1 ? "animal" : "animals"}?`;
+  const bulkDeleteBody = role === "owner"
+    ? `This will permanently delete ${selectedIds.size} ${selectedIds.size === 1 ? "animal" : "animals"} and all of their records. This cannot be undone.`
+    : `This will send ${selectedIds.size} deletion ${selectedIds.size === 1 ? "request" : "requests"} to the ranch owner for approval.`;
+  const bulkDeleteConfirmLabel = role === "owner" ? "Delete" : "Send Requests";
+
   return (
     <div className="space-y-5">
       {/* Always-present hidden inputs and dialogs */}
@@ -721,6 +910,27 @@ export default function AnimalList() {
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
       <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <SimpleDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen} title={bulkDeleteTitle}>
+        <div className="space-y-5">
+          <p className="text-sm text-muted-foreground leading-relaxed">{bulkDeleteBody}</p>
+          <div className="flex gap-3">
+            <Button
+              variant={role === "owner" ? "destructive" : "default"}
+              className="flex-1"
+              isLoading={bulkDeleting}
+              onClick={handleBulkDelete}
+            >
+              {!bulkDeleting && role === "owner" && <Trash2 className="w-4 h-4 mr-2" />}
+              {bulkDeleteConfirmLabel}
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleting}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </SimpleDialog>
 
       {hasNoAnimals ? (
         <EmptyHerdOverlay
@@ -738,74 +948,126 @@ export default function AnimalList() {
           <p className="text-muted-foreground font-medium mt-1">
             {isLoading
               ? "Loading…"
-              : locationGrouped
-                ? `${filteredAnimals.length} animals across ${locationGrouped.length} ${locationGrouped.length === 1 ? "location" : "locations"}`
-                : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
+              : selectMode
+                ? selectedIds.size > 0
+                  ? `${selectedIds.size} selected`
+                  : "Tap animals to select"
+                : locationGrouped
+                  ? `${filteredAnimals.length} animals across ${locationGrouped.length} ${locationGrouped.length === 1 ? "location" : "locations"}`
+                  : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
           </p>
         </div>
         <TooltipProvider delayDuration={300}>
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
+            {selectMode ? (
+              /* ── Selection mode controls ── */
+              <>
                 <Button
                   variant="outline"
-                  onClick={downloadTemplate}
-                  className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm"
-                  aria-label="Download CSV template"
+                  onClick={selectAll}
+                  className="h-10 px-4 rounded-xl font-semibold text-sm"
                 >
-                  <Download className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Download Template</span>
+                  Select All
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>Download CSV template</TooltipContent>
-            </Tooltip>
-            {role !== "viewer" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={importing}
-                    className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
-                    aria-label="Upload CSV"
-                  >
-                    {importing ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
-                    ) : (
-                      <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload CSV</>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Upload CSV</TooltipContent>
-              </Tooltip>
-            )}
-            {role !== "viewer" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    onClick={() => setScanOpen(true)}
-                    className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
-                    aria-label="Scan record book to add animals"
-                  >
-                    <ScanLine className="w-4 h-4 mr-2" />
-                    Add from Photo
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Take a photo of your record book — Claude reads it and adds your animals automatically</TooltipContent>
-              </Tooltip>
-            )}
-            {role !== "viewer" && (
-              <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Animal
-              </Link>
+                <Button
+                  variant="destructive"
+                  disabled={selectedIds.size === 0}
+                  onClick={() => setBulkDeleteOpen(true)}
+                  className="h-10 px-4 rounded-xl font-semibold text-sm"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete ({selectedIds.size})
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={exitSelectMode}
+                  className="h-10 px-4 rounded-xl font-semibold text-sm"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              /* ── Normal controls ── */
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={downloadTemplate}
+                      className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm"
+                      aria-label="Download CSV template"
+                    >
+                      <Download className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Download Template</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download CSV template</TooltipContent>
+                </Tooltip>
+                {role !== "viewer" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={importing}
+                        className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
+                        aria-label="Upload CSV"
+                      >
+                        {importing ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Importing…</>
+                        ) : (
+                          <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload CSV</>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload CSV</TooltipContent>
+                  </Tooltip>
+                )}
+                {role !== "viewer" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        onClick={() => setScanOpen(true)}
+                        className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
+                        aria-label="Scan record book to add animals"
+                      >
+                        <ScanLine className="w-4 h-4 mr-2" />
+                        Add from Photo
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Take a photo of your record book — Claude reads it and adds your animals automatically</TooltipContent>
+                  </Tooltip>
+                )}
+                {isOwnerOrHand && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectMode(true)}
+                        className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm"
+                        aria-label="Select animals to delete"
+                      >
+                        <CheckSquare className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Select</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Select multiple animals to delete</TooltipContent>
+                  </Tooltip>
+                )}
+                {role !== "viewer" && (
+                  <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Animal
+                  </Link>
+                )}
+              </>
             )}
           </div>
         </TooltipProvider>
       </div>
 
-      {/* Import error — inline, red, impossible to miss */}
+      {/* Import error */}
       {importError && (
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
           <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
@@ -818,7 +1080,7 @@ export default function AnimalList() {
         </div>
       )}
 
-      {/* Import success — inline, green */}
+      {/* Import success */}
       {importSummary && (
         <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
           <div className="flex items-center justify-between gap-2">
@@ -864,44 +1126,46 @@ export default function AnimalList() {
       )}
 
       {/* Filter bar */}
-      <div className="bg-card border border-border p-3 rounded-2xl shadow-sm">
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or tag..."
-              className="pl-12 border-none bg-muted/30 focus-visible:bg-background"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+      {!selectMode && (
+        <div className="bg-card border border-border p-3 rounded-2xl shadow-sm">
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or tag..."
+                className="pl-12 border-none bg-muted/30 focus-visible:bg-background"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              value={breedFilter}
+              onChange={e => setBreedFilter(e.target.value)}
+              className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
+            >
+              {uniqueBreeds.map(breed => (
+                <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
+              ))}
+            </select>
+            <select
+              value={sexFilter}
+              onChange={e => setSexFilter(e.target.value)}
+              className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
+            >
+              <option value="All">All Sexes</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Wether">Wether</option>
+              <option value="Castrated">Castrated</option>
+            </select>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearAllFilters} className="shrink-0 text-destructive hover:text-destructive">
+                Clear filters
+              </Button>
+            )}
           </div>
-          <select
-            value={breedFilter}
-            onChange={e => setBreedFilter(e.target.value)}
-            className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
-          >
-            {uniqueBreeds.map(breed => (
-              <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
-            ))}
-          </select>
-          <select
-            value={sexFilter}
-            onChange={e => setSexFilter(e.target.value)}
-            className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
-          >
-            <option value="All">All Sexes</option>
-            <option value="Female">Female</option>
-            <option value="Male">Male</option>
-            <option value="Wether">Wether</option>
-            <option value="Castrated">Castrated</option>
-          </select>
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="shrink-0 text-destructive hover:text-destructive">
-              Clear filters
-            </Button>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -941,6 +1205,10 @@ export default function AnimalList() {
               locationName={name}
               animals={locAnimals}
               initialOpen={dueSoonFilter ? true : undefined}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggleAnimal={toggleAnimal}
+              onToggleSpecies={toggleGroup}
             />
           ))}
         </div>
@@ -952,6 +1220,10 @@ export default function AnimalList() {
               species={species}
               animals={speciesAnimals}
               initialOpen={dueSoonFilter ? true : undefined}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggleAnimal={toggleAnimal}
+              onToggleSpecies={toggleGroup}
             />
           ))}
         </div>
