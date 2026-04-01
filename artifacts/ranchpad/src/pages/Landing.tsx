@@ -42,7 +42,7 @@ export default function Landing() {
 
         {/* Tagline */}
         <p className="text-base font-semibold text-white mb-8 tracking-wide uppercase" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
-          AI Powered Livestock Management
+          AI-Powered Livestock Management
         </p>
 
         {/* Bullets */}
