@@ -3,6 +3,7 @@ import { db, famachaScoresTable, animalsTable, animalAssignmentsTable } from "@w
 import { eq, and } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
+import { upsertAlert, makeKey } from "./alerts.js";
 
 const router: IRouter = Router();
 
@@ -73,6 +74,28 @@ router.post("/animals/:animalId/famacha", requireAuth, requireNotViewer, async (
     .insert(famachaScoresTable)
     .values({ ...parsed.data, animalId, ranchId })
     .returning();
+
+  // Check for two consecutive declining FAMACHA scores (3 readings, each worse than the last)
+  const allScores = await db
+    .select()
+    .from(famachaScoresTable)
+    .where(eq(famachaScoresTable.animalId, animalId))
+    .orderBy(famachaScoresTable.recordedDate);
+
+  if (allScores.length >= 3) {
+    const last3 = allScores.slice(-3);
+    if (last3[0].score < last3[1].score && last3[1].score < last3[2].score) {
+      const alertKey = makeKey("famacha_decline", animalId, last3[2].id);
+      await upsertAlert({
+        ranchId,
+        animalId,
+        alertType: "record",
+        alertKey,
+        message: `${animal.name}'s FAMACHA score has declined two readings in a row (${last3.map(s => s.score).join(" → ")}). Barber pole worm burden may be increasing — consider anthelmintic treatment.`,
+        severity: "high",
+      });
+    }
+  }
 
   res.status(201).json(score);
 });

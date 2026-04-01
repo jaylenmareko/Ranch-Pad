@@ -720,5 +720,5 @@ router.post("/alerts/:alertId/dismiss", requireAuth, requireNotViewer, async (re
   res.json({ ...alert, animalName: null });
 });
 
-export { generateRecordAlerts, generateWeatherAlerts };
+export { generateRecordAlerts, generateWeatherAlerts, upsertAlert, makeKey };
 export default router;
