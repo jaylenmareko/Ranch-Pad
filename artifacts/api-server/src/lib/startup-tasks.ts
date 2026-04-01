@@ -19,18 +19,36 @@ async function upsertAlert(alert: {
 }): Promise<boolean> {
   const today = new Date().toISOString().split("T")[0];
   const existing = await db
-    .select({ id: alertsTable.id })
+    .select({ id: alertsTable.id, isDismissed: alertsTable.isDismissed })
     .from(alertsTable)
     .where(
       and(
         eq(alertsTable.ranchId, alert.ranchId),
-        eq(alertsTable.alertKey, alert.alertKey),
-        sql`DATE(${alertsTable.generatedAt}) = ${today}`
+        eq(alertsTable.alertKey, alert.alertKey)
       )
     )
+    .orderBy(alertsTable.generatedAt)
     .limit(1);
 
-  if (existing.length > 0) return false;
+  if (existing.length > 0) {
+    const row = existing[0];
+    if (!row.isDismissed) return false;
+    if (row.isDismissed) {
+      const [dismissedRow] = await db
+        .select({ generatedAt: alertsTable.generatedAt })
+        .from(alertsTable)
+        .where(
+          and(
+            eq(alertsTable.ranchId, alert.ranchId),
+            eq(alertsTable.alertKey, alert.alertKey),
+            eq(alertsTable.isDismissed, true),
+            sql`DATE(${alertsTable.generatedAt}) = ${today}`
+          )
+        )
+        .limit(1);
+      if (dismissedRow) return false;
+    }
+  }
 
   await db.insert(alertsTable).values({ ...alert, isDismissed: false });
   return true;

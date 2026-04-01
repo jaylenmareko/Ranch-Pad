@@ -351,7 +351,7 @@ function AuthDashboard() {
   const sortedWeatherAlerts = [...weatherAlerts].sort((a, b) => {
     const weights: Record<string, number> = { critical: 4, high: 3, moderate: 2, medium: 2, low: 1 };
     return (weights[b.severity] ?? 0) - (weights[a.severity] ?? 0);
-  }).slice(0, 5);
+  });
 
   const totalAnimals = animals?.length ?? 0;
   // Stat tile links to Action Center which only shows non-weather alerts — count must match

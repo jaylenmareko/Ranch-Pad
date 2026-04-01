@@ -31,23 +31,43 @@ async function upsertAlert(alert: {
   message: string;
   severity: string;
 }): Promise<boolean> {
-  // Check if any alert with this key was already generated today (dismissed or not).
-  // Including dismissed alerts in the check prevents dismissed alerts from
-  // reappearing when analysis re-runs later the same day.
+  // Two-part dedup:
+  // 1. If a non-dismissed alert with this key exists (any date) → it's already on the list, skip.
+  // 2. If a dismissed alert with this key was generated today → don't resurrect it same day.
   const today = new Date().toISOString().split("T")[0];
   const existing = await db
-    .select({ id: alertsTable.id })
+    .select({ id: alertsTable.id, isDismissed: alertsTable.isDismissed })
     .from(alertsTable)
     .where(
       and(
         eq(alertsTable.ranchId, alert.ranchId),
-        eq(alertsTable.alertKey, alert.alertKey),
-        sql`DATE(${alertsTable.generatedAt}) = ${today}`
+        eq(alertsTable.alertKey, alert.alertKey)
       )
     )
+    .orderBy(alertsTable.generatedAt)
     .limit(1);
 
-  if (existing.length > 0) return false; // Already generated today, skip
+  if (existing.length > 0) {
+    const row = existing[0];
+    // Active alert already on the list — never duplicate it
+    if (!row.isDismissed) return false;
+    // Dismissed today — don't bring it back until tomorrow
+    if (row.isDismissed) {
+      const [dismissedRow] = await db
+        .select({ generatedAt: alertsTable.generatedAt })
+        .from(alertsTable)
+        .where(
+          and(
+            eq(alertsTable.ranchId, alert.ranchId),
+            eq(alertsTable.alertKey, alert.alertKey),
+            eq(alertsTable.isDismissed, true),
+            sql`DATE(${alertsTable.generatedAt}) = ${today}`
+          )
+        )
+        .limit(1);
+      if (dismissedRow) return false;
+    }
+  }
 
   await db.insert(alertsTable).values({
     ...alert,
