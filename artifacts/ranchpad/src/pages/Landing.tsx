@@ -4,11 +4,9 @@ import { HoofIcon } from "@/components/HoofIcon";
 import { useNavigation } from "@/contexts/navigation-context";
 
 const BULLETS = [
-  "Your whole team sees the same live records — from the field, the office, or across the state.",
-  "Local weather triggers AI alerts specific to your cattle, goats, or sheep — know the risk before it hits your herd.",
-  "AI spots patterns in your herd you'd never catch flipping through a notebook.",
-  "Snap a photo of your paper records and AI converts them instantly.",
-  "Your records don't just sit there — AI flags problems, spots patterns, and warns you before things go wrong.",
+  "Cross-references local weather and each animal's health history to warn you of disease risk before symptoms show up.",
+  "Role-based team access — owners, ranch hands, and cattle clients each see exactly what they need and nothing they don't.",
+  "Every animal's full history searchable from your phone in seconds — health events, medications, and records.",
 ];
 
 export default function Landing() {
