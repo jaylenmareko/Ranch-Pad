@@ -28,6 +28,7 @@ async function upsertAlert(alert: {
   animalId?: number | null;
   alertType: string;
   alertKey: string;
+  summary?: string | null;
   message: string;
   severity: string;
 }): Promise<boolean> {
@@ -561,7 +562,7 @@ SPECIES-SPECIFIC DISEASE TRIGGERS — apply ONLY to species present in the inven
 ALERT RULES:
 1. Generate one herd-level alert per disease risk that is present in the forecast for any species in your inventory.
 2. Generate a SEPARATE individual alert for every at-risk animal whose history matches a forecast condition. Use exact tag numbers and names. Quote the specific health event (e.g. "treated for respiratory illness on 2026-03-18") and the exact forecast trigger (e.g. "temps forecast to drop from 68°F to 41°F on April 2nd").
-3. Reference actual weather numbers — temperatures, humidity percentages, wind speeds, rain totals — from the data above.
+3. Reference actual weather numbers — temperatures, humidity percentages, wind speeds, rain totals — from the data above. Never reference a number that is not in the forecast data provided.
 4. Severity:
    - "low": Worth watching, no immediate action
    - "moderate": Take precautions this week, check animals daily
@@ -570,8 +571,16 @@ ALERT RULES:
 5. Do NOT generate empty output. If the herd has animals with recent health histories and any forecast condition is relevant, issue alerts.
 6. alertKey must be stable (no dates) so repeated runs don't duplicate — e.g. "brd_cattle_herd", "brd_individual_hank_ksc001", "barber_pole_sheep_woolsworth_kss001".
 
-Return ONLY a valid JSON array. No markdown, no explanation. Example format:
-[{"alertType":"weather","message":"...","severity":"high","alertKey":"brd_cattle_herd"}]`;
+STRICT LENGTH AND ACCURACY RULES — no exceptions:
+- summary: EXACTLY 1–2 sentences. Format: "SEVERITY — Animal Name (#tag, Species): [risk in plain language a working rancher would say]. [One action the rancher should take today]." Use only plain language. No jargon.
+- message: MAXIMUM 4 sentences of expanded detail. Include: (a) the exact forecast numbers that triggered this alert, (b) why THIS specific animal is at elevated risk — only reference what is explicitly stated in the logged health records provided, never infer or extrapolate anything not written there, (c) one clear action item. Count your sentences before writing. Stop at 4.
+- Never exceed 4 sentences in message.
+- Never state clinical details not present in the provided health logs. If it is not logged, do not say it.
+- One action item per alert maximum.
+- No medical jargon a working rancher would not understand.
+
+Return ONLY a valid JSON array. No markdown, no explanation. Each object must have these exact fields — summary and message are both required:
+[{"alertType":"weather","summary":"HIGH — Mae (#T-105, Nubian Goat): High Barber Pole Worm risk given recent treatment and incoming warm wet weather. Check her FAMACHA score today.","message":"Temps are forecast to reach 68°F with 85% humidity and 0.8 inches of rain Wednesday — conditions that activate barber pole worm larvae on pasture. Mae was treated for barber pole worm on March 15th, placing her at elevated risk of reinfection. Check her FAMACHA score today and consider retreatment if it is 3 or higher.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
 
     console.log(`[weather-alerts] Calling Claude for ranch ${ranchId} (${location}) — ${animals.length} animals, ${profileLines.length} with health history`);
 
@@ -591,6 +600,7 @@ Return ONLY a valid JSON array. No markdown, no explanation. Example format:
 
     let parsedAlerts: Array<{
       alertType: string;
+      summary?: string | null;
       message: string;
       severity: string;
       alertKey: string;
@@ -632,6 +642,7 @@ Return ONLY a valid JSON array. No markdown, no explanation. Example format:
         animalId: null,
         alertType: "weather_forecast",
         alertKey: `weather_${alert.alertKey}`,
+        summary: alert.summary ?? null,
         message: alert.message,
         severity: alert.severity,
       });

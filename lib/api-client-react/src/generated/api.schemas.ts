@@ -288,6 +288,8 @@ export interface Alert {
   /** @nullable */
   animalSpecies?: string | null;
   alertType: string;
+  /** @nullable */
+  summary?: string | null;
   message: string;
   severity: AlertSeverity;
   isDismissed: boolean;

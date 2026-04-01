@@ -10,6 +10,7 @@ export const alertsTable = pgTable("alerts", {
   animalId: integer("animal_id").references(() => animalsTable.id, { onDelete: "set null" }),
   alertType: text("alert_type").notNull(),
   alertKey: text("alert_key").notNull(), // deterministic key for idempotency
+  summary: text("summary"),
   message: text("message").notNull(),
   severity: text("severity").notNull(), // low, medium, high
   isDismissed: boolean("is_dismissed").notNull().default(false),
