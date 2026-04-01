@@ -1049,7 +1049,7 @@ export default function AnimalList() {
                         aria-label="Select animals to delete"
                       >
                         <CheckSquare className="w-4 h-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Select</span>
+                        <span className="hidden sm:inline">Delete Animals</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Select multiple animals to delete</TooltipContent>
