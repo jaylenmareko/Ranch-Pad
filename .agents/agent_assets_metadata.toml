@@ -12,3 +12,9 @@ id = "DB3bw4KI_tfP4e34ZVFll"
 uri = "file://artifacts/ranchpad/public/test-herd.csv"
 type = "table"
 title = "test-herd.csv — Winfield KS weather-optimized"
+
+[[outputs]]
+id = "W4GpeFIlMgudz8aQNpCyc"
+uri = "file://test-data/ranchpad-test-5-animals.csv"
+type = "table"
+title = "RanchPad Test Animals (5 animals)"
