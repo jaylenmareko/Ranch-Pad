@@ -219,15 +219,23 @@ function MyRanchSetupDialog({
     if (suggestTimer.current) clearTimeout(suggestTimer.current);
     if (value.trim().length < 3) { setSuggestions([]); setShowSuggestions(false); return; }
     suggestTimer.current = setTimeout(async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5`,
-          { headers: { "Accept-Language": "en" } }
+          { headers: { "Accept-Language": "en" }, signal: controller.signal }
         );
+        clearTimeout(timeout);
         const results: Array<{ display_name: string; lat: string; lon: string }> = await res.json();
         setSuggestions(results ?? []);
         setShowSuggestions((results ?? []).length > 0);
-      } catch { setSuggestions([]); setShowSuggestions(false); }
+      } catch {
+        clearTimeout(timeout);
+        setSuggestions([]);
+        setShowSuggestions(false);
+        toast({ title: "Poor signal", description: "Couldn't load address suggestions — move to better coverage and try again." });
+      }
     }, 350);
   }
 
