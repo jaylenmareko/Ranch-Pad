@@ -318,6 +318,10 @@ export default function AnimalDetail() {
         sireName: animal.sireName ?? null,
         sire: animal.sire ?? null,
         babies: animal.babies ?? [],
+        archivedAt: animal.archivedAt ?? null,
+        archiveReason: animal.archiveReason ?? null,
+        archiveDate: (animal as any).archiveDate ?? null,
+        archiveNotes: (animal as any).archiveNotes ?? null,
         healthEvents: (pdfHealthEvents || []).map(ev => ({
           id: ev.id,
           description: ev.description,

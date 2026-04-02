@@ -32,6 +32,11 @@ export interface PdfAnimalData {
   sireName?: string | null;
   sire?: { name: string } | null;
   babies?: { name: string; tagNumber?: string | null }[];
+  // archive
+  archivedAt?: string | null;
+  archiveReason?: string | null;
+  archiveDate?: string | null;
+  archiveNotes?: string | null;
   // records
   healthEvents: { id: number; description: string; eventDate: string; severity: string }[];
   medications: { id: number; medicationName: string; dosage?: string | null; dateGiven: string; nextDueDate?: string | null }[];
@@ -147,6 +152,46 @@ export async function generateAnimalPDF(data: PdfAnimalData): Promise<void> {
   let y = 36;
 
   // ─────────────────────────────────────────────────────────────────────────
+  // ARCHIVE STATUS BANNER (if animal is archived)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (data.archivedAt) {
+    const REASON_LABELS: Record<string, string> = {
+      deceased: "DECEASED",
+      sold: "SOLD",
+      transferred: "TRANSFERRED",
+    };
+    const reasonLabel = data.archiveReason ? (REASON_LABELS[data.archiveReason] ?? data.archiveReason.toUpperCase()) : "ARCHIVED";
+    const bannerColor: [number,number,number] = data.archiveReason === "deceased"
+      ? [180, 35, 35]
+      : data.archiveReason === "sold"
+      ? [180, 100, 10]
+      : [70, 80, 100];
+
+    doc.setFillColor(...bannerColor);
+    doc.rect(margin, y, contentW, 10, "F");
+    doc.setTextColor(...WHITE);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(reasonLabel, margin + 4, y + 6.5);
+
+    const archiveDateStr = data.archiveDate ? fmtDate(data.archiveDate) : fmtDate(data.archivedAt);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(archiveDateStr, pageW - margin - 4, y + 6.5, { align: "right" });
+
+    y += 12;
+
+    if (data.archiveNotes) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(...SUBTEXT);
+      const noteLines = doc.splitTextToSize(data.archiveNotes, contentW);
+      doc.text(noteLines, margin + 2, y + 4);
+      y += noteLines.length * 4.5 + 6;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // IDENTITY GRID  (2-column)
   // ─────────────────────────────────────────────────────────────────────────
   const identFields: [string, string][] = [
@@ -158,9 +203,6 @@ export async function generateAnimalPDF(data: PdfAnimalData): Promise<void> {
   ];
   if (data.sire || data.sireName) identFields.push(["Sire", data.sire?.name || data.sireName || "—"]);
   if (data.dam  || data.damName)  identFields.push(["Dam",  data.dam?.name  || data.damName  || "—"]);
-  if (data.babies && data.babies.length > 0) {
-    identFields.push(["Offspring", data.babies.map(b => b.name + (b.tagNumber ? ` (#${b.tagNumber})` : "")).join(", ")]);
-  }
 
   const colMid = margin + contentW / 2 + 4;
   const leftFields  = identFields.filter((_, i) => i % 2 === 0);
@@ -199,9 +241,6 @@ export async function generateAnimalPDF(data: PdfAnimalData): Promise<void> {
 
   y += gridRows * rowH + 8;
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // HEALTH EVENTS
-  // ─────────────────────────────────────────────────────────────────────────
   const checkPageBreak = (needed: number) => {
     if (y + needed > pageH - 20) {
       doc.addPage();
@@ -209,6 +248,31 @@ export async function generateAnimalPDF(data: PdfAnimalData): Promise<void> {
     }
   };
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // OFFSPRING (own section — avoids identity-grid overflow)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (data.babies && data.babies.length > 0) {
+    checkPageBreak(20);
+    y = sectionHeader(doc, `Offspring  (${data.babies.length})`, y, pageW, margin);
+    autoTable(doc, {
+      startY: y,
+      margin: { left: margin, right: margin },
+      head: [["Name", "Tag #"]],
+      body: data.babies.map(b => [b.name, b.tagNumber ? `#${b.tagNumber}` : "—"]),
+      styles: { font: "helvetica", fontSize: 8.5, textColor: DARK, lineColor: BORDER, lineWidth: 0.2 },
+      headStyles: { fillColor: GREEN, textColor: WHITE, fontStyle: "bold", fontSize: 8 },
+      alternateRowStyles: { fillColor: [248, 252, 250] },
+      columnStyles: {
+        0: { cellWidth: "auto" },
+        1: { cellWidth: 35 },
+      },
+    });
+    y = (doc as any).lastAutoTable.finalY + 4;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // HEALTH EVENTS
+  // ─────────────────────────────────────────────────────────────────────────
   checkPageBreak(20);
   y = sectionHeader(doc, "Health Events", y, pageW, margin);
 
