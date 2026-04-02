@@ -15,7 +15,7 @@ import {
   fieldNotesTable,
   famachaScoresTable,
 } from "@workspace/db";
-import { eq, and, isNull, gt, desc, sql } from "drizzle-orm";
+import { eq, and, isNull, gt, lt, desc, sql } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { signToken } from "../lib/jwt.js";
 
@@ -57,6 +57,18 @@ router.get("/team/members", requireAuth, requireOwner, async (req, res): Promise
     .orderBy(ranchUsersTable.createdAt);
 
   const now = new Date();
+
+  // Hard-delete expired unused invites so they don't accumulate
+  await db
+    .delete(teamInvitesTable)
+    .where(
+      and(
+        eq(teamInvitesTable.ranchId, ranchId),
+        isNull(teamInvitesTable.usedBy),
+        lt(teamInvitesTable.expiresAt, now),
+      )
+    );
+
   const invites = await db
     .select()
     .from(teamInvitesTable)
