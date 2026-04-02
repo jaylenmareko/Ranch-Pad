@@ -60,11 +60,9 @@ function LoginRedirect() {
 }
 
 function SignupRedirect() {
-  const { openSignup } = useAuthModal();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    openSignup();
     setLocation("/");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
