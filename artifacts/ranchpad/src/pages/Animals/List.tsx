@@ -388,14 +388,14 @@ function GuestAnimalList() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={readingFile} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Upload your herd from a csv file here">
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={readingFile} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Import herd from CSV">
                       {readingFile
                         ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Reading…</>
-                        : <><Upload className="w-4 h-4 mr-2 shrink-0" />Upload your herd from a csv file here</>
+                        : <><Upload className="w-4 h-4 mr-2 shrink-0" />Import CSV</>
                       }
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Upload your herd from a csv file here</TooltipContent>
+                  <TooltipContent>Import your herd from a CSV file</TooltipContent>
                 </Tooltip>
                 <Button onClick={handleAddAnimal} className="h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
                   <Plus className="w-4 h-4 mr-2" /> Add Animal

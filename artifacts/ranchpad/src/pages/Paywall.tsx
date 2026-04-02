@@ -53,7 +53,7 @@ export default function Paywall({ billingStatus }: PaywallProps) {
         {/* Status message */}
         {isExpired && (
           <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl px-5 py-3.5 mb-6 text-center">
-            <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Your 14-day free trial has ended.</p>
+            <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Your 2-week free trial has ended.</p>
             <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">Subscribe to continue managing your herd.</p>
           </div>
         )}
