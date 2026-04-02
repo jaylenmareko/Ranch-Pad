@@ -80,8 +80,18 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
           res.json(billingStatus);
           return;
         }
-      } catch (e) {
-        console.error("[billing/status] Stripe retrieve error:", e);
+      } catch (e: unknown) {
+        // If the subscription ID doesn't exist in this Stripe mode (e.g. a test-mode ID
+        // looked up with a live-mode key), clear the stale ID so we stop retrying.
+        const stripeCode = (e as { code?: string })?.code;
+        if (stripeCode === "resource_missing") {
+          console.warn(`[billing/status] Subscription ${ranch.stripeSubscriptionId} not found in current Stripe mode — clearing stale ID for ranch ${ranchId}`);
+          await db.update(ranchesTable)
+            .set({ stripeSubscriptionId: null })
+            .where(eq(ranchesTable.id, ranchId));
+        } else {
+          console.error("[billing/status] Stripe retrieve error:", (e as Error)?.message ?? e);
+        }
       }
     }
 
