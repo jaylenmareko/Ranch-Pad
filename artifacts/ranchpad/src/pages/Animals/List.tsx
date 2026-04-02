@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare, Archive } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
@@ -683,6 +683,19 @@ export default function AnimalList() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  // ─── Archive tab ───────────────────────────────────────────────────────────
+  const [showArchived, setShowArchived] = useState(false);
+
+  const { data: archivedAnimals, isLoading: archivedLoading } = useQuery<Animal[]>({
+    queryKey: ["/api/animals", { archived: true }],
+    queryFn: async () => {
+      const res = await fetch("/api/animals?archived=true");
+      if (!res.ok) throw new Error("Failed to load archived animals");
+      return res.json();
+    },
+    enabled: isAuthenticated && showArchived,
+  });
+
   // After signup: carry out the pending action (navigate to add form)
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -886,7 +899,7 @@ export default function AnimalList() {
     return [...assigned, ...unassigned] as Array<[number | null, { name: string | null; animals: Animal[] }]>;
   }, [filteredAnimals]);
 
-  const hasNoAnimals = isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0 && search.length === 0;
+  const hasNoAnimals = !showArchived && isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0 && search.length === 0;
 
   const isOwnerOrHand = role === "owner" || role === "ranch_hand";
 
@@ -1067,6 +1080,30 @@ export default function AnimalList() {
         </TooltipProvider>
       </div>
 
+      {/* Active / Archived tab bar */}
+      {!selectMode && (
+        <div className="flex border-b border-border/60 pb-px gap-6">
+          <button
+            onClick={() => setShowArchived(false)}
+            className={`flex items-center gap-2 py-2.5 px-1 text-sm font-bold transition-all border-b-2 ${
+              !showArchived ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <PawPrint className="w-4 h-4" />
+            Active Herd
+          </button>
+          <button
+            onClick={() => setShowArchived(true)}
+            className={`flex items-center gap-2 py-2.5 px-1 text-sm font-bold transition-all border-b-2 ${
+              showArchived ? "border-amber-500 text-amber-400" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Archive className="w-4 h-4" />
+            Archived
+          </button>
+        </div>
+      )}
+
       {/* Import error */}
       {importError && (
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
@@ -1126,7 +1163,7 @@ export default function AnimalList() {
       )}
 
       {/* Filter bar */}
-      {!selectMode && (
+      {!selectMode && !showArchived && (
         <div className="bg-card border border-border p-3 rounded-2xl shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
@@ -1167,8 +1204,50 @@ export default function AnimalList() {
         </div>
       )}
 
+      {/* Archived Animals Content */}
+      {showArchived && (
+        archivedLoading ? (
+          <div className="space-y-4">
+            {[1, 2].map(i => (
+              <div key={i} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="h-14 bg-muted/40 animate-pulse" />
+                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {[1, 2, 3].map(j => <div key={j} className="h-28 bg-muted rounded-xl animate-pulse" />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : !archivedAnimals || archivedAnimals.length === 0 ? (
+          <div className="text-center py-20 bg-card rounded-3xl border border-border border-dashed">
+            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <Archive className="w-8 h-8 text-muted-foreground/40" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">No archived animals</h3>
+            <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
+              Archive an animal from its detail page when it's sold, deceased, or transferred. Records are preserved.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(
+              archivedAnimals.reduce<Record<string, Animal[]>>((acc, a) => {
+                (acc[a.species] = acc[a.species] || []).push(a);
+                return acc;
+              }, {})
+            ).sort(([a], [b]) => a.localeCompare(b)).map(([species, speciesAnimals]) => (
+              <SpeciesFolder
+                key={`archived-${species}`}
+                species={species}
+                animals={speciesAnimals}
+                initialOpen
+              />
+            ))}
+          </div>
+        )
+      )}
+
       {/* Content */}
-      {isLoading ? (
+      {!showArchived && (isLoading ? (
         <div className="space-y-4">
           {[1, 2].map(i => (
             <div key={i} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
@@ -1227,7 +1306,7 @@ export default function AnimalList() {
             />
           ))}
         </div>
-      )}
+      ))}
 
       </>
       )}

@@ -19,6 +19,10 @@ export const animalsTable = pgTable("animals", {
   expectedDueDate: text("expected_due_date"),
   locationId: integer("location_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  archivedAt: timestamp("archived_at", { withTimezone: true }),
+  archiveReason: text("archive_reason"),
+  archiveDate: text("archive_date"),
+  archiveNotes: text("archive_notes"),
 });
 
 export const insertAnimalSchema = createInsertSchema(animalsTable).omit({ id: true, createdAt: true });

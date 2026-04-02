@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown } from "lucide-react";
+import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw } from "lucide-react";
 import { 
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
@@ -42,6 +42,23 @@ type SavedPhoto = {
   mimeType: string;
   fileSize: number;
   uploadedAt: string;
+};
+
+type ArchiveReason = "sold" | "deceased" | "transferred";
+
+type AnimalDetailWithArchive = AnimalDetail & {
+  archivedAt?: string | null;
+  archiveReason?: ArchiveReason | null;
+  archiveDate?: string | null;
+  archiveNotes?: string | null;
+  locationId?: number | null;
+  locationName?: string | null;
+};
+
+const ARCHIVE_REASON_LABELS: Record<ArchiveReason, string> = {
+  sold: "Sold",
+  deceased: "Deceased",
+  transferred: "Transferred",
 };
 
 const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/heic", "image/heif"];
@@ -248,6 +265,12 @@ export default function AnimalDetail() {
   const animalId = parseInt(params.id || "0", 10);
   const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha">("health");
   const [isExporting, setIsExporting] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [archiveReason, setArchiveReason] = useState<ArchiveReason>("sold");
+  const [archiveDate, setArchiveDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [archiveNotes, setArchiveNotes] = useState("");
+  const [archiving, setArchiving] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { role } = useAuth();
@@ -353,6 +376,68 @@ export default function AnimalDetail() {
     }
   };
 
+  const requestArchiveAnimal = async () => {
+    if (!animal) return;
+    const res = await fetch("/api/team/delete-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resourceType: "animal_archive", resourceId: animalId, resourceName: animal.name }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast({ title: "Archive request sent", description: "The owner will review your request." });
+    } else if (res.status === 409) {
+      toast({ title: "Request already pending", description: "The owner has been notified." });
+    } else {
+      toast({ title: "Error", description: data.message, variant: "destructive" });
+    }
+  };
+
+  const submitArchive = async () => {
+    if (!animal) return;
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/animals/${animalId}/archive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: archiveReason, date: archiveDate, notes: archiveNotes || null }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        toast({ title: "Error", description: data.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: `${animal.name} archived`, description: `Marked as ${ARCHIVE_REASON_LABELS[archiveReason]}.` });
+      setArchiveDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+    } catch {
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const restoreAnimal = async () => {
+    if (!animal) return;
+    setRestoring(true);
+    try {
+      const res = await fetch(`/api/animals/${animalId}/restore`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        toast({ title: "Error", description: data.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: `${animal.name} restored`, description: "Animal is back in the active herd." });
+      queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+    } catch {
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setRestoring(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="p-12 text-center text-muted-foreground animate-pulse font-bold">Loading profile...</div>;
   }
@@ -379,28 +464,67 @@ export default function AnimalDetail() {
             <FileDown className="w-4 h-4 mr-2" />
             Export PDF
           </Button>
-          {role !== "viewer" && (
-            <Link href={`/animals/${animal.id}/edit`}>
-              <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
-            </Link>
-          )}
-          {role === "owner" && (
-            <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
-              if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
-                deleteMutation.mutate({ animalId });
-              }
-            }}><Trash2 className="w-4 h-4" /></Button>
-          )}
-          {role === "ranch_hand" && (
-            <Button variant="outline" size="sm" className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10" onClick={requestDeleteAnimal}>
-              <Trash2 className="w-4 h-4 mr-1.5" /> Request Deletion
-            </Button>
-          )}
+          {(() => {
+            const a = animal as AnimalDetailWithArchive;
+            const isArchived = !!a.archivedAt;
+            return (
+              <>
+                {!isArchived && role !== "viewer" && (
+                  <Link href={`/animals/${animal.id}/edit`}>
+                    <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
+                  </Link>
+                )}
+                {!isArchived && role === "owner" && (
+                  <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={() => setArchiveDialogOpen(true)}>
+                    <Archive className="w-4 h-4 mr-1.5" /> Archive
+                  </Button>
+                )}
+                {!isArchived && role === "ranch_hand" && (
+                  <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={requestArchiveAnimal}>
+                    <Archive className="w-4 h-4 mr-1.5" /> Request Archive
+                  </Button>
+                )}
+                {isArchived && role === "owner" && (
+                  <Button variant="outline" size="sm" className="min-h-[44px] border-primary/40 text-primary hover:bg-primary/10" onClick={restoreAnimal} disabled={restoring}>
+                    {restoring ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
+                    Restore
+                  </Button>
+                )}
+                {!isArchived && role === "owner" && (
+                  <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
+                    if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
+                      deleteMutation.mutate({ animalId });
+                    }
+                  }}><Trash2 className="w-4 h-4" /></Button>
+                )}
+                {!isArchived && role === "ranch_hand" && (
+                  <Button variant="outline" size="sm" className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10" onClick={requestDeleteAnimal}>
+                    <Trash2 className="w-4 h-4 mr-1.5" /> Request Deletion
+                  </Button>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
 
       {/* Header Card */}
       <Card className="border-none shadow-xl shadow-black/5 bg-gradient-to-br from-card to-card/50 overflow-hidden relative">
+        {(() => {
+          const a = animal as AnimalDetailWithArchive;
+          if (!a.archivedAt) return null;
+          const label = a.archiveReason ? ARCHIVE_REASON_LABELS[a.archiveReason] : "Archived";
+          const dateStr = a.archiveDate ?? new Date(a.archivedAt).toLocaleDateString();
+          return (
+            <div className="bg-amber-900/30 border-b border-amber-600/30 px-6 py-3 flex items-center gap-3">
+              <Archive className="w-4 h-4 text-amber-400 shrink-0" />
+              <div className="flex-1 text-sm text-amber-300 font-semibold">
+                Archived — {label} on {dateStr}
+                {a.archiveNotes && <span className="ml-2 font-normal opacity-75">· {a.archiveNotes}</span>}
+              </div>
+            </div>
+          );
+        })()}
         <CardContent className="p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center relative z-10">
           <div className="w-24 h-24 rounded-3xl bg-secondary flex items-center justify-center border-4 border-background shadow-md shrink-0">
             <span className="text-4xl font-display font-black text-secondary-foreground opacity-50">{animal.species[0]}</span>
@@ -483,6 +607,53 @@ export default function AnimalDetail() {
         {activeTab === "meds" && <MedsTab animalId={animalId} />}
         {activeTab === "famacha" && ["Sheep", "Goat"].includes(animal.species) && <FamachaTab animalId={animalId} />}
       </div>
+
+      {/* Archive Dialog */}
+      <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen} title="Archive Animal">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Archiving <strong>{animal.name}</strong> removes them from your active herd. All health records and history are preserved.
+          </p>
+          <div className="space-y-2">
+            <Label>Reason</Label>
+            <select
+              value={archiveReason}
+              onChange={e => setArchiveReason(e.target.value as ArchiveReason)}
+              className="flex h-12 w-full rounded-xl border-2 border-border bg-background px-4 py-2 font-medium"
+            >
+              <option value="sold">Sold</option>
+              <option value="deceased">Deceased</option>
+              <option value="transferred">Transferred</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Input
+              type="date"
+              value={archiveDate}
+              onChange={e => setArchiveDate(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Notes (optional)</Label>
+            <Textarea
+              placeholder="e.g. Sold to Smith Ranch for $450"
+              value={archiveNotes}
+              onChange={e => setArchiveNotes(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setArchiveDialogOpen(false)}>Cancel</Button>
+            <Button
+              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white border-0"
+              onClick={submitArchive}
+              isLoading={archiving}
+            >
+              <Archive className="w-4 h-4 mr-1.5" /> Archive Animal
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

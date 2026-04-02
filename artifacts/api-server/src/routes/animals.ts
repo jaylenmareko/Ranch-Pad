@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import multer from "multer";
 import { parse as parseCsv } from "csv-parse/sync";
 import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable, pastureLocationsTable } from "@workspace/db";
-import { eq, and, or, inArray, getTableColumns } from "drizzle-orm";
+import { eq, and, or, inArray, isNull, isNotNull, getTableColumns } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
@@ -51,7 +51,8 @@ async function getLatestHealthSeverity(animalId: number, ranchId: number): Promi
 
 router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
-  const { species, sex, breed, search } = req.query as Record<string, string>;
+  const { species, sex, breed, search, archived } = req.query as Record<string, string>;
+  const showArchived = archived === "true";
 
   let animals = await db
     .select({
@@ -60,7 +61,10 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
     })
     .from(animalsTable)
     .leftJoin(pastureLocationsTable, eq(animalsTable.locationId, pastureLocationsTable.id))
-    .where(eq(animalsTable.ranchId, ranchId))
+    .where(and(
+      eq(animalsTable.ranchId, ranchId),
+      showArchived ? isNotNull(animalsTable.archivedAt) : isNull(animalsTable.archivedAt),
+    ))
     .orderBy(animalsTable.createdAt);
 
   // Filter in-memory for flexibility
@@ -277,6 +281,69 @@ router.delete("/animals/:animalId", requireAuth, requireOwner, async (req, res):
   }
 
   res.sendStatus(204);
+});
+
+// ─── Archive / Restore ────────────────────────────────────────────────────────
+
+const archiveAnimalSchema = z.object({
+  reason: z.enum(["sold", "deceased", "transferred"]),
+  date: z.string().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+router.post("/animals/:animalId/archive", requireAuth, requireOwner, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
+  const animalId = parseInt(raw, 10);
+
+  const parsed = archiveAnimalSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const [updated] = await db
+    .update(animalsTable)
+    .set({
+      archivedAt: new Date(),
+      archiveReason: parsed.data.reason,
+      archiveDate: parsed.data.date ?? today,
+      archiveNotes: parsed.data.notes ?? null,
+    })
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
+router.post("/animals/:animalId/restore", requireAuth, requireOwner, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
+  const animalId = parseInt(raw, 10);
+
+  const [updated] = await db
+    .update(animalsTable)
+    .set({
+      archivedAt: null,
+      archiveReason: null,
+      archiveDate: null,
+      archiveNotes: null,
+    })
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  res.json(updated);
 });
 
 // ─── CSV Import ───────────────────────────────────────────────────────────────
