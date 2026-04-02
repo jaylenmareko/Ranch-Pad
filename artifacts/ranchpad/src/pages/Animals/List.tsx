@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare, Archive } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare, Archive, FileDown } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
+import { format } from "date-fns";
+import { useRanch } from "@/contexts/ranch-context";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { formatAge } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -676,6 +678,8 @@ export default function AnimalList() {
   const queryClient = useQueryClient();
   const { isAuthenticated, role } = useAuth();
   const { toast } = useToast();
+  const { activeRanch } = useRanch();
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   // ─── Bulk-delete state ─────────────────────────────────────────────────────
   const [selectMode, setSelectMode] = useState(false);
@@ -736,6 +740,221 @@ export default function AnimalList() {
       setImporting(false);
     }
   }
+
+  const generateHerdReport = async () => {
+    if (!animals || (animals as Animal[]).length === 0) return;
+    setIsExportingPDF(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+
+      const healthEventsByAnimalId: Record<number, { eventDate: string; description: string; severity: string }[]> = {};
+      const [upcomingData, alertsData] = await Promise.all([
+        fetch("/api/upcoming").then(r => r.ok ? r.json() : { medications: [] }).catch(() => ({ medications: [] })),
+        fetch("/api/alerts").then(r => r.ok ? r.json() : []).catch(() => []),
+        ...((animals as Animal[]).map(async (animal) => {
+          try {
+            const res = await fetch(`/api/animals/${animal.id}/health-events`);
+            if (res.ok) healthEventsByAnimalId[animal.id] = await res.json();
+          } catch {}
+        })),
+      ]);
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const ML = 20; const MR = 20;
+      const contentWidth = pageWidth - ML - MR;
+      let y = 0;
+
+      const today = new Date();
+      const in7DaysStr = new Date(today.getTime() + 7 * 86400000).toISOString().split("T")[0];
+      const ranchName = activeRanch?.name ?? "My Ranch";
+
+      const checkPage = (needed = 12) => {
+        if (y + needed > pageHeight - 18) { doc.addPage(); y = 18; }
+      };
+
+      doc.setFillColor(22, 46, 42);
+      doc.rect(0, 0, pageWidth, 44, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
+      doc.text("HERD REPORT", pageWidth / 2, 17, { align: "center" });
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(ranchName, pageWidth / 2, 26, { align: "center" });
+      doc.setFontSize(8.5);
+      doc.setTextColor(160, 210, 180);
+      doc.text(`Generated ${format(today, "MMMM d, yyyy")}`, pageWidth / 2, 33, { align: "center" });
+      y = 56;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(22, 46, 42);
+      doc.text("HERD SUMMARY", ML, y);
+      y += 2;
+      doc.setDrawColor(66, 169, 110);
+      doc.setLineWidth(0.5);
+      doc.line(ML, y, pageWidth - MR, y);
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Total Animals: ${(animals as Animal[]).length}`, ML, y);
+      y += 5.5;
+
+      const speciesCounts = (animals as Animal[]).reduce((acc, a) => {
+        acc[a.species] = (acc[a.species] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const speciesBreakdown = Object.entries(speciesCounts)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([s, c]) => `${s}: ${c}`)
+        .join("   ·   ");
+      const breakdownLines = doc.splitTextToSize(`Species: ${speciesBreakdown}`, contentWidth);
+      doc.text(breakdownLines, ML, y);
+      y += breakdownLines.length * 5 + 2;
+
+      type AlertRow = { isDismissed: boolean; animalId?: number | null; summary?: string; message: string };
+      const activeAlerts = (alertsData as AlertRow[]).filter(a => !a.isDismissed);
+      if (activeAlerts.length > 0) {
+        doc.setTextColor(180, 60, 40);
+        doc.text(`Active Alerts: ${activeAlerts.length}`, ML, y);
+        doc.setTextColor(40, 40, 40);
+        y += 5.5;
+      }
+      y += 8;
+
+      type MedRow = { animalId: number; medicationName: string; nextDueDate: string; isOverdue: boolean };
+      const medsByAnimal: Record<number, MedRow[]> = {};
+      for (const med of ((upcomingData as { medications?: MedRow[] }).medications ?? [])) {
+        if (!medsByAnimal[med.animalId]) medsByAnimal[med.animalId] = [];
+        medsByAnimal[med.animalId].push(med);
+      }
+      const alertsByAnimal: Record<number, AlertRow[]> = {};
+      for (const alert of activeAlerts) {
+        if (alert.animalId) {
+          if (!alertsByAnimal[alert.animalId]) alertsByAnimal[alert.animalId] = [];
+          alertsByAnimal[alert.animalId].push(alert);
+        }
+      }
+
+      const bySpecies = (animals as Animal[]).reduce<Record<string, Animal[]>>((acc, a) => {
+        (acc[a.species] = acc[a.species] || []).push(a);
+        return acc;
+      }, {});
+
+      for (const [species, group] of Object.entries(bySpecies).sort(([a], [b]) => a.localeCompare(b))) {
+        checkPage(18);
+        doc.setFillColor(22, 46, 42);
+        doc.rect(ML - 2, y - 5.5, contentWidth + 4, 9, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`${species.toUpperCase()}  (${group.length})`, ML + 1, y);
+        y += 8;
+
+        for (const animal of group) {
+          checkPage(14);
+          const tag = animal.tagNumber ? `  #${animal.tagNumber}` : "";
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9.5);
+          doc.setTextColor(22, 46, 42);
+          doc.text(`${animal.name}${tag}`, ML + 3, y);
+          y += 4.5;
+
+          const age = formatAge(animal.dateOfBirth);
+          const loc = (animal as Animal & { locationName?: string | null }).locationName
+            ? `  ·  ${(animal as Animal & { locationName?: string | null }).locationName}`
+            : "";
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(80, 80, 80);
+          doc.text(`${animal.breed || "Unknown Breed"}  ·  ${animal.sex}  ·  ${age}${loc}`, ML + 3, y);
+          y += 4.5;
+
+          const events = healthEventsByAnimalId[animal.id] ?? [];
+          if (events.length > 0) {
+            checkPage(6);
+            const evt = events[0];
+            const sevColors: Record<string, [number, number, number]> = {
+              high: [180, 60, 40], medium: [160, 110, 30], low: [50, 120, 70],
+            };
+            const [r, g, b] = sevColors[evt.severity] ?? [80, 80, 80];
+            doc.setTextColor(r, g, b);
+            const evtLines = doc.splitTextToSize(
+              `Latest health (${evt.eventDate}): ${evt.description} [${evt.severity}]`,
+              contentWidth - 6
+            );
+            doc.text(evtLines, ML + 6, y);
+            y += evtLines.length * 4;
+          }
+
+          const animalMeds = medsByAnimal[animal.id] ?? [];
+          const overdue = animalMeds.filter(m => m.isOverdue);
+          if (overdue.length > 0) {
+            checkPage(5);
+            doc.setTextColor(180, 60, 40);
+            const txt = doc.splitTextToSize(
+              `Overdue: ${overdue.map(m => `${m.medicationName} (was due ${m.nextDueDate})`).join(", ")}`,
+              contentWidth - 6
+            );
+            doc.text(txt, ML + 6, y);
+            y += txt.length * 4;
+          }
+
+          const soon = animalMeds.filter(m => !m.isOverdue && m.nextDueDate <= in7DaysStr);
+          if (soon.length > 0) {
+            checkPage(5);
+            doc.setTextColor(130, 100, 20);
+            const txt = doc.splitTextToSize(
+              `Due within 7 days: ${soon.map(m => `${m.medicationName} (${m.nextDueDate})`).join(", ")}`,
+              contentWidth - 6
+            );
+            doc.text(txt, ML + 6, y);
+            y += txt.length * 4;
+          }
+
+          const animalAlerts = alertsByAnimal[animal.id] ?? [];
+          if (animalAlerts.length > 0) {
+            checkPage(5);
+            doc.setTextColor(160, 90, 20);
+            for (const alert of animalAlerts) {
+              const txt = doc.splitTextToSize(`Alert: ${alert.summary ?? alert.message}`, contentWidth - 6);
+              doc.text(txt, ML + 6, y);
+              y += txt.length * 4;
+            }
+          }
+
+          doc.setTextColor(80, 80, 80);
+          doc.setDrawColor(210, 220, 215);
+          doc.setLineWidth(0.25);
+          doc.line(ML + 3, y + 1.5, pageWidth - MR, y + 1.5);
+          y += 5.5;
+        }
+        y += 3;
+      }
+
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5);
+        doc.setTextColor(160, 160, 160);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          `${ranchName}  ·  RanchPad Herd Report  ·  ${format(today, "MMMM d, yyyy")}`,
+          pageWidth / 2, pageHeight - 8, { align: "center" }
+        );
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth - MR, pageHeight - 8, { align: "right" });
+      }
+
+      doc.save(`${ranchName.replace(/\s+/g, "_")}_Herd_Report_${format(today, "yyyy-MM-dd")}.pdf`);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1068,6 +1287,21 @@ export default function AnimalList() {
                     <TooltipContent>Select multiple animals to delete</TooltipContent>
                   </Tooltip>
                 )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={generateHerdReport}
+                      disabled={isExportingPDF || !animals || (animals as Animal[]).length === 0}
+                      className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 disabled:opacity-60"
+                    >
+                      {isExportingPDF
+                        ? <><Loader2 className="w-4 h-4 mr-2 shrink-0 animate-spin" />Generating…</>
+                        : <><FileDown className="w-4 h-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">Export PDF</span></>
+                      }
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Export Herd Report as PDF</TooltipContent>
+                </Tooltip>
                 {role !== "viewer" && (
                   <Link href="/animals/new" className="inline-flex items-center justify-center h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
                     <Plus className="w-4 h-4 mr-2" />

@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, FileDown } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRanch } from "@/contexts/ranch-context";
 import { getGuestAnimals, importCsvToGuestStore, clearGuestAnimals, type GuestAnimal } from "@/lib/guest-store";
-import { formatDate, formatAge } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
@@ -384,8 +384,6 @@ function AuthDashboard() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
-  const [isExportingPDF, setIsExportingPDF] = useState(false);
-
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useListAlerts();
   const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
@@ -414,234 +412,6 @@ function AuthDashboard() {
       return acc;
     }, {} as Record<string, number>);
   }, [animals]);
-
-  const generateHerdReport = async () => {
-    if (!animals || (animals as Animal[]).length === 0) return;
-    setIsExportingPDF(true);
-    try {
-      const { jsPDF } = await import("jspdf");
-
-      // Fetch health events for all animals in parallel
-      const healthEventsByAnimalId: Record<number, { eventDate: string; description: string; severity: string }[]> = {};
-      await Promise.all(
-        (animals as Animal[]).map(async (animal) => {
-          try {
-            const res = await fetch(`/api/animals/${animal.id}/health-events`);
-            if (res.ok) healthEventsByAnimalId[animal.id] = await res.json();
-          } catch {}
-        })
-      );
-
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const ML = 20; const MR = 20;
-      const contentWidth = pageWidth - ML - MR;
-      let y = 0;
-
-      const today = new Date();
-      const in7DaysStr = new Date(today.getTime() + 7 * 86400000).toISOString().split("T")[0];
-      const ranchName = activeRanch?.name ?? "My Ranch";
-
-      const checkPage = (needed = 12) => {
-        if (y + needed > pageHeight - 18) { doc.addPage(); y = 18; }
-      };
-
-      // ── Cover header ──────────────────────────────────────────────────────
-      doc.setFillColor(22, 46, 42);
-      doc.rect(0, 0, pageWidth, 44, "F");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
-      doc.setTextColor(255, 255, 255);
-      doc.text("HERD REPORT", pageWidth / 2, 17, { align: "center" });
-
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-      doc.text(ranchName, pageWidth / 2, 26, { align: "center" });
-
-      doc.setFontSize(8.5);
-      doc.setTextColor(160, 210, 180);
-      doc.text(`Generated ${format(today, "MMMM d, yyyy")}`, pageWidth / 2, 33, { align: "center" });
-
-      y = 56;
-
-      // ── Herd Summary ──────────────────────────────────────────────────────
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(22, 46, 42);
-      doc.text("HERD SUMMARY", ML, y);
-      y += 2;
-      doc.setDrawColor(66, 169, 110);
-      doc.setLineWidth(0.5);
-      doc.line(ML, y, pageWidth - MR, y);
-      y += 6;
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.5);
-      doc.setTextColor(40, 40, 40);
-      doc.text(`Total Animals: ${(animals as Animal[]).length}`, ML, y);
-      y += 5.5;
-
-      const speciesBreakdown = Object.entries(speciesCounts)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([s, c]) => `${s}: ${c}`)
-        .join("   ·   ");
-      const breakdownLines = doc.splitTextToSize(`Species: ${speciesBreakdown}`, contentWidth);
-      doc.text(breakdownLines, ML, y);
-      y += breakdownLines.length * 5 + 2;
-
-      const activeAlerts = (alerts || []).filter(a => !a.isDismissed);
-      if (activeAlerts.length > 0) {
-        doc.setTextColor(180, 60, 40);
-        doc.text(`Active Alerts: ${activeAlerts.length}`, ML, y);
-        doc.setTextColor(40, 40, 40);
-        y += 5.5;
-      }
-      y += 8;
-
-      // ── Build lookup maps ────────────────────────────────────────────────
-      const medsByAnimal: Record<number, { medicationName: string; nextDueDate: string; isOverdue: boolean }[]> = {};
-      for (const med of upcoming?.medications ?? []) {
-        if (!medsByAnimal[med.animalId]) medsByAnimal[med.animalId] = [];
-        medsByAnimal[med.animalId].push(med);
-      }
-      const alertsByAnimal: Record<number, typeof activeAlerts> = {};
-      for (const alert of activeAlerts) {
-        if (alert.animalId) {
-          if (!alertsByAnimal[alert.animalId]) alertsByAnimal[alert.animalId] = [];
-          alertsByAnimal[alert.animalId].push(alert);
-        }
-      }
-
-      // ── Animals by species ───────────────────────────────────────────────
-      const bySpecies = (animals as Animal[]).reduce<Record<string, Animal[]>>((acc, a) => {
-        (acc[a.species] = acc[a.species] || []).push(a);
-        return acc;
-      }, {});
-
-      for (const [species, group] of Object.entries(bySpecies).sort(([a], [b]) => a.localeCompare(b))) {
-        checkPage(18);
-
-        // Species header bar
-        doc.setFillColor(22, 46, 42);
-        doc.rect(ML - 2, y - 5.5, contentWidth + 4, 9, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9.5);
-        doc.setTextColor(255, 255, 255);
-        doc.text(`${species.toUpperCase()}  (${group.length})`, ML + 1, y);
-        y += 8;
-
-        for (const animal of group) {
-          checkPage(14);
-
-          // Animal name + tag
-          const tag = animal.tagNumber ? `  #${animal.tagNumber}` : "";
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.5);
-          doc.setTextColor(22, 46, 42);
-          doc.text(`${animal.name}${tag}`, ML + 3, y);
-          y += 4.5;
-
-          // Detail line
-          const age = formatAge(animal.dateOfBirth);
-          const loc = (animal as Animal & { locationName?: string | null }).locationName
-            ? `  ·  ${(animal as Animal & { locationName?: string | null }).locationName}`
-            : "";
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
-          doc.setTextColor(80, 80, 80);
-          doc.text(`${animal.breed || "Unknown Breed"}  ·  ${animal.sex}  ·  ${age}${loc}`, ML + 3, y);
-          y += 4.5;
-
-          // Most recent health event
-          const events = healthEventsByAnimalId[animal.id] ?? [];
-          if (events.length > 0) {
-            checkPage(6);
-            const evt = events[0];
-            const sevColors: Record<string, [number, number, number]> = {
-              high: [180, 60, 40], medium: [160, 110, 30], low: [50, 120, 70],
-            };
-            const [r, g, b] = sevColors[evt.severity] ?? [80, 80, 80];
-            doc.setTextColor(r, g, b);
-            const evtLines = doc.splitTextToSize(
-              `Latest health (${evt.eventDate}): ${evt.description} [${evt.severity}]`,
-              contentWidth - 6
-            );
-            doc.text(evtLines, ML + 6, y);
-            y += evtLines.length * 4;
-          }
-
-          // Overdue meds
-          const animalMeds = medsByAnimal[animal.id] ?? [];
-          const overdue = animalMeds.filter(m => m.isOverdue);
-          if (overdue.length > 0) {
-            checkPage(5);
-            doc.setTextColor(180, 60, 40);
-            const txt = doc.splitTextToSize(
-              `Overdue: ${overdue.map(m => `${m.medicationName} (was due ${m.nextDueDate})`).join(", ")}`,
-              contentWidth - 6
-            );
-            doc.text(txt, ML + 6, y);
-            y += txt.length * 4;
-          }
-
-          // Upcoming meds (next 7 days)
-          const soon = animalMeds.filter(m => !m.isOverdue && m.nextDueDate <= in7DaysStr);
-          if (soon.length > 0) {
-            checkPage(5);
-            doc.setTextColor(130, 100, 20);
-            const txt = doc.splitTextToSize(
-              `Due within 7 days: ${soon.map(m => `${m.medicationName} (${m.nextDueDate})`).join(", ")}`,
-              contentWidth - 6
-            );
-            doc.text(txt, ML + 6, y);
-            y += txt.length * 4;
-          }
-
-          // Active alerts for this animal
-          const animalAlerts = alertsByAnimal[animal.id] ?? [];
-          if (animalAlerts.length > 0) {
-            checkPage(5);
-            doc.setTextColor(160, 90, 20);
-            for (const alert of animalAlerts) {
-              const txt = doc.splitTextToSize(`Alert: ${alert.summary ?? alert.message}`, contentWidth - 6);
-              doc.text(txt, ML + 6, y);
-              y += txt.length * 4;
-            }
-          }
-
-          doc.setTextColor(80, 80, 80);
-          // Divider between animals
-          doc.setDrawColor(210, 220, 215);
-          doc.setLineWidth(0.25);
-          doc.line(ML + 3, y + 1.5, pageWidth - MR, y + 1.5);
-          y += 5.5;
-        }
-        y += 3;
-      }
-
-      // ── Footer on every page ─────────────────────────────────────────────
-      const pageCount = doc.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(7.5);
-        doc.setTextColor(160, 160, 160);
-        doc.setFont("helvetica", "normal");
-        doc.text(
-          `${ranchName}  ·  RanchPad Herd Report  ·  ${format(today, "MMMM d, yyyy")}`,
-          pageWidth / 2, pageHeight - 8, { align: "center" }
-        );
-        doc.text(`Page ${i} of ${pageCount}`, pageWidth - MR, pageHeight - 8, { align: "right" });
-      }
-
-      doc.save(`${ranchName.replace(/\s+/g, "_")}_Herd_Report_${format(today, "yyyy-MM-dd")}.pdf`);
-    } catch (err) {
-      console.error("PDF generation failed:", err);
-    } finally {
-      setIsExportingPDF(false);
-    }
-  };
 
   const avgAgeMonths = React.useMemo(() => {
     if (!animals || animals.length === 0) return null;
@@ -755,16 +525,6 @@ function AuthDashboard() {
           <p className="text-muted-foreground text-sm font-medium mt-0.5">{format(new Date(), "EEEE, MMMM do, yyyy")}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <button
-            onClick={generateHerdReport}
-            disabled={isExportingPDF || !animals || (animals as Animal[]).length === 0}
-            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap shrink-0 disabled:opacity-60 shadow-md shadow-primary/20"
-          >
-            {isExportingPDF
-              ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Generating…</>
-              : <><FileDown className="w-4 h-4 shrink-0" />Export Herd Report</>
-            }
-          </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
