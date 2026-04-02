@@ -372,7 +372,7 @@ export async function generateAnimalPDF(data: PdfAnimalData): Promise<void> {
   // ─────────────────────────────────────────────────────────────────────────
   if (data.fieldNotes.length > 0) {
     checkPageBreak(20);
-    y = sectionHeader(doc, "Field Notes", y, pageW, margin);
+    y = sectionHeader(doc, "Ranch Journal", y, pageW, margin);
 
     for (const note of [...data.fieldNotes].sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

@@ -80,7 +80,7 @@ function FieldNotesSection() {
     <Card className="flex flex-col shadow-sm">
       <CardHeader className="border-b border-border pb-4">
         <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-          <BookOpen className="w-5 h-5 text-primary" /> Field Notes
+          <BookOpen className="w-5 h-5 text-primary" /> Ranch Journal
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 flex flex-col">
@@ -362,7 +362,7 @@ function GuestDashboard() {
       <Card className="flex flex-col shadow-sm">
         <CardHeader className="border-b border-border pb-4">
           <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-            <CloudLightning className="w-5 h-5 text-primary" /> Herd Health Forecast
+            <CloudLightning className="w-5 h-5 text-primary" /> Disease Risk This Week
           </CardTitle>
         </CardHeader>
         <CardContent className="py-8 flex flex-col items-center text-center gap-3">
@@ -785,7 +785,7 @@ function AuthDashboard() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-                <CloudLightning className="w-5 h-5 text-primary" /> Herd Health Forecast
+                <CloudLightning className="w-5 h-5 text-primary" /> Disease Risk This Week
               </CardTitle>
               <Badge variant="outline" className="font-bold">{weatherAlerts.length}</Badge>
             </div>
@@ -795,7 +795,7 @@ function AuthDashboard() {
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50 shrink-0"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${generateMutation.isPending ? "animate-spin" : ""}`} />
-              Run Analysis
+              Refresh Alerts
             </button>
           </div>
         </CardHeader>
