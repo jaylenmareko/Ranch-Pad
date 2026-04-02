@@ -130,7 +130,10 @@ function SimpleDialog({ open, onOpenChange, title, hideTitle, hideClose, descrip
       >
         <DialogHeader>
           <DialogTitle className={hideTitle ? "sr-only" : undefined}>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          {description
+            ? <DialogDescription>{description}</DialogDescription>
+            : <DialogDescription className="sr-only">{title}</DialogDescription>
+          }
         </DialogHeader>
         <div className="p-6 overflow-y-auto flex-1">
           {children}
