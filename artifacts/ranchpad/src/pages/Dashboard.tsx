@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, BookOpen } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -21,6 +21,121 @@ type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: s
 const INVARIANT_PLURAL = new Set(["Cattle", "Sheep", "Bison", "Deer"]);
 function pluralizeSpecies(species: string) {
   return INVARIANT_PLURAL.has(species) ? species : `${species}s`;
+}
+
+// ─── Guest Dashboard ──────────────────────────────────────────────────────────
+
+// ─── Field Notes Section ─────────────────────────────────────────────────────
+
+type RanchNote = { id: number; noteDate: string; noteText: string; createdAt: string };
+
+function FieldNotesSection() {
+  const today = format(new Date(), "yyyy-MM-dd");
+  const [noteDate, setNoteDate] = useState(today);
+  const [noteText, setNoteText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [notes, setNotes] = useState<RanchNote[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotes = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/ranch-notes");
+      if (res.ok) setNotes(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchNotes(); }, [fetchNotes]);
+
+  const handleSave = async () => {
+    if (!noteText.trim() || !noteDate) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/ranch-notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteDate, noteText: noteText.trim() }),
+      });
+      if (res.ok) {
+        setNoteText("");
+        setNoteDate(today);
+        await fetchNotes();
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const formatNoteDate = (dateStr: string) => {
+    try {
+      const [y, m, d] = dateStr.split("-").map(Number);
+      return format(new Date(y, m - 1, d), "MMM d");
+    } catch {
+      return dateStr;
+    }
+  };
+
+  return (
+    <Card className="flex flex-col shadow-sm">
+      <CardHeader className="border-b border-border pb-4">
+        <CardTitle className="text-xl flex items-center gap-2 text-foreground">
+          <BookOpen className="w-5 h-5 text-primary" /> Field Notes
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0 flex flex-col">
+        {/* Input area */}
+        <div className="p-5 border-b border-border/60 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="date"
+              value={noteDate}
+              onChange={e => setNoteDate(e.target.value)}
+              className="h-9 px-3 rounded-lg border border-border bg-muted text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
+            />
+          </div>
+          <textarea
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave(); }}
+            placeholder="What happened on the ranch today?"
+            rows={3}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={saving || !noteText.trim() || !noteDate}
+              className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
+            </button>
+          </div>
+        </div>
+        {/* Notes list */}
+        {loading ? (
+          <div className="p-5 space-y-3">{[1, 2].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
+        ) : notes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+              <BookOpen className="w-7 h-7 text-primary/60" />
+            </div>
+            <p className="text-muted-foreground text-sm font-medium">No field notes yet.</p>
+            <p className="text-muted-foreground text-xs mt-1">Start logging daily observations above.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/40">
+            {notes.map(note => (
+              <div key={note.id} className="px-5 py-4">
+                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{formatNoteDate(note.noteDate)}</p>
+                <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 // ─── Guest Dashboard ──────────────────────────────────────────────────────────
@@ -744,6 +859,11 @@ function AuthDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Field Notes — owners and ranch hands only */}
+      {(role === "owner" || role === "ranch_hand") && (
+        <FieldNotesSection />
+      )}
 
       {/* Upcoming — full width */}
       <Card className="flex flex-col shadow-sm">
