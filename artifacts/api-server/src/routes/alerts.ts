@@ -86,7 +86,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
   const animals = await db
     .select()
     .from(animalsTable)
-    .where(eq(animalsTable.ranchId, ranchId));
+    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)));
 
   // 1. Overdue medications + due soon (within 7 days)
   const sevenDaysFromNow = new Date(today);
@@ -309,7 +309,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
   const animals = await db
     .select()
     .from(animalsTable)
-    .where(eq(animalsTable.ranchId, ranchId));
+    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)));
 
   // Fetch individual health records for all animals on this ranch in parallel
   const cutoffBase = new Date();

@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import multer from "multer";
 import { parse as parseCsv } from "csv-parse/sync";
-import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable, pastureLocationsTable } from "@workspace/db";
+import { db, animalsTable, healthEventsTable, medicationRecordsTable, animalAssignmentsTable, pastureLocationsTable, alertsTable } from "@workspace/db";
 import { eq, and, or, inArray, isNull, isNotNull, getTableColumns } from "drizzle-orm";
 import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
 import { z } from "zod";
@@ -318,6 +318,12 @@ router.post("/animals/:animalId/archive", requireAuth, requireOwner, async (req,
     res.status(404).json({ error: true, message: "Animal not found" });
     return;
   }
+
+  // Dismiss any active alerts for this animal so they disappear immediately
+  await db
+    .update(alertsTable)
+    .set({ isDismissed: true })
+    .where(and(eq(alertsTable.animalId, animalId), eq(alertsTable.isDismissed, false)));
 
   res.json(updated);
 });
