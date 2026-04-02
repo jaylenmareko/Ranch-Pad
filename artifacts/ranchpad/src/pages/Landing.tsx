@@ -5,7 +5,7 @@ import { useNavigation } from "@/contexts/navigation-context";
 
 const BULLETS = [
   "Cross-references local weather and each animal's health history to warn you of disease risk before symptoms show up.",
-  "Role-based team access — owners, ranch hands, and cattle clients each see exactly what they need and nothing they don't.",
+  "Role-based team access — owners, ranch hands, and outside viewers each see exactly what they need and nothing they don't.",
   "Every animal's full history searchable from your phone in seconds — health events, medications, and records.",
   "Free 2-week trial, then $12/month. Cancel anytime.",
 ];
@@ -67,7 +67,7 @@ export default function Landing() {
             onClick={() => { markNavigated(); navigate("/"); }}
             className="inline-flex items-center justify-center h-12 px-10 rounded-xl font-bold text-base bg-white text-green-800 hover:bg-white/90 transition-colors shadow-md"
           >
-            Build Your Ranch
+            Start Your Free 2-Week Trial
           </button>
         </div>
       </div>
