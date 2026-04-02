@@ -90,7 +90,7 @@ router.get("/weather", requireAuth, async (req, res): Promise<void> => {
       tempLow: Math.min(...d.temps),
       humidity: Math.round(d.humidity.reduce((a, b) => a + b, 0) / d.humidity.length),
       windSpeed: Math.max(...d.wind),
-      rainfall: d.rain,
+      rainfall: parseFloat((d.rain / 25.4).toFixed(2)),
       description: d.descs[0] ?? "",
       icon: d.icons[Math.floor(d.icons.length / 2)] ?? "",
     }));

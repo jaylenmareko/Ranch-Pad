@@ -361,7 +361,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       tempLow: parseFloat(Math.min(...d.temps).toFixed(1)),
       avgHumidity: Math.round(d.humidity.reduce((a, b) => a + b, 0) / d.humidity.length),
       maxWind: parseFloat(Math.max(...d.wind).toFixed(1)),
-      totalRain: parseFloat(d.rain.toFixed(2)),
+      totalRain: parseFloat((d.rain / 25.4).toFixed(2)),
       conditions: [...new Set(d.desc)].join(", "),
     }));
 
@@ -386,7 +386,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
         tempLow: parseFloat(cw.main.temp_min.toFixed(1)),
         avgHumidity: cw.main.humidity,
         maxWind: parseFloat(cw.wind.speed.toFixed(1)),
-        totalRain: parseFloat((cw.rain?.["1h"] ?? cw.rain?.["3h"] ?? 0).toFixed(2)),
+        totalRain: parseFloat(((cw.rain?.["1h"] ?? cw.rain?.["3h"] ?? 0) / 25.4).toFixed(2)),
         conditions: cw.weather[0]?.description ?? "",
         tempHighChange: null,
         tempLowChange: null,
