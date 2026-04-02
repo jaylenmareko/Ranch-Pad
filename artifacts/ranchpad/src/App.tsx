@@ -40,7 +40,7 @@ import type { BillingStatus } from "@/hooks/use-billing";
 
 const queryClient = new QueryClient();
 
-// ─── /login redirect — opens modal, stays on current page ─────────────────────
+// ─── /login and /signup redirects — open modal, stay on current page ──────────
 
 function LoginRedirect() {
   const { openLogin, openSignup } = useAuthModal();
@@ -53,6 +53,18 @@ function LoginRedirect() {
     } else {
       openLogin();
     }
+    setLocation("/");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+}
+
+function SignupRedirect() {
+  const { openSignup } = useAuthModal();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    openSignup();
     setLocation("/");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -175,6 +187,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={LoginRedirect} />
+      <Route path="/signup" component={SignupRedirect} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/reset-password" component={ResetPassword} />
