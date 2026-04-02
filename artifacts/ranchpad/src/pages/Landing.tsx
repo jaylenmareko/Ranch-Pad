@@ -39,9 +39,14 @@ export default function Landing() {
         </div>
 
         {/* Tagline */}
-        <p className="text-base font-semibold text-white mb-8 tracking-wide uppercase" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
-          AI-Powered Livestock Management
-        </p>
+        <div className="mb-8">
+          <p className="text-base font-semibold text-white tracking-wide uppercase whitespace-nowrap" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
+            Know before your animals get sick.
+          </p>
+          <p className="text-xs font-medium text-white/75 tracking-wide uppercase mt-1.5" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
+            Every record. Right in your pocket.
+          </p>
+        </div>
 
         {/* Bullets */}
         <ul className="flex flex-col gap-3 mb-10 text-left w-full">
