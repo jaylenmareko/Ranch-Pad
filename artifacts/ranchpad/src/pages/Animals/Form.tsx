@@ -240,6 +240,9 @@ export default function AnimalForm() {
   // Breeding status — UI only, gates expectedDueDate visibility
   const [breedingStatus, setBreedingStatus] = useState<"unknown" | "open" | "bred">("unknown");
 
+  // Parentage section — collapsed by default, expanded when editing an animal that already has data
+  const [showParentage, setShowParentage] = useState(false);
+
   const { data: animal, isLoading: loadingAnimal } = useGetAnimal(animalId, {
     query: { queryKey: getGetAnimalQueryKey(animalId), enabled: isEditing }
   });
@@ -322,6 +325,10 @@ export default function AnimalForm() {
       });
       // Infer breeding status from existing due date
       if (animal.expectedDueDate) setBreedingStatus("bred");
+      // Auto-expand parentage if the animal already has data
+      if (animal.sireId || animal.damId || (animal as any).sireName || (animal as any).damName) {
+        setShowParentage(true);
+      }
     }
   }, [animal, isEditing, form]);
 
@@ -528,29 +535,57 @@ export default function AnimalForm() {
             )}
 
             {/* ── Parentage ── */}
-            <div className="pt-2 border-t border-border/60 space-y-4">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Parentage</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ParentField
-                  label="Sire (Father)"
-                  animals={sameSpeciesAnimals}
-                  idValue={form.watch("sireId")}
-                  nameValue={form.watch("sireName")}
-                  onIdChange={v => form.setValue("sireId", v)}
-                  onNameChange={v => form.setValue("sireName", v)}
-                />
-                <ParentField
-                  label="Dam (Mother)"
-                  animals={sameSpeciesAnimals}
-                  idValue={form.watch("damId")}
-                  nameValue={form.watch("damName")}
-                  onIdChange={v => form.setValue("damId", v)}
-                  onNameChange={v => form.setValue("damName", v)}
-                />
-              </div>
+            <div className="pt-2 border-t border-border/60">
+              {showParentage ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Parentage</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowParentage(false);
+                        form.setValue("sireId", null);
+                        form.setValue("sireName", "");
+                        form.setValue("damId", null);
+                        form.setValue("damName", "");
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ParentField
+                      label="Sire (Father)"
+                      animals={sameSpeciesAnimals}
+                      idValue={form.watch("sireId")}
+                      nameValue={form.watch("sireName")}
+                      onIdChange={v => form.setValue("sireId", v)}
+                      onNameChange={v => form.setValue("sireName", v)}
+                    />
+                    <ParentField
+                      label="Dam (Mother)"
+                      animals={sameSpeciesAnimals}
+                      idValue={form.watch("damId")}
+                      nameValue={form.watch("damName")}
+                      onIdChange={v => form.setValue("damId", v)}
+                      onNameChange={v => form.setValue("damName", v)}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowParentage(true)}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="font-medium">Add parentage <span className="text-xs opacity-60">(optional)</span></span>
+                </button>
+              )}
             </div>
 
             <div className="pt-2 border-t border-border flex justify-end gap-3">
