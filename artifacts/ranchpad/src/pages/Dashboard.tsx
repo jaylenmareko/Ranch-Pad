@@ -860,11 +860,6 @@ function AuthDashboard() {
         </CardContent>
       </Card>
 
-      {/* Field Notes — owners and ranch hands only */}
-      {(role === "owner" || role === "ranch_hand") && (
-        <FieldNotesSection />
-      )}
-
       {/* Upcoming — full width */}
       <Card className="flex flex-col shadow-sm">
         <CardHeader className="border-b border-border pb-4">
@@ -929,6 +924,11 @@ function AuthDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Field Notes — owners and ranch hands only */}
+      {(role === "owner" || role === "ranch_hand") && (
+        <FieldNotesSection />
+      )}
 
       </>
       )}
