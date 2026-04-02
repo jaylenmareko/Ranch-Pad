@@ -485,10 +485,17 @@ export default function AnimalDetail() {
                   </Button>
                 )}
                 {isArchived && role === "owner" && (
-                  <Button variant="outline" size="sm" className="min-h-[44px] border-primary/40 text-primary hover:bg-primary/10" onClick={restoreAnimal} disabled={restoring}>
-                    {restoring ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
-                    Restore
-                  </Button>
+                  <>
+                    <Button variant="outline" size="sm" className="min-h-[44px] border-primary/40 text-primary hover:bg-primary/10" onClick={restoreAnimal} disabled={restoring}>
+                      {restoring ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
+                      Restore
+                    </Button>
+                    <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
+                      if(confirm("Permanently delete this animal? All records will be lost.")) {
+                        deleteMutation.mutate({ animalId });
+                      }
+                    }}><Trash2 className="w-4 h-4" /></Button>
+                  </>
                 )}
                 {!isArchived && role === "owner" && (
                   <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
