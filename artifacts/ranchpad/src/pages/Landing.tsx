@@ -7,6 +7,7 @@ const BULLETS = [
   "Cross-references local weather and each animal's health history to warn you of disease risk before symptoms show up.",
   "Role-based team access — owners, ranch hands, and cattle clients each see exactly what they need and nothing they don't.",
   "Every animal's full history searchable from your phone in seconds — health events, medications, and records.",
+  "Free 2-week trial, then $12/month. Cancel anytime.",
 ];
 
 export default function Landing() {
