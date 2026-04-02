@@ -51,7 +51,10 @@ async function upsertAlert(alert: {
   if (existing.length > 0) {
     const row = existing[0];
     // Active alert already on the list — never duplicate it
-    if (!row.isDismissed) return false;
+    if (!row.isDismissed) {
+      console.log(`[upsertAlert] Skipped (already active): key="${alert.alertKey}" ranch=${alert.ranchId}`);
+      return false;
+    }
     // Dismissed today — don't bring it back until tomorrow
     if (row.isDismissed) {
       const [dismissedRow] = await db
@@ -66,7 +69,10 @@ async function upsertAlert(alert: {
           )
         )
         .limit(1);
-      if (dismissedRow) return false;
+      if (dismissedRow) {
+        console.log(`[upsertAlert] Skipped (dismissed today): key="${alert.alertKey}" ranch=${alert.ranchId}`);
+        return false;
+      }
     }
   }
 
@@ -293,10 +299,15 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
 
 // --- Weather-based AI alert generation ---
 async function generateWeatherAlerts(ranchId: number): Promise<number> {
+  console.log(`[weather-alerts] ▶ generateWeatherAlerts called for ranch ${ranchId}`);
+
   const OPENWEATHERMAP_API_KEY = process.env.OPENWEATHERMAP_API_KEY;
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-  if (!OPENWEATHERMAP_API_KEY || !ANTHROPIC_API_KEY) return 0;
+  if (!OPENWEATHERMAP_API_KEY || !ANTHROPIC_API_KEY) {
+    console.warn(`[weather-alerts] Ranch ${ranchId}: Missing API keys — OPENWEATHERMAP_API_KEY=${!!OPENWEATHERMAP_API_KEY} ANTHROPIC_API_KEY=${!!ANTHROPIC_API_KEY} — skipping`);
+    return 0;
+  }
 
   const [ranch] = await db
     .select()
@@ -304,12 +315,24 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
     .where(eq(ranchesTable.id, ranchId))
     .limit(1);
 
-  if (!ranch || ranch.lat == null || ranch.lon == null) return 0;
+  if (!ranch) {
+    console.warn(`[weather-alerts] Ranch ${ranchId}: Not found in database — skipping`);
+    return 0;
+  }
+
+  if (ranch.lat == null || ranch.lon == null) {
+    console.warn(`[weather-alerts] Ranch ${ranchId} ("${ranch.name}"): No coordinates set (lat=${ranch.lat}, lon=${ranch.lon}) — go to Settings → Ranch Info → enter your address to enable weather alerts`);
+    return 0;
+  }
+
+  console.log(`[weather-alerts] Ranch ${ranchId} ("${ranch.name}") at lat=${ranch.lat} lon=${ranch.lon} — proceeding`);
 
   const animals = await db
     .select()
     .from(animalsTable)
     .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)));
+
+  console.log(`[weather-alerts] Ranch ${ranchId}: ${animals.length} active animals`);
 
   // Fetch individual health records for all animals on this ranch in parallel
   const cutoffBase = new Date();
@@ -325,13 +348,22 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       .where(and(eq(famachaScoresTable.ranchId, ranchId), gte(famachaScoresTable.recordedDate, ninetyDaysAgo))),
   ]);
 
+  console.log(`[weather-alerts] Ranch ${ranchId}: DB records — ${recentHealthEvents.length} health events (30d), ${recentMeds.length} medications (30d), ${recentFamacha.length} FAMACHA scores (90d)`);
+
   try {
     // Fetch forecast + current observed conditions in parallel
     const [forecastResp, currentResp] = await Promise.all([
       fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${ranch.lat}&lon=${ranch.lon}&appid=${OPENWEATHERMAP_API_KEY}&units=imperial&cnt=40`),
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${ranch.lat}&lon=${ranch.lon}&appid=${OPENWEATHERMAP_API_KEY}&units=imperial`),
     ]);
-    if (!forecastResp.ok) return 0;
+
+    console.log(`[weather-alerts] Ranch ${ranchId}: Forecast API → HTTP ${forecastResp.status}; Current weather API → HTTP ${currentResp.status}`);
+
+    if (!forecastResp.ok) {
+      const errBody = await forecastResp.text().catch(() => "(unreadable)");
+      console.error(`[weather-alerts] Ranch ${ranchId}: Forecast API failed (${forecastResp.status}): ${errBody.slice(0, 300)}`);
+      return 0;
+    }
 
     const forecastData = (await forecastResp.json()) as {
       list: Array<{
@@ -507,6 +539,11 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       profileLines.push(profile);
     }
 
+    console.log(`[weather-alerts] Ranch ${ranchId}: ${profileLines.length} animals have health history (out of ${animals.length} total)`);
+    if (profileLines.length > 0) {
+      console.log(`[weather-alerts] Ranch ${ranchId}: First animal profile sample:\n${profileLines[0]}`);
+    }
+
     // Prioritize the most critical animals first, cap at 30 to avoid token overflow
     // Priority: FAMACHA ≥ 3 first, then high-severity events, then due-soon, then rest
     profileLines.sort((a) => {
@@ -631,7 +668,7 @@ Return ONLY a valid JSON array. No markdown, no explanation. Return [] if there 
       return 0;
     }
 
-    console.log(`[weather-alerts] Claude raw response (${content.text.length} chars):`, content.text.slice(0, 500));
+    console.log(`[weather-alerts] Ranch ${ranchId}: Claude raw response (${content.text.length} chars):\n${content.text}`);
 
     let parsedAlerts: Array<{
       alertType: string;

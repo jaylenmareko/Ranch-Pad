@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Info, CheckCircle2, PawPrint, ChevronDown } from "lucide-react";
+import { AlertTriangle, Info, CheckCircle2, PawPrint, ChevronDown, Cloud } from "lucide-react";
 import { useListAlerts, useDismissAlert, useListAnimals, useGenerateAlerts, type Alert, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/utils";
@@ -81,6 +81,7 @@ export default function AlertsList() {
 
   const activeAlerts = alerts?.filter(a => !a.isDismissed) || [];
   const recordAlerts = activeAlerts.filter(a => a.alertType !== 'weather_forecast');
+  const weatherAlerts = activeAlerts.filter(a => a.alertType === 'weather_forecast');
 
   const getSeverityIcon = (sev: string) => {
     if (sev === 'critical') return <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />;
@@ -286,7 +287,7 @@ export default function AlertsList() {
             <div className="space-y-4">
               {[1,2,3].map(i => <div key={i} className="h-24 bg-card rounded-2xl animate-pulse" />)}
             </div>
-          ) : recordAlerts.length === 0 ? (
+          ) : recordAlerts.length === 0 && weatherAlerts.length === 0 ? (
             <div className="text-center py-24 bg-card rounded-3xl border border-border">
               <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
@@ -297,14 +298,28 @@ export default function AlertsList() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <h3 className="font-display font-bold text-xl flex items-center gap-2">
-                <PawPrint className="w-5 h-5 text-accent" /> Herd Health &amp; Tasks
-              </h3>
-              <div className="grid gap-3">
-                {recordAlerts.map(a => <AlertRow key={a.id} alert={a} />)}
-              </div>
-            </div>
+            <>
+              {recordAlerts.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-display font-bold text-xl flex items-center gap-2">
+                    <PawPrint className="w-5 h-5 text-accent" /> Herd Health &amp; Tasks
+                  </h3>
+                  <div className="grid gap-3">
+                    {recordAlerts.map(a => <AlertRow key={a.id} alert={a} />)}
+                  </div>
+                </div>
+              )}
+              {weatherAlerts.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-display font-bold text-xl flex items-center gap-2">
+                    <Cloud className="w-5 h-5 text-accent" /> Weather Forecast Risks
+                  </h3>
+                  <div className="grid gap-3">
+                    {weatherAlerts.map(a => <AlertRow key={a.id} alert={a} />)}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
