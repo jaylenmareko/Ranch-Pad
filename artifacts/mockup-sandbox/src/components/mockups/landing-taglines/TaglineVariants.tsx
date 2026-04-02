@@ -30,24 +30,22 @@ function RanchPadLogo() {
 function HeroVariant({
   label,
   tagline,
+  subTagline,
   taglineSize = "text-sm",
-  accent,
   dim = false,
 }: {
   label: string;
   tagline: string;
+  subTagline?: string;
   taglineSize?: string;
-  accent: string;
   dim?: boolean;
 }) {
   return (
     <div className="flex flex-col items-stretch" style={{ width: 390 }}>
-      {/* Label above */}
       <div className={`text-center text-xs font-bold uppercase tracking-widest mb-3 ${dim ? "text-gray-400" : "text-gray-200"}`}>
         {label}
       </div>
 
-      {/* Phone frame */}
       <div
         className="relative overflow-hidden flex flex-col"
         style={{
@@ -57,30 +55,35 @@ function HeroVariant({
           boxShadow: dim ? "0 8px 32px rgba(0,0,0,0.5)" : "0 16px 56px rgba(0,0,0,0.7)",
         }}
       >
-        {/* Background */}
         <img
           src={BG}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: dim ? "brightness(0.55) saturate(0.7)" : "brightness(0.65)" }}
         />
-        {/* Dark scrim */}
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0,0,0,0.22) 0%, transparent 100%)" }} />
 
-        {/* Content */}
         <div className="relative z-10 flex flex-col h-full px-6 pt-10 pb-6">
           <RanchPadLogo />
 
-          {/* Tagline */}
-          <p
-            className={`font-semibold text-white mb-6 tracking-wide uppercase ${taglineSize}`}
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}
-          >
-            {tagline}
-          </p>
+          <div className="mb-6">
+            <p
+              className={`font-semibold text-white tracking-wide uppercase ${taglineSize}`}
+              style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}
+            >
+              {tagline}
+            </p>
+            {subTagline && (
+              <p
+                className="text-white/80 text-xs font-medium tracking-wide uppercase mt-1.5"
+                style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}
+              >
+                {subTagline}
+              </p>
+            )}
+          </div>
 
-          {/* Bullets */}
           <ul className="flex flex-col gap-3 mb-auto">
             {BULLETS.map((b, i) => (
               <li key={i} className="flex items-start gap-2.5">
@@ -92,9 +95,8 @@ function HeroVariant({
             ))}
           </ul>
 
-          {/* CTA */}
           <button
-            className="mt-6 w-full h-12 rounded-xl font-bold text-base shadow-md transition-colors"
+            className="mt-6 w-full h-12 rounded-xl font-bold text-base shadow-md"
             style={{ background: "white", color: "#1a4a35" }}
           >
             Build Your Ranch
@@ -111,29 +113,30 @@ export function TaglineVariants() {
       className="min-h-screen flex items-start justify-center gap-10 p-10"
       style={{ background: "#0f1e1b" }}
     >
-      {/* Current */}
       <HeroVariant
         label="Current"
         tagline="AI-Powered Livestock Management"
         taglineSize="text-sm"
-        accent="#42A96E"
         dim
       />
 
-      {/* Option A — Outcome-led */}
       <HeroVariant
         label="Option A — Outcome-led"
         tagline="Know before your animals get sick"
         taglineSize="text-base"
-        accent="#42A96E"
       />
 
-      {/* Option B — Plain-spoken */}
       <HeroVariant
         label="Option B — Plain-spoken"
         tagline="Your whole herd. Every record. Right in your pocket."
         taglineSize="text-sm"
-        accent="#42A96E"
+      />
+
+      <HeroVariant
+        label="Option C — Combined"
+        tagline="Know before your animals get sick."
+        subTagline="Every record. Right in your pocket."
+        taglineSize="text-base"
       />
     </div>
   );
