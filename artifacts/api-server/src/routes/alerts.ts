@@ -563,7 +563,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       : "No individual health records on file for any animal in the last 30–90 days.";
 
     // Fetch recent weather alerts for this ranch (last 48 h) to inform dedup rule
-    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const recentWeatherAlerts = await db
       .select({
         alertKey: alertsTable.alertKey,
