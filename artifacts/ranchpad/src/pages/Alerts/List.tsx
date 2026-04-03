@@ -52,7 +52,7 @@ export default function AlertsList() {
       if (!res.ok) {
         setImportError(data.message ?? "Import failed. Please check your file and try again.");
       } else {
-        queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+        queryClient.refetchQueries({ queryKey: ["/api/animals"] });
         generateMutation.mutate();
       }
     } catch {
