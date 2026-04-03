@@ -393,14 +393,14 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
       tempLow: parseFloat(Math.min(...d.temps).toFixed(1)),
       avgHumidity: Math.round(d.humidity.reduce((a, b) => a + b, 0) / d.humidity.length),
       maxWind: parseFloat(Math.max(...d.wind).toFixed(1)),
-      totalRain: parseFloat((d.rain / 25.4).toFixed(2)),
+      rainfallInches: parseFloat((d.rain / 25.4).toFixed(2)),
       conditions: [...new Set(d.desc)].join(", "),
     }));
 
     // Parse current observed conditions to anchor the trend
     type WeatherDay = {
       date: string; label?: string;
-      tempHigh: number; tempLow: number; avgHumidity: number; maxWind: number; totalRain: number;
+      tempHigh: number; tempLow: number; avgHumidity: number; maxWind: number; rainfallInches: number;
       conditions: string; tempHighChange: number | null; tempLowChange: number | null;
     };
     let observedToday: WeatherDay | null = null;
@@ -418,7 +418,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
         tempLow: parseFloat(cw.main.temp_min.toFixed(1)),
         avgHumidity: cw.main.humidity,
         maxWind: parseFloat(cw.wind.speed.toFixed(1)),
-        totalRain: parseFloat(((cw.rain?.["1h"] ?? cw.rain?.["3h"] ?? 0) / 25.4).toFixed(2)),
+        rainfallInches: parseFloat(((cw.rain?.["1h"] ?? cw.rain?.["3h"] ?? 0) / 25.4).toFixed(2)),
         conditions: cw.weather[0]?.description ?? "",
         tempHighChange: null,
         tempLowChange: null,
@@ -593,14 +593,15 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
 
     const location = [ranch.locationCity, ranch.locationState].filter(Boolean).join(", ") || `lat ${ranch.lat}, lon ${ranch.lon}`;
 
-    const prompt = `You are a livestock health advisor generating predictive disease-risk alerts for a working rancher.
+    const prompt = `You are generating livestock weather-risk alerts for a working rancher. Write like you are a trusted neighbor who ranches — plain, direct, no fluff.
 
-YOUR MISSION: Only issue an alert when there is a specific, measurable, weather-driven reason to act. An empty response — zero alerts — is a correct and expected outcome when conditions are normal. Do not generate alerts just because the function ran.
+YOUR MISSION: Only issue an alert when the forecast creates a specific, measurable reason to act. Zero alerts is a correct outcome when conditions are normal.
 
-DATA YOU HAVE:
-- "observed_today": the actual current weather conditions at the ranch RIGHT NOW
-- Remaining entries: 5-day FORECAST (what's coming). tempHighChange/tempLowChange = change vs prior day (negative = cooling)
-- Each animal's individual health history, medications, and FAMACHA scores from the past 30–90 days
+DATA NOTES:
+- "observed_today": actual conditions at the ranch right now
+- Remaining entries: 5-day forecast. tempHighChange/tempLowChange = change vs prior day (negative = cooling)
+- rainfallInches: total inches of rain for that day (e.g. 0.80 = just under an inch)
+- Each animal profile includes health events, medications, and FAMACHA scores from the last 30–90 days
 
 RANCH: ${ranch.name} — ${location}
 
@@ -616,43 +617,42 @@ ${JSON.stringify(summary, null, 2)}
 ALERTS ALREADY ISSUED IN THE LAST 48 HOURS:
 ${recentAlertsContext}
 
-SPECIES-SPECIFIC DISEASE TRIGGERS — apply ONLY to species present in the inventory above:
-- Cattle: Temps dropping >15°F between days + wet/wind → BRD/pneumonia. Risk is CRITICAL for calves under 6 months or any animal with a logged respiratory illness in the past 30 days. Wet mud → foot rot. Dusty/windy days above 55°F → pinkeye.
-- Sheep & Goats: Forecast temps >45°F + humidity >70% + any rain = barber pole worm (Haemonchus contortus) larval activation. Animals with FAMACHA ≥3 or a logged worm treatment are at HIGH or CRITICAL individual risk. Cold + wet nights → pneumonia in lambs/kids. Wet pasture → foot scald and foot rot.
-- Horses: Sustained wet fetlocks → Mud Fever (Pastern Dermatitis). Prolonged humidity + warmth → Rain Rot. Only reference animals with a logged treatment for either condition.
-- Swine: Heat >80°F + humidity → heat stress. Cold + wet drafts → respiratory illness (PRRS).
-- All species: Temp swing >20°F between consecutive forecast days = significant immune suppression trigger. Cite the actual °F numbers from the data.
+DISEASE TRIGGERS — only apply to species present in this herd:
+- Cattle: Temps dropping >15°F between days + wet/wind → pneumonia. Calves under 6 months or animals with a logged respiratory illness are critical risk. Wet mud → foot rot. Dusty/windy + above 55°F → pinkeye.
+- Sheep & Goats: Forecast temps >45°F + humidity >70% + any rain = barber pole worm larvae on pasture. FAMACHA ≥3 or recent worm treatment = high or critical individual risk. Cold + wet nights → pneumonia in young animals. Wet pasture → foot scald and foot rot.
+- Horses: Prolonged wet legs → mud fever. Warm humid stretch → rain rot. Only flag animals with a logged treatment for either.
+- Swine: Heat >80°F + humidity → heat stress. Cold + wet drafts → respiratory illness.
+- All species: Temp swing >20°F between consecutive days = immune suppression risk. Always cite the exact °F numbers.
 
-FIVE STRICT RULES — violating any one of these means the alert must not be generated:
+FIVE STRICT RULES:
 
-RULE 1 — ZERO ALERTS IS A VALID RESPONSE.
-If the forecast shows no meaningful risk — mild temperatures, low humidity, no significant precipitation, no dramatic swings — return an empty array []. Do not generate low-severity alerts just to have output. "All clear" is correct.
+RULE 1 — ZERO ALERTS IS VALID. No meaningful risk? Return []. Do not pad output.
 
-RULE 2 — EVERY ALERT MUST CITE AN EXACT DATA POINT.
-Before generating any alert, identify the specific number from the forecast JSON that justifies it — a temperature drop, a humidity level, a rainfall amount. If you cannot point to a specific value in the data above, do not generate the alert.
+RULE 2 — CITE EXACT DATA. Every alert must name a specific number from the forecast (a temp, a humidity %, an inches value). No data point = no alert.
 
-RULE 3 — ONLY ALERT FOR DISEASES THAT AFFECT SPECIES ACTUALLY IN THIS HERD.
-Check HERD INVENTORY first. If there are no sheep or goats, do not generate a barber pole worm alert. If there are no horses, do not generate mud fever or rain rot alerts. Species not in the inventory = no alerts for that species.
+RULE 3 — SPECIES IN THIS HERD ONLY. No sheep/goats = no barber pole worm alert. No horses = no mud fever alert.
 
-RULE 4 — INDIVIDUAL ANIMAL ALERTS REQUIRE DOCUMENTED HISTORY.
-Only name a specific animal if their profile above contains a logged health event or medication record that directly relates to the forecast risk. Do not infer individual risk from breed, age, or species characteristics alone. The documentation must be present in the profile.
+RULE 4 — INDIVIDUAL ALERTS NEED DOCUMENTED HISTORY. Only name a specific animal if their profile has a logged health event or treatment that directly relates to the risk. Breed or age alone is not enough.
 
-RULE 5 — DO NOT DUPLICATE ALERTS ALREADY ISSUED IN THE LAST 48 HOURS.
-Check ALERTS ALREADY ISSUED above. If an ACTIVE alert covers the same risk category and species, skip it entirely. If a DISMISSED alert covers the same risk and the forecast data has not materially shifted (no temperature change >5°F and no humidity change >15%), skip it.
+RULE 5 — NO DUPLICATES. If an ACTIVE alert for the same risk and species already exists in the last 48 hours, skip it. If a DISMISSED alert covers the same risk and the forecast has not shifted more than 5°F or 15% humidity, skip it.
 
-ADDITIONAL ALERT RULES:
-- Severity: "low" = worth watching; "moderate" = take precautions this week; "high" = act within 24 hours; "critical" = imminent life-threatening risk, name the specific animal.
-- alertKey must be stable and contain no dates — e.g. "brd_cattle_herd", "brd_individual_hank_ksc001", "barber_pole_sheep_herd".
-- One action item per alert maximum.
+LANGUAGE RULES — strictly enforced:
+- Write like you're leaving a voicemail for a neighbor who ranches. Short sentences. No textbook terms.
+- BANNED words/phrases: Haemonchus contortus, H. contortus, larval activation, hypoproteinemia, physiological recovery, Fusobacterium necrophorum, rectal temperature, mucous membranes, clinical signs, targeted selective treatment, immunocompromised, cardiovascular reserves. Say the plain word instead: "barber pole worm larvae", "bottle jaw from blood loss", "pale gums", "check temperature", "immune system", "recovery".
+- alertKey: stable, no dates — e.g. "barber_pole_sheep_herd", "pneumonia_cattle_herd", "barber_pole_mae_t105"
+- Severity: "low" = worth watching; "moderate" = take action this week; "high" = act within 24 hours; "critical" = act today, name the animal.
 
-STRICT FORMAT RULES — no exceptions:
-- summary: EXACTLY 1–2 sentences. Lead with the action or most urgent thing. Format: "SEVERITY — [Species/Animal]: [action]. [One supporting reason in plain language]."
-- message: MAXIMUM 4 sentences. First sentence = action. Second = exact forecast numbers. Third = why this animal or herd is at elevated risk based only on logged records. Fourth = optional. Stop at 4.
-- Never state clinical details not present in the provided health logs.
-- No medical jargon a working rancher would not understand.
+FORMAT — hard limits, no exceptions:
+- summary: 1–2 sentences max. Lead with the action. "SEVERITY — [Who]: [what to do]. [One plain reason why]."
+- message: HARD STOP at 3 sentences. No more. Sentence 1 = what to do. Sentence 2 = the specific forecast numbers that triggered this. Sentence 3 = why this animal or herd is higher risk, based only on what is in the logged records.
+- Do not repeat information across summary and message — they are read together.
+- Do not list multiple actions — one clear action per alert.
 
-Return ONLY a valid JSON array. No markdown, no explanation. Return [] if there are no genuine alerts. Each object must have these exact fields:
-[{"alertType":"weather","summary":"HIGH — Mae (#T-105, Nubian Goat): Check her FAMACHA score today — she's at high risk for barber pole worm given her recent treatment and incoming warm wet weather.","message":"Check Mae's FAMACHA score today and consider retreatment if it is 3 or higher. Temps are forecast to reach 68°F with 85% humidity and 0.8 inches of rain Wednesday, which activates barber pole worm larvae on pasture. Mae was treated for barber pole worm on March 15th.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
+Return ONLY a valid JSON array. No markdown, no explanation outside the array. Return [] for no alerts.
+Each object: {"alertType":"weather","summary":"...","message":"...","severity":"...","alertKey":"..."}
+
+EXAMPLE of correct output:
+[{"alertType":"weather","summary":"HIGH — Mae (Nubian Goat, #T-105): Check her FAMACHA score today and consider retreatment if she scores 3 or higher. Warm wet weather coming will bring barber pole worm larvae up on pasture.","message":"Pull Mae off wet pasture today and check her FAMACHA score. Temps are staying above 65°F with 80% humidity and 0.9 inches of rain forecast Wednesday — prime conditions for barber pole worm larvae. She was treated for barber pole worm on March 28th and has not fully recovered.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
 
     console.log(`[weather-alerts] Calling Claude for ranch ${ranchId} (${location}) — ${animals.length} animals, ${profileLines.length} with health history`);
 
