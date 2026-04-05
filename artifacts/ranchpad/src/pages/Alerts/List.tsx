@@ -46,12 +46,70 @@ function SeverityFolder({
         </span>
       </button>
       {open && (
-        <div className="px-3 pb-3 space-y-2.5 border-t border-border/50 pt-3">
+        <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-3">
           {children}
         </div>
       )}
     </div>
   );
+}
+
+function TypeFolder({
+  label, count, icon, storageKey, children
+}: {
+  label: string; count: number; icon: React.ReactNode; storageKey: string; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(() => {
+    try { return sessionStorage.getItem(storageKey) === 'true'; } catch { return false; }
+  });
+
+  const toggle = () => {
+    setOpen(v => {
+      const next = !v;
+      try { sessionStorage.setItem(storageKey, String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-background/30 overflow-hidden">
+      <button
+        onClick={toggle}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/3 transition-colors text-left"
+      >
+        <span className="text-muted-foreground shrink-0">{icon}</span>
+        <span className="text-sm font-semibold text-foreground flex-1">{label}</span>
+        <span className="text-xs text-muted-foreground font-medium">{count}</span>
+        <ChevronDown
+          className="w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+        />
+      </button>
+      {open && (
+        <div className="px-2.5 pb-2.5 space-y-2 border-t border-border/40 pt-2.5">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getAlertTypeInfo(alertKey: string | undefined): { label: string; icon: React.ReactNode } {
+  if (!alertKey) return { label: "Other", icon: <Info className="w-3.5 h-3.5" /> };
+  if (alertKey.startsWith("severe_health_event|")) return { label: "Severe Health Event", icon: <AlertTriangle className="w-3.5 h-3.5" /> };
+  if (alertKey.startsWith("repeat_health|")) return { label: "Repeat Health Issues", icon: <AlertTriangle className="w-3.5 h-3.5" /> };
+  if (alertKey.startsWith("famacha_decline|")) return { label: "Declining FAMACHA", icon: <Info className="w-3.5 h-3.5" /> };
+  if (alertKey.startsWith("heat_cycle|")) return { label: "Heat Cycle Reminder", icon: <CheckCircle2 className="w-3.5 h-3.5" /> };
+  return { label: "Other", icon: <Info className="w-3.5 h-3.5" /> };
+}
+
+function getAlertTypeKey(alertKey: string | undefined): string {
+  if (!alertKey) return "other";
+  if (alertKey.startsWith("severe_health_event|")) return "severe_health_event";
+  if (alertKey.startsWith("repeat_health|")) return "repeat_health";
+  if (alertKey.startsWith("famacha_decline|")) return "famacha_decline";
+  if (alertKey.startsWith("heat_cycle|")) return "heat_cycle";
+  return "other";
 }
 
 export default function AlertsList() {
@@ -289,21 +347,45 @@ export default function AlertsList() {
                 const high = recordAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
                 const medium = recordAlerts.filter(a => a.severity === 'moderate' || a.severity === 'medium');
                 const low = recordAlerts.filter(a => a.severity !== 'critical' && a.severity !== 'high' && a.severity !== 'moderate' && a.severity !== 'medium');
+
+                function renderTypeGroups(alerts: typeof recordAlerts, severityKey: string) {
+                  const groups = new Map<string, typeof recordAlerts>();
+                  for (const a of alerts) {
+                    const key = getAlertTypeKey(a.alertKey ?? undefined);
+                    if (!groups.has(key)) groups.set(key, []);
+                    groups.get(key)!.push(a);
+                  }
+                  return Array.from(groups.entries()).map(([typeKey, items]) => {
+                    const { label, icon } = getAlertTypeInfo(items[0].alertKey ?? undefined);
+                    return (
+                      <TypeFolder
+                        key={typeKey}
+                        label={label}
+                        count={items.length}
+                        icon={icon}
+                        storageKey={`alert-type-${severityKey}-${typeKey}`}
+                      >
+                        {items.map(a => <AlertRow key={a.id} alert={a} />)}
+                      </TypeFolder>
+                    );
+                  });
+                }
+
                 return (
                   <>
                     {high.length > 0 && (
                       <SeverityFolder label="High" count={high.length} accentColor="#ef4444" storageKey="alert-folder-high">
-                        {high.map(a => <AlertRow key={a.id} alert={a} />)}
+                        {renderTypeGroups(high, 'high')}
                       </SeverityFolder>
                     )}
                     {medium.length > 0 && (
                       <SeverityFolder label="Medium" count={medium.length} accentColor="#eab308" storageKey="alert-folder-medium">
-                        {medium.map(a => <AlertRow key={a.id} alert={a} />)}
+                        {renderTypeGroups(medium, 'medium')}
                       </SeverityFolder>
                     )}
                     {low.length > 0 && (
                       <SeverityFolder label="Low" count={low.length} accentColor="#22c55e" storageKey="alert-folder-low">
-                        {low.map(a => <AlertRow key={a.id} alert={a} />)}
+                        {renderTypeGroups(low, 'low')}
                       </SeverityFolder>
                     )}
                   </>
