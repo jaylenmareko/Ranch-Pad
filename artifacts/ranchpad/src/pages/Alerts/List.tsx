@@ -11,15 +11,26 @@ import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 function SeverityFolder({
-  label, count, accentColor, defaultOpen, children
+  label, count, accentColor, storageKey, children
 }: {
-  label: string; count: number; accentColor: string; defaultOpen: boolean; children: React.ReactNode;
+  label: string; count: number; accentColor: string; storageKey: string; children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(() => {
+    try { return sessionStorage.getItem(storageKey) === 'true'; } catch { return false; }
+  });
+
+  const toggle = () => {
+    setOpen(v => {
+      const next = !v;
+      try { sessionStorage.setItem(storageKey, String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
   return (
     <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
       <button
-        onClick={() => setOpen(v => !v)}
+        onClick={toggle}
         className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
       >
         <ChevronDown
@@ -257,7 +268,7 @@ export default function AlertsList() {
   const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 max-w-lg mx-auto pb-20">
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
       <ImportModeDialog
         open={modeDialogOpen}
@@ -275,9 +286,7 @@ export default function AlertsList() {
         />
       ) : (
         <>
-          <div>
-            <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alerts</h1>
-          </div>
+          <h1 className="text-2xl font-black font-display text-foreground">Alerts</h1>
 
           {importError && (
             <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">{importError}</p>
@@ -306,17 +315,17 @@ export default function AlertsList() {
                 return (
                   <>
                     {high.length > 0 && (
-                      <SeverityFolder label="High" count={high.length} accentColor="#ef4444" defaultOpen={true}>
+                      <SeverityFolder label="High" count={high.length} accentColor="#ef4444" storageKey="alert-folder-high">
                         {high.map(a => <AlertRow key={a.id} alert={a} />)}
                       </SeverityFolder>
                     )}
                     {medium.length > 0 && (
-                      <SeverityFolder label="Medium" count={medium.length} accentColor="#eab308" defaultOpen={high.length === 0}>
+                      <SeverityFolder label="Medium" count={medium.length} accentColor="#eab308" storageKey="alert-folder-medium">
                         {medium.map(a => <AlertRow key={a.id} alert={a} />)}
                       </SeverityFolder>
                     )}
                     {low.length > 0 && (
-                      <SeverityFolder label="Low" count={low.length} accentColor="#22c55e" defaultOpen={high.length === 0 && medium.length === 0}>
+                      <SeverityFolder label="Low" count={low.length} accentColor="#22c55e" storageKey="alert-folder-low">
                         {low.map(a => <AlertRow key={a.id} alert={a} />)}
                       </SeverityFolder>
                     )}
