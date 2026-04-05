@@ -354,167 +354,164 @@ export default function Settings() {
                 No coordinates set — weather data won't be available until you select your location above.
               </p>
             )}
+
+            <Button type="submit" className="w-full gap-2 mt-2" isLoading={updateMutation.isPending}>
+              <Save className="w-4 h-4" />
+              Save Ranch Settings
+            </Button>
           </CardContent>
         </Card>
-
-        <Button type="submit" className="w-full gap-2" isLoading={updateMutation.isPending}>
-          <Save className="w-4 h-4" />
-          Save Ranch Settings
-        </Button>
       </form>
 
       {/* Pastures & Locations */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-primary" />
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <FolderOpen className="w-5 h-5 text-primary" />
             Pastures &amp; Locations
-          </h2>
-          <p className="text-sm text-muted-foreground font-medium mt-0.5 ml-6">
+          </CardTitle>
+          <p className="text-sm text-muted-foreground font-medium">
             Tag animals to specific pastures or areas. Animals are then grouped by location in the Herd Directory.
           </p>
-        </div>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            {locations.length === 0 ? (
-              <p className="px-6 py-5 text-sm text-muted-foreground font-medium">
-                No locations yet — add your first pasture or pen below.
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {locations.map(loc => (
-                  <li
-                    key={loc.id}
-                    className={assigningLocId === loc.id ? "px-4 py-4 space-y-3" : "flex items-center gap-3 px-4 py-3"}
-                  >
-                    {editingLocId === loc.id ? (
-                      <>
-                        <Input
-                          value={editLocName}
-                          onChange={e => setEditLocName(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
-                          className="flex-1 h-9"
-                          autoFocus
-                        />
-                        <Button size="sm" onClick={() => saveLocEdit(loc.id)} isLoading={savingLoc} className="shrink-0">
-                          Save
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {locations.length === 0 ? (
+            <p className="text-sm text-muted-foreground font-medium">
+              No locations yet — add your first pasture or pen below.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+              {locations.map(loc => (
+                <li
+                  key={loc.id}
+                  className={assigningLocId === loc.id ? "px-4 py-4 space-y-3" : "flex items-center gap-3 px-4 py-3"}
+                >
+                  {editingLocId === loc.id ? (
+                    <>
+                      <Input
+                        value={editLocName}
+                        onChange={e => setEditLocName(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
+                        className="flex-1 h-9"
+                        autoFocus
+                      />
+                      <Button size="sm" onClick={() => saveLocEdit(loc.id)} isLoading={savingLoc} className="shrink-0">
+                        Save
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingLocId(null)} className="shrink-0">
+                        Cancel
+                      </Button>
+                    </>
+                  ) : assigningLocId === loc.id ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-foreground">{loc.name}</span>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected
+                        </span>
+                      </div>
+                      {allAnimals === null ? (
+                        <div className="flex items-center gap-2 py-2 text-muted-foreground">
+                          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                          <span className="text-sm">Loading animals…</span>
+                        </div>
+                      ) : allAnimals.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-2">No animals in your herd yet.</p>
+                      ) : (
+                        <div className="max-h-52 overflow-y-auto rounded-xl border border-border divide-y divide-border">
+                          {allAnimals.map(a => (
+                            <label
+                              key={a.id}
+                              className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedAnimalIds.has(a.id)}
+                                onChange={e => {
+                                  setSelectedAnimalIds(prev => {
+                                    const next = new Set(prev);
+                                    if (e.target.checked) next.add(a.id);
+                                    else next.delete(a.id);
+                                    return next;
+                                  });
+                                }}
+                                className="w-4 h-4 rounded accent-primary shrink-0"
+                              />
+                              <span className="text-sm font-semibold text-foreground truncate flex-1">{a.name}</span>
+                              {a.tagNumber && (
+                                <span className="text-xs text-muted-foreground font-mono shrink-0">#{a.tagNumber}</span>
+                              )}
+                              <span className="text-xs text-muted-foreground shrink-0 ml-1">{a.species}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={saveAssignments}
+                          isLoading={savingAssign}
+                          disabled={allAnimals === null}
+                          className="shrink-0"
+                        >
+                          Save Assignments
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setEditingLocId(null)} className="shrink-0">
+                        <Button size="sm" variant="ghost" onClick={() => setAssigningLocId(null)} className="shrink-0">
                           Cancel
                         </Button>
-                      </>
-                    ) : assigningLocId === loc.id ? (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-foreground">{loc.name}</span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected
-                          </span>
-                        </div>
-                        {allAnimals === null ? (
-                          <div className="flex items-center gap-2 py-2 text-muted-foreground">
-                            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                            <span className="text-sm">Loading animals…</span>
-                          </div>
-                        ) : allAnimals.length === 0 ? (
-                          <p className="text-sm text-muted-foreground py-2">No animals in your herd yet.</p>
-                        ) : (
-                          <div className="max-h-52 overflow-y-auto rounded-xl border border-border divide-y divide-border">
-                            {allAnimals.map(a => (
-                              <label
-                                key={a.id}
-                                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedAnimalIds.has(a.id)}
-                                  onChange={e => {
-                                    setSelectedAnimalIds(prev => {
-                                      const next = new Set(prev);
-                                      if (e.target.checked) next.add(a.id);
-                                      else next.delete(a.id);
-                                      return next;
-                                    });
-                                  }}
-                                  className="w-4 h-4 rounded accent-primary shrink-0"
-                                />
-                                <span className="text-sm font-semibold text-foreground truncate flex-1">{a.name}</span>
-                                {a.tagNumber && (
-                                  <span className="text-xs text-muted-foreground font-mono shrink-0">#{a.tagNumber}</span>
-                                )}
-                                <span className="text-xs text-muted-foreground shrink-0 ml-1">{a.species}</span>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={saveAssignments}
-                            isLoading={savingAssign}
-                            disabled={allAnimals === null}
-                            className="shrink-0"
-                          >
-                            Save Assignments
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => setAssigningLocId(null)} className="shrink-0">
-                            Cancel
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
-                        <button
-                          onClick={() => openAssignPanel(loc.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                          title="Assign animals to this location"
-                        >
-                          <ListChecks className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                          title="Edit location name"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => deleteLocation(loc.id)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Delete location"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
+                      <button
+                        onClick={() => openAssignPanel(loc.id)}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        title="Assign animals to this location"
+                      >
+                        <ListChecks className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        title="Edit location name"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteLocation(loc.id)}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        title="Delete location"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
 
-        <div className="flex gap-2">
-          <Input
-            value={newLocName}
-            onChange={e => setNewLocName(e.target.value)}
-            placeholder="e.g. South Pasture, Barn, Lot A"
-            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
-          />
-          <Button
-            type="button"
-            onClick={addLocation}
-            isLoading={addingLoc}
-            disabled={!newLocName.trim()}
-            className="shrink-0 gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            Add
-          </Button>
-        </div>
-      </div>
+          <div className="flex gap-2">
+            <Input
+              value={newLocName}
+              onChange={e => setNewLocName(e.target.value)}
+              placeholder="e.g. South Pasture, Barn, Lot A"
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
+            />
+            <Button
+              type="button"
+              onClick={addLocation}
+              isLoading={addingLoc}
+              disabled={!newLocName.trim()}
+              className="shrink-0 gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              Add
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
