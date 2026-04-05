@@ -198,7 +198,7 @@ export default function AlertsList() {
     const hasMoreContent = alert.message.length > firstSentence.length;
 
     return (
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
         {/* Top: animal + date */}
         <div className="px-3 pt-3 pb-2 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
