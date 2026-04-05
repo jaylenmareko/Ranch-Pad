@@ -371,7 +371,7 @@ export default function Team() {
           )}
 
           <p className="text-xs text-muted-foreground">
-            Links expire in 2 hours and can only be used once.
+            Links expire in 24 hours and can only be used once.
           </p>
         </CardContent>
       </Card>
