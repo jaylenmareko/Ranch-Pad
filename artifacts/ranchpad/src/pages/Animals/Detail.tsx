@@ -521,66 +521,100 @@ export default function AnimalDetail() {
       </div>
 
       {/* Header Card */}
-      <Card className="border-none shadow-xl shadow-black/5 bg-gradient-to-br from-card to-card/50 overflow-hidden relative">
-        {(() => {
-          const a = animal as AnimalDetailWithArchive;
-          if (!a.archivedAt) return null;
-          const label = a.archiveReason ? ARCHIVE_REASON_LABELS[a.archiveReason] : "Archived";
-          const dateStr = a.archiveDate ?? new Date(a.archivedAt).toLocaleDateString();
-          return (
-            <div className="bg-amber-900/30 border-b border-amber-600/30 px-6 py-3 flex items-center gap-3">
-              <Archive className="w-4 h-4 text-amber-400 shrink-0" />
-              <div className="flex-1 text-sm text-amber-300 font-semibold">
-                Archived — {label} on {dateStr}
-                {a.archiveNotes && <span className="ml-2 font-normal opacity-75">· {a.archiveNotes}</span>}
-              </div>
-            </div>
-          );
-        })()}
-        <CardContent className="p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center relative z-10">
-          <div className="w-24 h-24 rounded-3xl bg-secondary flex items-center justify-center border-4 border-background shadow-md shrink-0">
-            <span className="text-4xl font-display font-black text-secondary-foreground opacity-50">{animal.species[0]}</span>
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h1 className="text-3xl sm:text-4xl font-black font-display text-foreground leading-none">{animal.name}</h1>
-              {animal.tagNumber && (
-                <Badge variant="outline" className="text-sm border-border bg-background shadow-sm px-3 py-1">#{animal.tagNumber}</Badge>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Badge className="bg-primary/10 text-primary hover:bg-primary/20">{animal.species}</Badge></span>
-              <span className="flex items-center gap-1.5">{animal.breed || 'Unknown Breed'}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-border" />
-              <span>{animal.sex}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-border" />
-              <span>{formatAge(animal.dateOfBirth)}</span>
-            </div>
-            {(animal.sire || animal.sireName || animal.dam || animal.damName) && (
-              <div className="flex flex-wrap gap-3 mt-2">
-                {(animal.sire || animal.sireName) && (
-                  <span className="text-xs font-semibold text-muted-foreground bg-muted/60 rounded-lg px-2.5 py-1">
-                    Sire:{" "}
-                    {animal.sire
-                      ? <Link href={`/animals/${animal.sire.id}`} className="text-primary hover:underline">{animal.sire.name}</Link>
-                      : <span>{animal.sireName}</span>
-                    }
-                  </span>
-                )}
-                {(animal.dam || animal.damName) && (
-                  <span className="text-xs font-semibold text-muted-foreground bg-muted/60 rounded-lg px-2.5 py-1">
-                    Dam:{" "}
-                    {animal.dam
-                      ? <Link href={`/animals/${animal.dam.id}`} className="text-primary hover:underline">{animal.dam.name}</Link>
-                      : <span>{animal.damName}</span>
-                    }
-                  </span>
-                )}
+      {(() => {
+        const a = animal as AnimalDetailWithArchive;
+        const isArchived = !!a.archivedAt;
+        const SPECIES_EMOJI: Record<string, string> = { Cattle: "🐄", Sheep: "🐑", Goat: "🐐", Pig: "🐖", Horse: "🐴", Chicken: "🐔", Duck: "🦆", Alpaca: "🦙", Llama: "🦙", Rabbit: "🐇", Dog: "🐕" };
+        const emoji = SPECIES_EMOJI[animal.species] ?? "🐾";
+        const healthColor = (animal as AnimalDetail & { latestHealthSeverity?: string }).latestHealthSeverity === "high"
+          ? { dot: "#ef4444", label: "Urgent", bg: "bg-red-500/10 text-red-400" }
+          : (animal as AnimalDetail & { latestHealthSeverity?: string }).latestHealthSeverity === "medium"
+          ? { dot: "#eab308", label: "Watch", bg: "bg-yellow-500/10 text-yellow-400" }
+          : { dot: "#22c55e", label: "Healthy", bg: "bg-green-500/10 text-green-400" };
+
+        const facts = [
+          { label: "Species", value: animal.species },
+          { label: "Sex", value: animal.sex },
+          { label: "Breed", value: animal.breed || "Unknown" },
+          { label: "Age", value: formatAge(animal.dateOfBirth) },
+          ...(a.locationName ? [{ label: "Location", value: a.locationName }] : []),
+          ...(animal.dateOfBirth ? [{ label: "Born", value: format(parseISO(animal.dateOfBirth), "MMM d, yyyy") }] : []),
+        ];
+
+        return (
+          <Card className="overflow-hidden border-2 border-border">
+            {isArchived && (
+              <div className="bg-amber-900/30 border-b border-amber-600/30 px-5 py-2.5 flex items-center gap-2.5">
+                <Archive className="w-4 h-4 text-amber-400 shrink-0" />
+                <p className="text-sm text-amber-300 font-semibold">
+                  Archived — {a.archiveReason ? ARCHIVE_REASON_LABELS[a.archiveReason as ArchiveReason] : "Archived"}
+                  {a.archiveDate && ` on ${a.archiveDate}`}
+                  {a.archiveNotes && <span className="ml-2 font-normal opacity-75">· {a.archiveNotes}</span>}
+                </p>
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+
+            <div className="p-5 space-y-4">
+              {/* Identity row */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center shrink-0 text-4xl leading-none">
+                  {emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-2xl font-black font-display text-foreground leading-tight">{animal.name}</h1>
+                    {animal.tagNumber && (
+                      <span className="text-sm font-bold font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-lg border border-border">#{animal.tagNumber}</span>
+                    )}
+                  </div>
+                  {/* Health status badge */}
+                  <span className={`inline-flex items-center gap-1.5 mt-1 text-xs font-bold px-2.5 py-1 rounded-full ${healthColor.bg}`}>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: healthColor.dot }} />
+                    {healthColor.label}
+                  </span>
+                </div>
+              </div>
+
+              {/* Fact chips grid */}
+              <div className="grid grid-cols-2 gap-2">
+                {facts.map(({ label, value }) => (
+                  <div key={label} className="bg-muted/50 rounded-xl px-3 py-2.5 border border-border/60">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{label}</p>
+                    <p className="text-sm font-bold text-foreground">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Lineage */}
+              {(animal.sire || animal.sireName || animal.dam || animal.damName) && (
+                <div className="flex flex-wrap gap-2 pt-1 border-t border-border/50">
+                  {(animal.sire || animal.sireName) && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-semibold text-muted-foreground">Sire:</span>
+                      {animal.sire
+                        ? <Link href={`/animals/${animal.sire.id}`} className="font-bold text-primary hover:underline">{animal.sire.name}</Link>
+                        : <span className="font-bold text-foreground">{animal.sireName}</span>
+                      }
+                    </div>
+                  )}
+                  {(animal.sire || animal.sireName) && (animal.dam || animal.damName) && (
+                    <span className="text-muted-foreground/40">·</span>
+                  )}
+                  {(animal.dam || animal.damName) && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="font-semibold text-muted-foreground">Dam:</span>
+                      {animal.dam
+                        ? <Link href={`/animals/${animal.dam.id}`} className="font-bold text-primary hover:underline">{animal.dam.name}</Link>
+                        : <span className="font-bold text-foreground">{animal.damName}</span>
+                      }
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </Card>
+        );
+      })()}
 
       {/* Tab Navigation */}
       {(() => {
