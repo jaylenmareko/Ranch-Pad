@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, Save, XCircle, Cog, Loader2, Plus, Pencil, Trash2, ListChecks } from "lucide-react";
+import { MapPin, Save, XCircle, Cog, Loader2, Plus } from "lucide-react";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -408,14 +408,14 @@ export default function Settings() {
                 ) : (
                   <>
                     <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
-                    <button type="button" onClick={() => openAssignPanel(loc.id)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                      <ListChecks className="w-3.5 h-3.5" /> Assign Animals
+                    <button type="button" onClick={() => openAssignPanel(loc.id)} className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-border bg-muted text-foreground hover:bg-accent transition-colors">
+                      Assign Animals
                     </button>
-                    <button type="button" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                      <Pencil className="w-3.5 h-3.5" /> Edit Name
+                    <button type="button" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }} className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-border bg-muted text-foreground hover:bg-accent transition-colors">
+                      Edit Name
                     </button>
-                    <button type="button" onClick={() => deleteLocation(loc.id)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" /> Delete
+                    <button type="button" onClick={() => deleteLocation(loc.id)} className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                      Delete
                     </button>
                   </>
                 )}
