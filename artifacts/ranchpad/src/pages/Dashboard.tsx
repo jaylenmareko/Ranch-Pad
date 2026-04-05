@@ -30,8 +30,6 @@ function pluralizeSpecies(species: string) {
 type RanchNote = { id: number; noteDate: string; noteText: string; createdAt: string };
 
 function FieldNotesSection() {
-  const today = format(new Date(), "yyyy-MM-dd");
-  const [noteDate, setNoteDate] = useState(today);
   const [noteText, setNoteText] = useState("");
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState<RanchNote[]>([]);
@@ -49,17 +47,16 @@ function FieldNotesSection() {
   useEffect(() => { fetchNotes(); }, [fetchNotes]);
 
   const handleSave = async () => {
-    if (!noteText.trim() || !noteDate) return;
+    if (!noteText.trim()) return;
     setSaving(true);
     try {
       const res = await fetch("/api/ranch-notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteDate, noteText: noteText.trim() }),
+        body: JSON.stringify({ noteDate: format(new Date(), "yyyy-MM-dd"), noteText: noteText.trim() }),
       });
       if (res.ok) {
         setNoteText("");
-        setNoteDate(today);
         await fetchNotes();
       }
     } finally {
@@ -67,12 +64,12 @@ function FieldNotesSection() {
     }
   };
 
-  const formatNoteDate = (dateStr: string) => {
+  const formatNoteTimestamp = (createdAt: string) => {
     try {
-      const [y, m, d] = dateStr.split("-").map(Number);
-      return format(new Date(y, m - 1, d), "MMM d");
+      const d = new Date(createdAt);
+      return format(d, "MMM d · h:mm a");
     } catch {
-      return dateStr;
+      return createdAt;
     }
   };
 
@@ -86,14 +83,6 @@ function FieldNotesSection() {
       <CardContent className="p-0 flex flex-col">
         {/* Input area */}
         <div className="p-5 border-b border-border/60 flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <input
-              type="date"
-              value={noteDate}
-              onChange={e => setNoteDate(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-border bg-muted text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
-            />
-          </div>
           <textarea
             value={noteText}
             onChange={e => setNoteText(e.target.value)}
@@ -105,7 +94,7 @@ function FieldNotesSection() {
           <div className="flex justify-end">
             <button
               onClick={handleSave}
-              disabled={saving || !noteText.trim() || !noteDate}
+              disabled={saving || !noteText.trim()}
               className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
@@ -127,7 +116,7 @@ function FieldNotesSection() {
           <div className="divide-y divide-border/40">
             {notes.map(note => (
               <div key={note.id} className="px-5 py-4">
-                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{formatNoteDate(note.noteDate)}</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{formatNoteTimestamp(note.createdAt)}</p>
                 <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
               </div>
             ))}
