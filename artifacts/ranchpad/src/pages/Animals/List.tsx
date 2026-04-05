@@ -122,7 +122,7 @@ function AnimalCard({
 
   const inner = (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-card transition-colors hover:bg-muted/20 ${selected ? "bg-primary/5" : ""}`}
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-border bg-card transition-colors hover:bg-muted/20 ${selected ? "bg-primary/5" : ""}`}
       style={{ borderLeft: `4px solid ${accentColor}` }}
     >
       {selectMode && (
@@ -160,7 +160,7 @@ function AnimalCard({
 
 function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-card" style={{ borderLeft: "4px solid transparent" }}>
+    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-border bg-card" style={{ borderLeft: "4px solid transparent" }}>
       <div className="flex-1 min-w-0">
         <p className="font-bold text-sm text-foreground leading-tight truncate">{animal.name}</p>
         <p className="text-xs text-muted-foreground mt-0.5 truncate">
