@@ -420,10 +420,9 @@ export default function Team() {
                   {m.role !== "owner" && (
                     <button
                       onClick={() => removeMember(m.userId, m.name)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                      title="Remove member"
+                      className="text-xs font-semibold text-destructive hover:text-destructive/80 px-2 py-1 rounded-lg hover:bg-destructive/10 transition-colors"
                     >
-                      <UserMinus className="w-4 h-4" />
+                      Remove
                     </button>
                   )}
                 </div>
