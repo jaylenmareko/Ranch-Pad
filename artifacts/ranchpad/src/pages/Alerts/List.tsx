@@ -88,10 +88,10 @@ export default function AlertsList() {
   );
 
   const getSeverityIcon = (sev: string) => {
-    if (sev === 'critical') return <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />;
-    if (sev === 'high') return <AlertTriangle className="w-5 h-5 text-destructive" />;
-    if (sev === 'moderate' || sev === 'medium') return <Info className="w-5 h-5 text-yellow-500" />;
-    return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
+    if (sev === 'critical') return <AlertTriangle className="w-3.5 h-3.5" />;
+    if (sev === 'high') return <AlertTriangle className="w-3.5 h-3.5" />;
+    if (sev === 'moderate' || sev === 'medium') return <Info className="w-3.5 h-3.5" />;
+    return <CheckCircle2 className="w-3.5 h-3.5" />;
   };
 
   const getSeverityColor = (sev: string) => {
@@ -99,6 +99,13 @@ export default function AlertsList() {
     if (sev === 'high') return "bg-destructive/10 border-destructive/20 text-destructive";
     if (sev === 'moderate' || sev === 'medium') return "bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400";
     return "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400";
+  };
+
+  const getSeverityAccent = (sev: string) => {
+    if (sev === 'critical') return { border: '#ef4444', badge: 'bg-red-500/15 text-red-500 dark:text-red-400', icon: 'text-red-500 dark:text-red-400' };
+    if (sev === 'high') return { border: '#f97316', badge: 'bg-orange-500/15 text-orange-600 dark:text-orange-400', icon: 'text-orange-500 dark:text-orange-400' };
+    if (sev === 'moderate' || sev === 'medium') return { border: '#eab308', badge: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400', icon: 'text-yellow-500 dark:text-yellow-400' };
+    return { border: '#22c55e', badge: 'bg-green-500/15 text-green-600 dark:text-green-400', icon: 'text-green-500 dark:text-green-400' };
   };
 
   const getSeverityLabel = (sev: string) => sev.charAt(0).toUpperCase() + sev.slice(1);
@@ -145,113 +152,72 @@ export default function AlertsList() {
   const AlertRow = ({ alert }: { alert: Alert }) => {
     const [expanded, setExpanded] = useState(false);
 
+    const accent = getSeverityAccent(alert.severity);
     const severityLabel = getSeverityLabel(alert.severity);
     const animalLabel = buildAnimalLabel(alert);
     const firstSentence = getFirstSentence(alert.message);
     const hasMoreContent = alert.message.length > firstSentence.length;
 
     return (
-      <div className={`rounded-2xl border transition-all ${getSeverityColor(alert.severity)}`}>
-        <div className="p-4 md:p-5">
-          <div className="flex items-start gap-4">
-            <div className="shrink-0 mt-0.5 bg-background rounded-full p-2 shadow-sm border border-border/50">
-              {getSeverityIcon(alert.severity)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm md:text-base leading-snug text-foreground">
-                <span className="font-bold uppercase tracking-wide mr-1.5">{severityLabel}</span>
-                {animalLabel ? (
-                  <>
-                    <span className="opacity-60 mr-1.5">—</span>
-                    {alert.animalId ? (
-                      <Link href={`/animals/${alert.animalId}`} className="hover:underline mr-1">
-                        {animalLabel}
-                      </Link>
-                    ) : (
-                      <span className="mr-1">{animalLabel}</span>
-                    )}
-                    <span className="opacity-60 mr-1.5">:</span>
-                  </>
-                ) : null}
-                <span className="font-medium opacity-90">{firstSentence}</span>
-                {!expanded && hasMoreContent && (
-                  <button
-                    onClick={() => setExpanded(true)}
-                    className="inline-flex items-center gap-0.5 ml-1.5 text-xs font-semibold opacity-60 hover:opacity-100 transition-opacity whitespace-nowrap"
-                  >
-                    See details <ChevronDown className="w-3 h-3" />
-                  </button>
-                )}
-              </p>
-              <p className="text-xs opacity-50 mt-1">{format(new Date(alert.generatedAt), "MMM d · h:mm a")}</p>
-            </div>
-            <div className="shrink-0 flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="shrink-0 bg-background/50 hover:bg-background border-transparent shadow-none min-h-[40px] hidden md:flex"
-                onClick={() => dismissMutation.mutate({ alertId: alert.id })}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Resolved
-              </Button>
+      <div
+        className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden"
+        style={{ borderLeft: `4px solid ${accent.border}` }}
+      >
+        {/* Header row */}
+        <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Severity badge */}
+            <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${accent.badge}`}>
+              <span className={accent.icon}>{getSeverityIcon(alert.severity)}</span>
+              {severityLabel}
+            </span>
+            {/* Animal chip */}
+            {animalLabel && (
+              alert.animalId ? (
+                <Link
+                  href={`/animals/${alert.animalId}`}
+                  className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-muted border border-border text-foreground hover:bg-accent hover:text-foreground transition-colors"
+                >
+                  {animalLabel}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full bg-muted border border-border text-foreground">
+                  {animalLabel}
+                </span>
+              )
+            )}
+          </div>
+          {/* Timestamp */}
+          <span className="text-xs text-muted-foreground/60 shrink-0 mt-0.5 whitespace-nowrap">
+            {format(new Date(alert.generatedAt), "MMM d · h:mm a")}
+          </span>
+        </div>
+
+        {/* Message */}
+        <div className="px-4 pb-4">
+          <p className="text-sm md:text-[15px] text-foreground/85 leading-relaxed">
+            {expanded ? alert.message : firstSentence}
+          </p>
+
+          {/* Action bar */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+            <div>
               {hasMoreContent && (
                 <button
                   onClick={() => setExpanded(v => !v)}
-                  className={`p-1.5 rounded-lg hover:bg-background/50 transition-all ${expanded ? 'opacity-80' : 'opacity-50 hover:opacity-80'}`}
-                  aria-label={expanded ? "Collapse details" : "Expand details"}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
+                  {expanded ? "Collapse" : "See details"}
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
                 </button>
               )}
             </div>
-          </div>
-          <div className="mt-3 md:hidden">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full bg-background/50 hover:bg-background border-transparent shadow-none min-h-[44px]"
+            <button
               onClick={() => dismissMutation.mutate({ alertId: alert.id })}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             >
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Resolved
-            </Button>
-          </div>
-        </div>
-
-        <div
-          className="overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ maxHeight: expanded ? '600px' : '0px', opacity: expanded ? 1 : 0 }}
-        >
-          <div className="px-4 md:px-5 pb-4 md:pb-5 pt-0 border-t border-current/10">
-            <div className="pt-3 space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider opacity-60">
-                  {alert.alertType.replace(/_/g, ' ')}
-                </span>
-                <span className="text-xs opacity-40">•</span>
-                <span className="text-xs opacity-60">{formatDate(alert.generatedAt)}</span>
-                <Badge variant="outline" className={`text-[10px] font-bold uppercase px-1.5 py-0 leading-4 border ${
-                  alert.severity === 'critical' ? 'border-red-500/40 text-red-600 dark:text-red-400 bg-red-500/10' :
-                  alert.severity === 'high' ? 'border-destructive/40 text-destructive bg-destructive/10' :
-                  (alert.severity === 'moderate' || alert.severity === 'medium') ? 'border-yellow-500/40 text-yellow-600 dark:text-yellow-400 bg-yellow-500/10' :
-                  'border-green-500/40 text-green-600 dark:text-green-400 bg-green-500/10'
-                }`}>
-                  {getSeverityLabel(alert.severity)}
-                </Badge>
-              </div>
-              <p className="text-sm md:text-base leading-relaxed text-foreground/90 whitespace-pre-line">
-                {alert.message}
-              </p>
-              <div className="pt-1 hidden md:block">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-background/50 hover:bg-background border-transparent shadow-none"
-                  onClick={() => dismissMutation.mutate({ alertId: alert.id })}
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Resolved
-                </Button>
-              </div>
-            </div>
+              <CheckCircle2 className="w-3.5 h-3.5" /> Mark Resolved
+            </button>
           </div>
         </div>
       </div>
