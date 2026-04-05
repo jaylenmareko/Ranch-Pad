@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { format, parseISO, isPast } from "date-fns";
 import { useParams, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1007,9 +1008,17 @@ function MedsTab({ animalId }: { animalId: number }) {
                       <h4 className="font-bold text-primary text-lg">{med.medicationName}</h4>
                       {med.dosage && <Badge variant="secondary">{med.dosage}</Badge>}
                     </div>
-                    <div className="text-sm text-muted-foreground font-medium mt-1 flex gap-4">
-                      <span>Given: {formatDate(med.dateGiven)}</span>
-                      {med.nextDueDate && <span className="text-accent">Due: {formatDate(med.nextDueDate)}</span>}
+                    <div className="text-sm text-muted-foreground font-medium mt-1 flex flex-wrap gap-3">
+                      <span>Given {format(parseISO(med.dateGiven + (med.dateGiven.length === 10 ? "T12:00:00" : "")), "MMM d, yyyy")}</span>
+                      {med.nextDueDate && (() => {
+                        const dueDate = parseISO(med.nextDueDate + "T12:00:00");
+                        const overdue = isPast(dueDate);
+                        return (
+                          <span className={overdue ? "text-red-500 dark:text-red-400 font-semibold" : "text-amber-600 dark:text-amber-400 font-semibold"}>
+                            {overdue ? "Overdue" : "Due"} · {format(dueDate, "MMM d, yyyy")}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
