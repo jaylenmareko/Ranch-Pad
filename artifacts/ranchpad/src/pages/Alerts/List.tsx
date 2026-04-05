@@ -276,7 +276,6 @@ export default function AlertsList() {
         <>
           <div>
             <h1 className="text-xl font-black text-foreground whitespace-nowrap">Action Center</h1>
-            <p className="text-muted-foreground font-medium mt-1">Herd health tasks and urgent alerts.</p>
           </div>
 
           {importError && (
