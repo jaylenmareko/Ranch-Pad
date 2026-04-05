@@ -371,7 +371,7 @@ export default function Team() {
           )}
 
           <p className="text-xs text-muted-foreground">
-            Links expire in 15 minutes and can only be used once. Recipients will sign up with the selected role.
+            Links expire in 2 hours and can only be used once.
           </p>
         </CardContent>
       </Card>
