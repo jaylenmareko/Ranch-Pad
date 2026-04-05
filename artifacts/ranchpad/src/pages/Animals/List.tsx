@@ -430,7 +430,12 @@ function SpeciesFolder({
           />
         )}
         <span className="text-2xl leading-none">{speciesIcon(species)}</span>
-        <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
+        <div className="flex-1 min-w-0 text-left">
+          <span className="font-black text-lg text-foreground font-display block truncate">{species}</span>
+          {!open && !selectMode && (
+            <span className="text-xs font-medium text-muted-foreground">tap to open</span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             {animals.length} {animals.length === 1 ? "animal" : "animals"}
@@ -533,9 +538,14 @@ function LocationFolder({
           />
         )}
         <MapPin className={`w-5 h-5 shrink-0 ${isUnassigned ? "text-muted-foreground/50" : "text-primary"}`} />
-        <span className="font-black text-lg text-foreground font-display flex-1 text-left">
-          {isUnassigned ? "Unassigned" : locationName}
-        </span>
+        <div className="flex-1 min-w-0 text-left">
+          <span className="font-black text-lg text-foreground font-display block truncate">
+            {isUnassigned ? "Unassigned" : locationName}
+          </span>
+          {!open && !selectMode && (
+            <span className="text-xs font-medium text-muted-foreground">tap to open</span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
             {animals.length} {animals.length === 1 ? "animal" : "animals"}

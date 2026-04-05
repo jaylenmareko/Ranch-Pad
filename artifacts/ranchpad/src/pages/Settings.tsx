@@ -408,14 +408,14 @@ export default function Settings() {
                 ) : (
                   <>
                     <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
-                    <button type="button" onClick={() => openAssignPanel(loc.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Assign animals">
-                      <ListChecks className="w-3.5 h-3.5" />
+                    <button type="button" onClick={() => openAssignPanel(loc.id)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      <ListChecks className="w-3.5 h-3.5" /> Assign Animals
                     </button>
-                    <button type="button" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Edit name">
-                      <Pencil className="w-3.5 h-3.5" />
+                    <button type="button" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      <Pencil className="w-3.5 h-3.5" /> Edit Name
                     </button>
-                    <button type="button" onClick={() => deleteLocation(loc.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title="Delete">
-                      <Trash2 className="w-3.5 h-3.5" />
+                    <button type="button" onClick={() => deleteLocation(loc.id)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
                   </>
                 )}
