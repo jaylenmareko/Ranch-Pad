@@ -195,53 +195,49 @@ export default function AlertsList() {
 
     const animalLabel = buildAnimalLabel(alert);
     const firstSentence = getFirstSentence(alert.message);
+    const hasMoreContent = alert.message.length > firstSentence.length;
 
     return (
-      <div className="rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors overflow-hidden">
-        {/* Main row — always visible */}
-        <button
-          onClick={() => setExpanded(v => !v)}
-          className="w-full text-left px-3 py-2.5 flex items-start gap-2"
-        >
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        {/* Top: animal + date */}
+        <div className="px-3 pt-3 pb-2 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {animalLabel && (
-              <p className="text-xs font-bold text-foreground truncate">
-                {animalLabel}
-              </p>
+              alert.animalId ? (
+                <Link href={`/animals/${alert.animalId}`} className="text-xs font-bold text-foreground hover:text-primary transition-colors truncate block">
+                  {animalLabel}
+                </Link>
+              ) : (
+                <p className="text-xs font-bold text-foreground truncate">{animalLabel}</p>
+              )
             )}
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-0.5">
-              {firstSentence}
+            <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+              {expanded ? alert.message : firstSentence}
             </p>
           </div>
-          <span className="text-xs text-muted-foreground/50 shrink-0 mt-0.5 whitespace-nowrap">
+          <span className="text-xs text-muted-foreground/50 shrink-0 whitespace-nowrap">
             {format(new Date(alert.generatedAt), "MMM d")}
           </span>
-        </button>
+        </div>
 
-        {/* Expanded detail */}
-        {expanded && (
-          <div className="px-3 pb-3 space-y-2.5 border-t border-border/30 pt-2.5">
-            <p className="text-xs text-foreground/80 leading-relaxed">{alert.message}</p>
-            <div className="flex items-center justify-between">
-              {alert.animalId && (
-                <Link
-                  href={`/animals/${alert.animalId}`}
-                  className="text-xs font-semibold text-primary hover:underline"
-                >
-                  View animal →
-                </Link>
-              )}
-              <div className={!alert.animalId ? "ml-auto" : ""}>
-                <button
-                  onClick={() => dismissMutation.mutate({ alertId: alert.id })}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <CheckCircle2 className="w-3 h-3" /> Resolve
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Action bar — always visible */}
+        <div className="px-3 pb-2.5 flex items-center justify-between">
+          {hasMoreContent ? (
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              {expanded ? "Collapse" : "See details"}
+              <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${expanded ? "rotate-180" : ""}`} />
+            </button>
+          ) : <span />}
+          <button
+            onClick={() => dismissMutation.mutate({ alertId: alert.id })}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-accent px-2.5 py-1 rounded-lg transition-colors"
+          >
+            <CheckCircle2 className="w-3 h-3" /> Mark Resolved
+          </button>
+        </div>
       </div>
     );
   };
