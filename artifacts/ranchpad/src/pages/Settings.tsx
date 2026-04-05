@@ -327,13 +327,13 @@ export default function Settings() {
                 No coordinates set — weather data won't be available until you select your location above.
               </p>
             )}
-
-            <Button type="submit" className="w-full gap-2 mt-2" isLoading={updateMutation.isPending}>
-              <Save className="w-4 h-4" />
-              Save Ranch Settings
-            </Button>
           </CardContent>
         </Card>
+
+        <Button type="submit" className="w-full gap-2" isLoading={updateMutation.isPending}>
+          <Save className="w-4 h-4" />
+          Save Ranch Settings
+        </Button>
       </form>
 
       {/* Pastures & Locations */}
