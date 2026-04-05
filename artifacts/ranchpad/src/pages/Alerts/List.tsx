@@ -331,68 +331,54 @@ export default function AlertsList() {
             <div className="space-y-4">
               {[1,2,3].map(i => <div key={i} className="h-24 bg-card rounded-2xl animate-pulse" />)}
             </div>
-          ) : recordAlerts.length === 0 ? (
-            <div className="text-center py-24 bg-card rounded-3xl border border-border">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="text-2xl font-display font-bold text-foreground">You're all caught up!</h3>
-              <p className="text-muted-foreground mt-2 max-w-sm mx-auto font-medium">
-                No active alerts or pending tasks for your herd.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {(() => {
-                const high = recordAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
-                const medium = recordAlerts.filter(a => a.severity === 'moderate' || a.severity === 'medium');
-                const low = recordAlerts.filter(a => a.severity !== 'critical' && a.severity !== 'high' && a.severity !== 'moderate' && a.severity !== 'medium');
+          ) : (() => {
+              const ALL_TYPES: { key: string; label: string; icon: React.ReactNode }[] = [
+                { key: "severe_health_event", label: "Severe Health Events", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+                { key: "repeat_health",        label: "Repeat Health Issues",  icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+                { key: "famacha_decline",      label: "Declining FAMACHA",     icon: <Info className="w-3.5 h-3.5" /> },
+                { key: "heat_cycle",           label: "Heat Cycle Reminders",  icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+              ];
 
-                function renderTypeGroups(alerts: typeof recordAlerts, severityKey: string) {
-                  const groups = new Map<string, typeof recordAlerts>();
-                  for (const a of alerts) {
-                    const key = getAlertTypeKey(a.alertKey ?? undefined);
-                    if (!groups.has(key)) groups.set(key, []);
-                    groups.get(key)!.push(a);
-                  }
-                  return Array.from(groups.entries()).map(([typeKey, items]) => {
-                    const { label, icon } = getAlertTypeInfo(items[0].alertKey ?? undefined);
-                    return (
-                      <TypeFolder
-                        key={typeKey}
-                        label={label}
-                        count={items.length}
-                        icon={icon}
-                        storageKey={`alert-type-${severityKey}-${typeKey}`}
-                      >
-                        {items.map(a => <AlertRow key={a.id} alert={a} />)}
-                      </TypeFolder>
-                    );
-                  });
-                }
+              const high   = recordAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
+              const medium = recordAlerts.filter(a => a.severity === 'moderate' || a.severity === 'medium');
+              const low    = recordAlerts.filter(a => a.severity !== 'critical' && a.severity !== 'high' && a.severity !== 'moderate' && a.severity !== 'medium');
 
-                return (
-                  <>
-                    {high.length > 0 && (
-                      <SeverityFolder label="High" count={high.length} accentColor="#ef4444" storageKey="alert-folder-high">
-                        {renderTypeGroups(high, 'high')}
-                      </SeverityFolder>
-                    )}
-                    {medium.length > 0 && (
-                      <SeverityFolder label="Medium" count={medium.length} accentColor="#eab308" storageKey="alert-folder-medium">
-                        {renderTypeGroups(medium, 'medium')}
-                      </SeverityFolder>
-                    )}
-                    {low.length > 0 && (
-                      <SeverityFolder label="Low" count={low.length} accentColor="#22c55e" storageKey="alert-folder-low">
-                        {renderTypeGroups(low, 'low')}
-                      </SeverityFolder>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          )}
+              function renderTypes(alerts: typeof recordAlerts, severityKey: string) {
+                return ALL_TYPES.map(({ key: typeKey, label, icon }) => {
+                  const items = alerts.filter(a => getAlertTypeKey(a.alertKey ?? undefined) === typeKey);
+                  return (
+                    <TypeFolder
+                      key={typeKey}
+                      label={label}
+                      count={items.length}
+                      icon={icon}
+                      storageKey={`alert-type-${severityKey}-${typeKey}`}
+                    >
+                      {items.length === 0
+                        ? <p className="text-xs text-muted-foreground px-1 py-1">No active alerts of this type.</p>
+                        : items.map(a => <AlertRow key={a.id} alert={a} />)
+                      }
+                    </TypeFolder>
+                  );
+                });
+              }
+
+              const severities = [
+                { label: "High",   alerts: high,   color: "#ef4444", key: "high"   },
+                { label: "Medium", alerts: medium, color: "#eab308", key: "medium" },
+                { label: "Low",    alerts: low,    color: "#22c55e", key: "low"    },
+              ];
+
+              return (
+                <div className="space-y-3">
+                  {severities.map(({ label, alerts, color, key }) => (
+                    <SeverityFolder key={key} label={label} count={alerts.length} accentColor={color} storageKey={`alert-folder-${key}`}>
+                      {renderTypes(alerts, key)}
+                    </SeverityFolder>
+                  ))}
+                </div>
+              );
+            })()}
         </>
       )}
     </div>
