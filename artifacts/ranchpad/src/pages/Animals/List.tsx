@@ -113,15 +113,18 @@ function AnimalCard({
   selected?: boolean;
   onToggle?: () => void;
 }) {
-  const accentBorder =
+  const accentColor =
     animal.latestHealthSeverity === "high"
-      ? "border-l-2 border-l-destructive"
+      ? "#ef4444"
       : animal.latestHealthSeverity === "medium"
-      ? "border-l-2 border-l-yellow-500"
-      : "border-l-2 border-l-transparent";
+      ? "#eab308"
+      : "transparent";
 
   const inner = (
-    <div className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/20 ${selected ? "bg-primary/5" : ""} ${accentBorder}`}>
+    <div
+      className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/20 ${selected ? "bg-primary/5" : ""}`}
+      style={{ borderLeft: `4px solid ${accentColor}` }}
+    >
       {selectMode && (
         <SelectCheckbox
           checked={!!selected}
