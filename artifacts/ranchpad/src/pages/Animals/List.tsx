@@ -370,48 +370,6 @@ function GuestAnimalList() {
         />
       ) : (
       <>
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
-              <p className="text-muted-foreground font-medium mt-1">{guestAnimals.length} animals</p>
-            </div>
-            <TooltipProvider delayDuration={300}>
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" onClick={downloadTemplate} className="h-10 min-w-[44px] px-2.5 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Download CSV template">
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Download Template</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Download CSV template</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={readingFile} className="h-10 px-3 sm:px-4 rounded-xl font-semibold text-sm" aria-label="Import herd from CSV">
-                      {readingFile
-                        ? <><Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />Reading…</>
-                        : <><Upload className="w-4 h-4 mr-2 shrink-0" />Import CSV</>
-                      }
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Import your herd from a CSV file</TooltipContent>
-                </Tooltip>
-                <Button onClick={handleAddAnimal} className="h-10 px-4 sm:px-5 rounded-xl font-semibold bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-transform text-sm whitespace-nowrap">
-                  <Plus className="w-4 h-4 mr-2" /> Add Animal
-                </Button>
-              </div>
-            </TooltipProvider>
-          </div>
-
-          {importError && (
-            <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-              <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-              <p className="flex-1 text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
-              <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss"><XCircle className="w-4 h-4" /></button>
-            </div>
-          )}
-
           <div className="space-y-4">
             {Object.entries(bySpecies).map(([species, animals]) => (
               <GuestSpeciesFolder key={species} species={species} animals={animals} />
@@ -709,6 +667,15 @@ export default function AnimalList() {
       setLocation("/animals/new");
     }
   }, [isAuthenticated]);
+
+  // Auto-enter select mode when navigated here with ?select=true
+  useEffect(() => {
+    const params = new URLSearchParams(location.includes("?") ? location.split("?")[1] : "");
+    if (params.get("select") === "true") {
+      setSelectMode(true);
+      setLocation("/animals", { replace: true });
+    }
+  }, [location]);
 
   const { data: animals, isLoading } = useListAnimals(
     { search: search.length > 0 ? search : undefined },
@@ -1173,127 +1140,32 @@ export default function AnimalList() {
       ) : (
       <>
 
-      {/* Header */}
-      <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col gap-4">
-        <h1 className="text-xl font-black text-foreground tracking-tight">Herd Directory</h1>
-        <TooltipProvider delayDuration={300}>
-          <div className="flex flex-col gap-3 w-full">
-            {selectMode ? (
-              /* ── Selection mode controls ── */
-              <>
-                <button
-                  onClick={selectAll}
-                  className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full"
-                >
-                  Select All
-                </button>
-                <Button
-                  variant="destructive"
-                  disabled={selectedIds.size === 0}
-                  onClick={() => setBulkDeleteOpen(true)}
-                  className="h-10 px-4 rounded-lg font-semibold text-sm w-full"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete ({selectedIds.size})
-                </Button>
-                <button
-                  onClick={exitSelectMode}
-                  className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              /* ── Normal controls ── */
-              <>
-                {role !== "viewer" && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setScanOpen(true)}
-                        aria-label="Scan record book to add animals"
-                        className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30 w-full"
-                      >
-                        <ScanLine className="w-4 h-4 shrink-0" />
-                        Add from Photo
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Take a photo of your record book — Claude reads it and adds your animals automatically</TooltipContent>
-                  </Tooltip>
-                )}
-                {role !== "viewer" && (
-                  <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full">
-                    <Plus className="w-4 h-4 shrink-0" />
-                    Add Animal
-                  </Link>
-                )}
-                {role !== "viewer" && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={importing}
-                        aria-label="Upload CSV"
-                        className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full disabled:opacity-60"
-                      >
-                        {importing ? (
-                          <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
-                        ) : (
-                          <><Upload className="w-4 h-4 shrink-0" />Upload CSV</>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Upload CSV</TooltipContent>
-                  </Tooltip>
-                )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={downloadTemplate}
-                      aria-label="Download CSV template"
-                      className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full"
-                    >
-                      <Download className="w-4 h-4 shrink-0" />
-                      Download CSV Template
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Download CSV template</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={generateHerdReport}
-                      disabled={isExportingPDF || !animals || (animals as Animal[]).length === 0}
-                      className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full disabled:opacity-60"
-                    >
-                      {isExportingPDF
-                        ? <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Generating…</>
-                        : <><FileDown className="w-4 h-4 shrink-0" />Export Herd Report</>
-                      }
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Export Herd Report as PDF</TooltipContent>
-                </Tooltip>
-                {isOwnerOrHand && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setSelectMode(true)}
-                        aria-label="Select animals to delete"
-                        className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full"
-                      >
-                        <CheckSquare className="w-4 h-4 shrink-0" />
-                        Select Multiple Animals to Delete
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Select multiple animals to delete</TooltipContent>
-                  </Tooltip>
-                )}
-              </>
-            )}
-          </div>
-        </TooltipProvider>
-      </div>
+      {/* Select-mode toolbar */}
+      {selectMode && (
+        <div className="flex gap-2">
+          <button
+            onClick={selectAll}
+            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex-1"
+          >
+            Select All
+          </button>
+          <Button
+            variant="destructive"
+            disabled={selectedIds.size === 0}
+            onClick={() => setBulkDeleteOpen(true)}
+            className="h-10 px-4 rounded-lg font-semibold text-sm flex-1"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete ({selectedIds.size})
+          </Button>
+          <button
+            onClick={exitSelectMode}
+            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex-1"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       {/* Active / Archived tab bar */}
       {!selectMode && (

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Link } from "wouter";
-import { ScanLine, Plus, Upload, Download, FileDown, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { ScanLine, Plus, Upload, Download, FileDown, Loader2, CheckCircle, XCircle, CheckSquare } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useRanch } from "@/contexts/ranch-context";
@@ -397,6 +397,13 @@ export function ImportExport() {
               <><FileDown className="w-4 h-4 shrink-0" />Export Herd Report</>
             )}
           </button>
+
+          {!isViewer && (
+            <Link href="/animals?select=true" className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full">
+              <CheckSquare className="w-4 h-4 shrink-0" />
+              Select Multiple Animals to Delete
+            </Link>
+          )}
         </div>
       </div>
 
