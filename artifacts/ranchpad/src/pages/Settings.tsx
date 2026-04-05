@@ -238,7 +238,6 @@ export default function Settings() {
     <div className="space-y-8 max-w-2xl mx-auto">
       <div>
         <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Ranch Settings</h1>
-        <p className="text-muted-foreground font-medium mt-1">Manage your ranch name and location.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
