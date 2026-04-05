@@ -127,7 +127,7 @@ export default function AlertsList() {
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
-        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alert Center</h1>
+        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alerts</h1>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
             <AlertTriangle className="w-10 h-10 text-primary/50" />
@@ -246,7 +246,7 @@ export default function AlertsList() {
       ) : (
         <>
           <div>
-            <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alert Center</h1>
+            <h1 className="text-xl font-black text-foreground whitespace-nowrap">Alerts</h1>
           </div>
 
           {importError && (
