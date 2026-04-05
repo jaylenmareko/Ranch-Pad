@@ -6,6 +6,7 @@ import { AlertTriangle, Info, CheckCircle2, PawPrint, ChevronDown } from "lucide
 import { useListAlerts, useDismissAlert, useListAnimals, useGenerateAlerts, type Alert, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "@/lib/utils";
+import { format } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
@@ -182,6 +183,7 @@ export default function AlertsList() {
                   </button>
                 )}
               </p>
+              <p className="text-xs opacity-50 mt-1">{format(new Date(alert.generatedAt), "MMM d · h:mm a")}</p>
             </div>
             <div className="shrink-0 flex items-center gap-2">
               <Button
