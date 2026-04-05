@@ -274,181 +274,99 @@ export default function Team() {
     assignments: assignments.filter(a => a.viewerUserId === v.userId),
   }));
 
+  const [inviteOpen, setInviteOpen] = useState(false);
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto pb-20">
-      <div>
-        <h1 className="text-2xl font-black font-display text-foreground">Team</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage who has access to your ranch</p>
+    <div className="space-y-5 max-w-lg mx-auto pb-20">
+
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black font-display text-foreground">Team</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage who has access to your ranch</p>
+        </div>
+        <button
+          onClick={() => { setInviteOpen(v => !v); setInviteUrl(null); }}
+          className={`shrink-0 flex items-center gap-1.5 h-9 px-4 rounded-xl text-sm font-semibold transition-colors border ${
+            inviteOpen
+              ? "bg-muted border-border text-muted-foreground"
+              : "bg-primary border-primary text-primary-foreground hover:bg-primary/90"
+          }`}
+        >
+          <Link2 className="w-3.5 h-3.5" />
+          {inviteOpen ? "Cancel" : "Invite"}
+        </button>
       </div>
 
-      {/* ── Members ──────────────────────────────────────────────────────── */}
-      <Card className="border border-border bg-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <Users className="w-4 h-4 text-primary" />
-            Team Members
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1 p-0 pb-2">
-          {members.length === 0 ? (
-            <p className="text-sm text-muted-foreground px-6 pb-4">No team members yet. Generate an invite link below to add someone.</p>
-          ) : (
-            members.map(m => (
-              <div key={m.userId} className="flex items-center gap-3 px-6 py-3 hover:bg-white/3 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
-                </div>
-                {m.role !== "owner" && (
-                  <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
-                )}
-                <div className="flex items-center gap-1 shrink-0">
-                  <RoleBadge role={m.role} />
-                  {m.role !== "owner" && (
-                    <button
-                      onClick={() => removeMember(m.userId, m.name)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                      title="Remove member"
-                    >
-                      <UserMinus className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ── Generate Invite ───────────────────────────────────────────────── */}
-      <Card className="border border-border bg-card">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-bold">
-            <Link2 className="w-4 h-4 text-primary" />
-            Invite Someone
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground mb-1.5">Role</p>
-              <div className="flex gap-2">
-                <RoleToggleButton
-                  active={inviteRole === "ranch_hand"}
-                  icon={<Shield className="w-3.5 h-3.5" />}
-                  label="Ranch Hand"
-                  description="Can add and edit records"
-                  onClick={() => { setInviteRole("ranch_hand"); setInviteUrl(null); }}
-                />
-                <RoleToggleButton
-                  active={inviteRole === "viewer"}
-                  icon={<Eye className="w-3.5 h-3.5" />}
-                  label="Viewer"
-                  description="Read-only, assigned animals only"
-                  onClick={() => { setInviteRole("viewer"); setInviteUrl(null); }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Button onClick={generateInvite} disabled={generating} className="w-full sm:w-auto">
-            {generating ? "Generating…" : "Generate Invite Link"}
-          </Button>
-
-          {inviteUrl && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-              <p className="flex-1 text-xs font-mono text-foreground truncate">{inviteUrl}</p>
-              <button
-                onClick={copyInviteUrl}
-                className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-                title="Copy link"
-              >
-                {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          )}
-
-          <p className="text-xs text-muted-foreground">
-            Links expire in 24 hours and can only be used once.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* ── Animal Assignments (viewers) ──────────────────────────────────── */}
-      {viewersWithAssignments.length > 0 && (
+      {/* ── Invite Panel (slide-in when open) ─────────────────────────────── */}
+      {inviteOpen && (
         <Card className="border border-border bg-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <Eye className="w-4 h-4 text-primary" />
-              Viewer Animal Access
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-5 space-y-4">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Select a role</p>
+            <div className="flex gap-2">
+              <RoleToggleButton
+                active={inviteRole === "ranch_hand"}
+                icon={<Shield className="w-3.5 h-3.5" />}
+                label="Ranch Hand"
+                description="Can add and edit records"
+                onClick={() => { setInviteRole("ranch_hand"); setInviteUrl(null); }}
+              />
+              <RoleToggleButton
+                active={inviteRole === "viewer"}
+                icon={<Eye className="w-3.5 h-3.5" />}
+                label="Viewer"
+                description="Read-only, assigned animals only"
+                onClick={() => { setInviteRole("viewer"); setInviteUrl(null); }}
+              />
+            </div>
+
+            <button
+              onClick={generateInvite}
+              disabled={generating}
+              className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            >
+              {generating ? "Generating…" : "Generate Invite Link"}
+            </button>
+
+            {inviteUrl && (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                <p className="flex-1 text-xs font-mono text-foreground truncate">{inviteUrl}</p>
+                <button
+                  onClick={copyInviteUrl}
+                  className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                  title="Copy link"
+                >
+                  {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            )}
+
             <p className="text-xs text-muted-foreground">
-              Viewers only see animals assigned to them. Use the dropdowns below to control their access.
+              Links expire in 24 hours and can only be used once.
             </p>
-            {viewersWithAssignments.map(viewer => (
-              <ViewerAssignmentRow
-                key={viewer.userId}
-                viewer={viewer}
-                allAnimals={allAnimals}
-                onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
-                onRemove={removeAssignment}
-                onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
-              />
-            ))}
           </CardContent>
         </Card>
       )}
 
-      {/* ── Pending Invites ───────────────────────────────────────────────── */}
-      {pendingInvites.length > 0 && (
-        <Card className="border border-border bg-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <Link2 className="w-4 h-4 text-primary" />
-              Pending Invites
-              <span className="ml-auto text-xs font-normal text-muted-foreground">{pendingInvites.length} active</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1 p-0 pb-2">
-            {pendingInvites.map(inv => (
-              <PendingInviteRow
-                key={inv.id}
-                invite={inv}
-                onRevoke={() => revokeInvite(inv.id)}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Delete Requests ───────────────────────────────────────────────── */}
+      {/* ── Deletion Requests (shown prominently if any) ───────────────────── */}
       {pendingRequests.length > 0 && (
-        <Card className="border border-amber-500/30 bg-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base font-bold">
-              <ClipboardList className="w-4 h-4 text-amber-400" />
-              Deletion Requests
-              <span className="ml-1 text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                {pendingRequests.length} pending
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-amber-500/20">
+            <ClipboardList className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-sm font-bold text-foreground flex-1">Deletion Requests</span>
+            <span className="text-xs font-bold bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded-full">
+              {pendingRequests.length}
+            </span>
+          </div>
+          <div className="divide-y divide-amber-500/10">
             {pendingRequests.map(req => (
-              <div key={req.id} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border">
+              <div key={req.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {resourceTypeLabel(req.resourceType)}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{req.resourceName}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Requested by {req.requesterName} · {new Date(req.createdAt).toLocaleDateString()}
+                  <p className="text-sm font-semibold text-foreground truncate">{req.resourceName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {resourceTypeLabel(req.resourceType)} · {req.requesterName}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -469,7 +387,94 @@ export default function Team() {
                 </div>
               </div>
             ))}
-          </CardContent>
+          </div>
+        </div>
+      )}
+
+      {/* ── Members + Pending Invites ──────────────────────────────────────── */}
+      <Card className="border border-border bg-card overflow-hidden">
+        {/* Members */}
+        {members.length === 0 ? (
+          <div className="px-5 py-8 text-center">
+            <Users className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No team members yet.</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Use the Invite button above to add someone.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {members.map(m => (
+              <div key={m.userId} className="flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors">
+                {/* Avatar initial */}
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <span className="text-xs font-bold text-muted-foreground">{m.name.charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+                </div>
+                {m.role !== "owner" && (
+                  <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
+                )}
+                <div className="flex items-center gap-1 shrink-0">
+                  <RoleBadge role={m.role} />
+                  {m.role !== "owner" && (
+                    <button
+                      onClick={() => removeMember(m.userId, m.name)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Remove member"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pending Invites — inline below members */}
+        {pendingInvites.length > 0 && (
+          <div className="border-t border-border">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30">
+              <Link2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex-1">Pending Invites</span>
+              <span className="text-xs text-muted-foreground">{pendingInvites.length}</span>
+            </div>
+            <div className="divide-y divide-border">
+              {pendingInvites.map(inv => (
+                <PendingInviteRow
+                  key={inv.id}
+                  invite={inv}
+                  onRevoke={() => revokeInvite(inv.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* ── Viewer Animal Access ───────────────────────────────────────────── */}
+      {viewersWithAssignments.length > 0 && (
+        <Card className="border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border">
+            <Eye className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-sm font-bold text-foreground flex-1">Viewer Animal Access</span>
+          </div>
+          <div className="p-4 space-y-4">
+            <p className="text-xs text-muted-foreground">
+              Viewers only see animals assigned to them.
+            </p>
+            {viewersWithAssignments.map(viewer => (
+              <ViewerAssignmentRow
+                key={viewer.userId}
+                viewer={viewer}
+                allAnimals={allAnimals}
+                onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
+                onRemove={removeAssignment}
+                onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
+              />
+            ))}
+          </div>
         </Card>
       )}
     </div>
