@@ -35,6 +35,7 @@ import AccountSettings from "@/pages/AccountSettings";
 import Paywall from "@/pages/Paywall";
 import Team from "@/pages/Team";
 import InviteAccept from "@/pages/InviteAccept";
+import { ImportExport } from "@/pages/ImportExport";
 
 import type { BillingStatus } from "@/hooks/use-billing";
 
@@ -165,6 +166,7 @@ function AppContent() {
       <Route path="/animals/:id/edit" component={AnimalForm} />
       <Route path="/animals/:id" component={AnimalDetail} />
       <Route path="/alerts" component={AlertsList} />
+      <Route path="/import-export" component={ImportExport} />
       <Route path="/settings" component={Settings} />
       <Route path="/account" component={AccountSettings} />
       <Route path="/team" component={Team} />

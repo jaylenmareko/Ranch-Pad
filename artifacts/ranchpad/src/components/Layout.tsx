@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse, Users,
-  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor, UserCog, X, FolderOpen
+  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor, UserCog, X, FolderOpen, ArrowUpDown
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,7 @@ function getOwnerRanchItems(): NavItem[] {
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Animals" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
   ];
 }
 
@@ -41,6 +42,7 @@ function getViewerItems(): NavItem[] {
   return [
     { href: "/animals", icon: CowIcon, label: "Animals" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
   ];
 }
 
@@ -49,6 +51,7 @@ function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Animals" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/settings", icon: Settings, label: "Ranch Settings" },
     { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
   ];
@@ -60,6 +63,7 @@ function getFlatNavItems(pendingDeleteRequests: number): NavItem[] {
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Animals" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/settings", icon: Settings, label: "Ranch Settings" },
     { href: "/account", icon: UserCog, label: "Account Settings" },
     { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
