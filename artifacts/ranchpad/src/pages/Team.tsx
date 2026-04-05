@@ -301,10 +301,12 @@ export default function Team() {
                   <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{m.email}</p>
                 </div>
-                <RoleBadge role={m.role} />
                 {m.role !== "owner" && (
-                  <div className="flex items-center gap-1">
-                    <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
+                  <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
+                )}
+                <div className="flex items-center gap-1 shrink-0">
+                  <RoleBadge role={m.role} />
+                  {m.role !== "owner" && (
                     <button
                       onClick={() => removeMember(m.userId, m.name)}
                       className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
@@ -312,8 +314,8 @@ export default function Team() {
                     >
                       <UserMinus className="w-4 h-4" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))
           )}
