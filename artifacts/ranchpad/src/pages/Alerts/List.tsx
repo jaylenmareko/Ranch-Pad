@@ -1,17 +1,47 @@
 import React, { useRef, useState } from "react";
 import { Link } from "wouter";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, Info, CheckCircle2, PawPrint, ChevronDown } from "lucide-react";
+import { AlertTriangle, Info, CheckCircle2, ChevronDown } from "lucide-react";
 import { useListAlerts, useDismissAlert, useListAnimals, useGenerateAlerts, type Alert, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatDate } from "@/lib/utils";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
 import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
+
+function SeverityFolder({
+  label, count, accentColor, defaultOpen, children
+}: {
+  label: string; count: number; accentColor: string; defaultOpen: boolean; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
+      >
+        <ChevronDown
+          className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+        />
+        <span className="font-bold text-sm text-foreground flex-1">{label}</span>
+        <span
+          className="text-xs font-bold px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+        >
+          {count} {count === 1 ? 'alert' : 'alerts'}
+        </span>
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2.5 border-t border-border/50 pt-3">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AlertsList() {
   const { isAuthenticated, role } = useAuth();
@@ -268,13 +298,31 @@ export default function AlertsList() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <h3 className="font-display font-bold text-xl flex items-center gap-2">
-                <PawPrint className="w-5 h-5 text-accent" /> Herd Health &amp; Tasks
-              </h3>
-              <div className="grid gap-3">
-                {recordAlerts.map(a => <AlertRow key={a.id} alert={a} />)}
-              </div>
+            <div className="space-y-3">
+              {(() => {
+                const high = recordAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
+                const medium = recordAlerts.filter(a => a.severity === 'moderate' || a.severity === 'medium');
+                const low = recordAlerts.filter(a => a.severity !== 'critical' && a.severity !== 'high' && a.severity !== 'moderate' && a.severity !== 'medium');
+                return (
+                  <>
+                    {high.length > 0 && (
+                      <SeverityFolder label="High" count={high.length} accentColor="#ef4444" defaultOpen={true}>
+                        {high.map(a => <AlertRow key={a.id} alert={a} />)}
+                      </SeverityFolder>
+                    )}
+                    {medium.length > 0 && (
+                      <SeverityFolder label="Medium" count={medium.length} accentColor="#eab308" defaultOpen={high.length === 0}>
+                        {medium.map(a => <AlertRow key={a.id} alert={a} />)}
+                      </SeverityFolder>
+                    )}
+                    {low.length > 0 && (
+                      <SeverityFolder label="Low" count={low.length} accentColor="#22c55e" defaultOpen={high.length === 0 && medium.length === 0}>
+                        {low.map(a => <AlertRow key={a.id} alert={a} />)}
+                      </SeverityFolder>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </>
