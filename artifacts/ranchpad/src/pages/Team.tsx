@@ -415,7 +415,7 @@ export default function Team() {
                   <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
                 )}
                 <div className="flex items-center gap-1 shrink-0">
-                  <RoleBadge role={m.role} />
+                  {m.role === "owner" && <RoleBadge role={m.role} />}
                   {m.role !== "owner" && (
                     <button
                       onClick={() => removeMember(m.userId, m.name)}
