@@ -1266,7 +1266,7 @@ function FamachaTab({ animalId }: { animalId: number }) {
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">How score alerts work</p>
         <div className="flex items-start gap-2 text-xs text-muted-foreground">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-yellow-500" />
-          <span>An alert fires in the Action Center when three consecutive readings are each worse than the last — for example, 2 → 3 → 4.</span>
+          <span>An alert fires in the Alert Center when three consecutive readings are each worse than the last — for example, 2 → 3 → 4.</span>
         </div>
         <div className="flex items-start gap-2 text-xs text-muted-foreground">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground/50" />
