@@ -138,8 +138,26 @@ export default function Settings() {
   useEffect(() => {
     if (ranch) {
       setName(ranch.name ?? "");
-      setLat(ranch.lat ?? null);
-      setLon(ranch.lon ?? null);
+      const ranchLat = ranch.lat ?? null;
+      const ranchLon = ranch.lon ?? null;
+      setLat(ranchLat);
+      setLon(ranchLon);
+
+      // Reverse-geocode to populate the address input with the saved location
+      if (ranchLat !== null && ranchLon !== null) {
+        fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${ranchLat}&lon=${ranchLon}&format=json`,
+          { headers: { "User-Agent": "RanchPad/1.0" } }
+        )
+          .then(r => r.json())
+          .then(data => {
+            if (data.display_name) {
+              setAddress(data.display_name);
+              setGeocodeLabel(data.display_name);
+            }
+          })
+          .catch(() => {});
+      }
     }
   }, [ranch]);
 
