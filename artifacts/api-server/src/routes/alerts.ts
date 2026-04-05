@@ -9,7 +9,7 @@ import {
   ranchesTable,
   animalAssignmentsTable,
 } from "@workspace/db";
-import { eq, and, gte, lte, isNull, sql, desc } from "drizzle-orm";
+import { eq, and, gte, isNull, sql, desc } from "drizzle-orm";
 import { requireAuth, requireNotViewer } from "../middlewares/auth.js";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -87,58 +87,13 @@ async function upsertAlert(alert: {
 async function generateRecordAlerts(ranchId: number): Promise<number> {
   let created = 0;
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
 
   const animals = await db
     .select()
     .from(animalsTable)
     .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)));
 
-  // 1. Overdue medications + due soon (within 7 days)
-  const sevenDaysFromNow = new Date(today);
-  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-  const sevenDaysFromNowStr = sevenDaysFromNow.toISOString().split("T")[0];
-
-  for (const animal of animals) {
-    const medications = await db
-      .select()
-      .from(medicationRecordsTable)
-      .where(eq(medicationRecordsTable.animalId, animal.id));
-
-    for (const med of medications) {
-      if (!med.nextDueDate) continue;
-
-      if (med.nextDueDate < todayStr) {
-        // Strictly overdue
-        const key = makeKey("overdue_med", animal.id, med.id);
-        const wasCreated = await upsertAlert({
-          ranchId,
-          animalId: animal.id,
-          alertType: "record",
-          alertKey: key,
-          message: `${animal.name} is overdue for ${med.medicationName} (was due ${med.nextDueDate})`,
-          severity: "high",
-        });
-        if (wasCreated) created++;
-      } else if (med.nextDueDate <= sevenDaysFromNowStr) {
-        // Due today or within 7 days
-        const daysUntil = Math.round((new Date(med.nextDueDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        const when = daysUntil === 0 ? "today" : daysUntil === 1 ? "tomorrow" : `in ${daysUntil} days`;
-        const key = makeKey("due_soon_med", animal.id, med.id, med.nextDueDate);
-        const wasCreated = await upsertAlert({
-          ranchId,
-          animalId: animal.id,
-          alertType: "record",
-          alertKey: key,
-          message: `${animal.name} is due for ${med.medicationName} ${when} (${med.nextDueDate})`,
-          severity: daysUntil === 0 ? "medium" : "low",
-        });
-        if (wasCreated) created++;
-      }
-    }
-  }
-
-  // 1b. Recent high-severity health events (last 14 days)
+  // 1. Recent high-severity health events (last 14 days)
   const fourteenDaysAgo = new Date(today);
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
   const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split("T")[0];
@@ -258,37 +213,6 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
         alertKey: key,
         message: `${animal.name} (${animal.species}) may be entering her heat cycle (~${cycleDays}-day cycle)`,
         severity: "low",
-      });
-      if (wasCreated) created++;
-    }
-  }
-
-  // 5. Calving/kidding due-date alerts (30 days before and on due date)
-  for (const animal of animals) {
-    if (!animal.expectedDueDate) continue;
-    const dueDate = new Date(animal.expectedDueDate + "T12:00:00");
-    const daysUntil = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-    // Alert 30 days before
-    if (daysUntil >= 28 && daysUntil <= 30) {
-      const key = makeKey("calving_soon", animal.id, animal.expectedDueDate);
-      const wasCreated = await upsertAlert({
-        ranchId, animalId: animal.id, alertType: "record",
-        alertKey: key,
-        message: `${animal.name} is due to calve/kid in ~${daysUntil} days (${animal.expectedDueDate}) — prepare birthing area`,
-        severity: "medium",
-      });
-      if (wasCreated) created++;
-    }
-
-    // Alert on due date
-    if (daysUntil >= -1 && daysUntil <= 1) {
-      const key = makeKey("calving_due", animal.id, animal.expectedDueDate);
-      const wasCreated = await upsertAlert({
-        ranchId, animalId: animal.id, alertType: "record",
-        alertKey: key,
-        message: `${animal.name} is due to calve/kid today (${animal.expectedDueDate}) — monitor closely`,
-        severity: "high",
       });
       if (wasCreated) created++;
     }

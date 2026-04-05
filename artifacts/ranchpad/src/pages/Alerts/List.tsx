@@ -122,7 +122,7 @@ export default function AlertsList() {
   }
 
   const activeAlerts = alerts?.filter(a => !a.isDismissed) || [];
-  const DASHBOARD_ONLY_PREFIXES = ['overdue_med_', 'due_soon_med_', 'calving_soon_', 'calving_due_'];
+  const DASHBOARD_ONLY_PREFIXES = ['overdue_med|', 'due_soon_med|', 'calving_soon|', 'calving_due|'];
   const recordAlerts = activeAlerts.filter(a =>
     a.alertType !== 'weather_forecast' &&
     !DASHBOARD_ONLY_PREFIXES.some(prefix => a.alertKey?.startsWith(prefix))

@@ -1,4 +1,4 @@
-import { db, ranchesTable, alertsTable, animalsTable, medicationRecordsTable, healthEventsTable, famachaScoresTable } from "@workspace/db";
+import { db, ranchesTable, alertsTable, animalsTable, healthEventsTable, famachaScoresTable } from "@workspace/db";
 import { eq, and, gte, sql } from "drizzle-orm";
 
 export async function checkDbConnectivity(): Promise<void> {
@@ -57,7 +57,6 @@ async function upsertAlert(alert: {
 export async function generateAlertsForAllRanches(): Promise<void> {
   const ranches = await db.select({ id: ranchesTable.id }).from(ranchesTable);
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split("T")[0];
@@ -67,22 +66,6 @@ export async function generateAlertsForAllRanches(): Promise<void> {
     const animals = await db.select().from(animalsTable).where(eq(animalsTable.ranchId, ranchId));
 
     for (const animal of animals) {
-      const medications = await db
-        .select()
-        .from(medicationRecordsTable)
-        .where(eq(medicationRecordsTable.animalId, animal.id));
-
-      for (const med of medications) {
-        if (med.nextDueDate && med.nextDueDate < todayStr) {
-          await upsertAlert({
-            ranchId, animalId: animal.id, alertType: "record",
-            alertKey: makeKey("overdue_med", animal.id, med.id),
-            message: `${animal.name} is overdue for ${med.medicationName} (due ${med.nextDueDate})`,
-            severity: "medium",
-          });
-        }
-      }
-
       const recentEvents = await db
         .select()
         .from(healthEventsTable)
