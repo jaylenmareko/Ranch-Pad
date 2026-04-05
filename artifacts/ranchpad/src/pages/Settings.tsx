@@ -363,11 +363,7 @@ export default function Settings() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {locations.length === 0 ? (
-            <p className="text-sm text-muted-foreground font-medium">
-              No locations yet — add your first pasture or pen below.
-            </p>
-          ) : (
+          {locations.length > 0 && (
             <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
               {locations.map(loc => (
                 <li
