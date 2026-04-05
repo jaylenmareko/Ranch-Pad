@@ -540,7 +540,7 @@ function LocationFolder({
         <MapPin className={`w-5 h-5 shrink-0 ${isUnassigned ? "text-muted-foreground/50" : "text-primary"}`} />
         <div className="flex-1 min-w-0 text-left">
           <span className="font-black text-lg text-foreground font-display block truncate">
-            {isUnassigned ? "Unassigned" : locationName}
+            {isUnassigned ? "No Location Set" : locationName}
           </span>
           {!open && !selectMode && (
             <span className="text-xs font-medium text-muted-foreground">tap to open</span>
