@@ -410,7 +410,6 @@ export default function Team() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
                 </div>
                 {m.role !== "owner" && (
                   <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
