@@ -1169,7 +1169,7 @@ export default function AnimalList() {
 
       {/* Active / Archived tab bar */}
       {!selectMode && (
-        <div className="flex border-b border-border/60 pb-px gap-6">
+        <div className="flex items-center border-b border-border/60 pb-px gap-6">
           <button
             onClick={() => setShowArchived(false)}
             className={`flex items-center gap-2 py-2.5 px-1 text-sm font-bold transition-all border-b-2 ${
@@ -1188,6 +1188,15 @@ export default function AnimalList() {
             <Archive className="w-4 h-4" />
             Archived
           </button>
+          {isOwnerOrHand && (
+            <button
+              onClick={() => setSelectMode(true)}
+              className="ml-auto flex items-center gap-1.5 py-1.5 px-3 text-sm font-semibold rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          )}
         </div>
       )}
 
