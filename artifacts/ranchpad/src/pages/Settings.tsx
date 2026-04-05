@@ -152,7 +152,6 @@ export default function Settings() {
           .then(r => r.json())
           .then(data => {
             if (data.display_name) {
-              setAddress(data.display_name);
               setGeocodeLabel(data.display_name);
             }
           })
@@ -287,58 +286,57 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground font-medium">
-              Enter your ranch address to automatically find coordinates. These are used for weather data and AI alerts.
-            </p>
-
-            <div className="relative">
-              <Input
-                value={address}
-                onChange={e => handleAddressChange(e.target.value)}
-                placeholder="Start typing your address…"
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                autoComplete="off"
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-lg overflow-hidden">
-                  {suggestions.map((s, i) => (
-                    <li
-                      key={i}
-                      onMouseDown={() => selectSuggestion(s)}
-                      className="px-4 py-2.5 text-sm cursor-pointer hover:bg-muted text-foreground truncate border-b border-border last:border-0"
-                    >
-                      {s.display_name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
+            {/* Current Address display */}
             {lat !== null && lon !== null && (
-              <div className="rounded-xl border p-4 space-y-2 bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {geocodeLabel && (
-                      <p className="text-xs text-muted-foreground font-medium truncate mb-1">{geocodeLabel}</p>
-                    )}
-                    <p className="text-sm font-bold text-foreground font-mono">
-                      {lat.toFixed(6)}, {lon.toFixed(6)}
-                    </p>
-                  </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Current Address</Label>
+                <div className="flex items-start gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2.5">
+                  <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <p className="flex-1 text-sm text-foreground font-medium leading-snug min-w-0 break-words">
+                    {geocodeLabel ?? `${lat.toFixed(6)}, ${lon.toFixed(6)}`}
+                  </p>
                   <button
                     type="button"
                     onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
-                    className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
-                    title="Clear coordinates"
-                    aria-label="Clear coordinates"
+                    className="p-1 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
+                    title="Clear location"
+                    aria-label="Clear location"
                   >
                     <XCircle className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             )}
+
+            {/* New address search */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                {lat !== null ? "Enter New Address" : "Address"}
+              </Label>
+              <div className="relative">
+                <Input
+                  value={address}
+                  onChange={e => handleAddressChange(e.target.value)}
+                  placeholder="Enter new address…"
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  autoComplete="off"
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-lg overflow-hidden">
+                    {suggestions.map((s, i) => (
+                      <li
+                        key={i}
+                        onMouseDown={() => selectSuggestion(s)}
+                        className="px-4 py-2.5 text-sm cursor-pointer hover:bg-muted text-foreground truncate border-b border-border last:border-0"
+                      >
+                        {s.display_name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
 
             {lat === null && lon === null && (
               <p className="text-xs text-muted-foreground font-medium">
