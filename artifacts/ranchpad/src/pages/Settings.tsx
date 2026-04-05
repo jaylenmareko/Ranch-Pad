@@ -245,8 +245,7 @@ export default function Settings() {
         {/* Ranch Info */}
         <Card className="shadow-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold">
-              <Building2 className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-bold">
               Ranch Info
             </CardTitle>
           </CardHeader>
@@ -266,8 +265,7 @@ export default function Settings() {
         {/* Location */}
         <Card className="shadow-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold">
-              <MapPin className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-bold">
               Location
             </CardTitle>
           </CardHeader>
@@ -342,8 +340,7 @@ export default function Settings() {
       {/* Pastures & Locations */}
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <FolderOpen className="w-5 h-5 text-primary" />
+          <CardTitle className="text-lg font-bold">
             Pastures &amp; Locations
           </CardTitle>
           <p className="text-sm text-muted-foreground font-medium">
