@@ -20,8 +20,6 @@ export default function Settings() {
   const { data: ranch, isLoading } = useGetRanch({ query: { enabled: isAuthenticated } });
 
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
 
@@ -140,8 +138,6 @@ export default function Settings() {
   useEffect(() => {
     if (ranch) {
       setName(ranch.name ?? "");
-      setCity(ranch.locationCity ?? "");
-      setState(ranch.locationState ?? "");
       setLat(ranch.lat ?? null);
       setLon(ranch.lon ?? null);
     }
@@ -232,8 +228,6 @@ export default function Settings() {
     updateMutation.mutate({
       data: {
         name: name || undefined,
-        locationCity: city || null,
-        locationState: state || null,
         lat: lat ?? null,
         lon: lon ?? null,
       },
@@ -265,24 +259,6 @@ export default function Settings() {
                 placeholder="e.g. Double Bar Ranch"
                 required
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>City</Label>
-                <Input
-                  value={city}
-                  onChange={e => setCity(e.target.value)}
-                  placeholder="e.g. Wichita"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>State</Label>
-                <Input
-                  value={state}
-                  onChange={e => setState(e.target.value)}
-                  placeholder="e.g. Kansas"
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
