@@ -588,8 +588,6 @@ function LocationFolder({
 export default function AnimalList() {
   const [location, setLocation] = useLocation();
   const [search, setSearch] = useState("");
-  const [sexFilter, setSexFilter] = useState("All");
-  const [breedFilter, setBreedFilter] = useState("All");
 
   const dueSoonFilter = new URLSearchParams(location.includes("?") ? location.split("?")[1] : "").get("filter") === "due-soon";
   const [importing, setImporting] = useState(false);
@@ -1013,18 +1011,13 @@ export default function AnimalList() {
         (a.tagNumber && a.tagNumber.toLowerCase().includes(lower))
       );
     }
-    if (sexFilter !== "All") result = result.filter(a => a.sex === sexFilter);
-    if (breedFilter !== "All") result = result.filter(a => a.breed === breedFilter);
+
 
     return result;
-  }, [animals, search, sexFilter, breedFilter, dueSoonFilter]);
-
-  const uniqueBreeds: string[] = ["All", ...Array.from(new Set((animals || []).map((a: Animal) => a.breed).filter(Boolean))).sort() as string[]];
-  const hasActiveFilters = sexFilter !== "All" || breedFilter !== "All" || dueSoonFilter;
+  }, [animals, search, dueSoonFilter]);
+  const hasActiveFilters = dueSoonFilter;
 
   function clearAllFilters() {
-    setSexFilter("All");
-    setBreedFilter("All");
     if (dueSoonFilter) setLocation("/animals");
   }
 
@@ -1237,26 +1230,6 @@ export default function AnimalList() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <select
-              value={breedFilter}
-              onChange={e => setBreedFilter(e.target.value)}
-              className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-48"
-            >
-              {uniqueBreeds.map(breed => (
-                <option key={breed} value={breed}>{breed === "All" ? "All Breeds" : breed}</option>
-              ))}
-            </select>
-            <select
-              value={sexFilter}
-              onChange={e => setSexFilter(e.target.value)}
-              className="h-12 px-4 rounded-xl border-none bg-muted/30 font-medium text-sm focus:outline-none focus:bg-background transition-colors w-full md:w-36"
-            >
-              <option value="All">All Sexes</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Wether">Wether</option>
-              <option value="Castrated">Castrated</option>
-            </select>
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="shrink-0 text-destructive hover:text-destructive">
                 Clear filters

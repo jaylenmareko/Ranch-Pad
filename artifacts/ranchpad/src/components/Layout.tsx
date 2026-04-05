@@ -32,7 +32,7 @@ interface NavItem {
 function getOwnerRanchItems(): NavItem[] {
   return [
     { href: "/", icon: Home, label: "Dashboard" },
-    { href: "/animals", icon: CowIcon, label: "Animals" },
+    { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
     { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
   ];
@@ -40,7 +40,7 @@ function getOwnerRanchItems(): NavItem[] {
 
 function getViewerItems(): NavItem[] {
   return [
-    { href: "/animals", icon: CowIcon, label: "Animals" },
+    { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
     { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
   ];
@@ -49,7 +49,7 @@ function getViewerItems(): NavItem[] {
 function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
   return [
     { href: "/", icon: Home, label: "Dashboard" },
-    { href: "/animals", icon: CowIcon, label: "Animals" },
+    { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
     { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/settings", icon: Settings, label: "Ranch Settings" },
@@ -61,7 +61,7 @@ function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
 function getFlatNavItems(pendingDeleteRequests: number): NavItem[] {
   return [
     { href: "/", icon: Home, label: "Dashboard" },
-    { href: "/animals", icon: CowIcon, label: "Animals" },
+    { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
     { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/settings", icon: Settings, label: "Ranch Settings" },
