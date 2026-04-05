@@ -11,7 +11,7 @@ const createRanchNoteSchema = z.object({
   noteText: z.string().min(1),
 });
 
-router.get("/api/ranch-notes", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+router.get("/ranch-notes", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const notes = await db
     .select()
@@ -21,7 +21,7 @@ router.get("/api/ranch-notes", requireAuth, requireNotViewer, async (req, res): 
   res.json(notes);
 });
 
-router.post("/api/ranch-notes", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+router.post("/ranch-notes", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const userId = req.user!.userId;
 
