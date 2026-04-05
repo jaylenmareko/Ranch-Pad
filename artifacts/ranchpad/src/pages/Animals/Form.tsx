@@ -3,7 +3,6 @@ import { useLocation, useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Users, Search, X, Check, MapPin } from "lucide-react";
@@ -416,188 +415,189 @@ export default function AnimalForm() {
   );
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <button
-        onClick={() => window.history.back()}
-        className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back
-      </button>
+    <div className="max-w-lg mx-auto pb-20 space-y-6">
 
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-foreground">{isEditing ? "Edit Animal Profile" : "Add New Animal"}</h1>
-        <p className="text-muted-foreground mt-1 font-medium">Record basic information about this animal.</p>
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+        </button>
+        <h1 className="text-xl font-black text-foreground">{isEditing ? "Edit Animal" : "Add Animal"}</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Fill in what you know — everything except name and species is optional.</p>
       </div>
 
-      <Card className="border-border shadow-xl shadow-black/5">
-        <CardContent className="p-6 sm:p-8">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-            {/* ── Basic Info ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Animal Name <span className="text-destructive">*</span></Label>
-                <Input id="name" {...form.register("name")} placeholder="e.g. Bessie" />
-                {form.formState.errors.name && <p className="text-sm text-destructive font-semibold">{form.formState.errors.name.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tagNumber">Tag Number</Label>
-                <Input id="tagNumber" {...form.register("tagNumber")} placeholder="e.g. 104" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="species">Species <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <select id="species" {...form.register("species")} className={selectClass}>
-                    {["Cattle", "Goat", "Sheep", "Pig", "Horse", "Other"].map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                  {chevron}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="sex">Sex <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <select id="sex" {...form.register("sex")} className={selectClass}>
-                    {sexOptions.map(o => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                  {chevron}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="breed">Breed</Label>
-                <Input id="breed" {...form.register("breed")} placeholder="e.g. Angus" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input id="dateOfBirth" type="date" {...form.register("dateOfBirth")} className="font-medium" />
-              </div>
-
-              {/* Breeding status — only for females */}
-              {isFemale && (
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Breeding Status</Label>
-                  <div className="flex gap-2">
-                    {breedBtn("unknown", "Unknown")}
-                    {breedBtn("open", "Open — not bred")}
-                    {breedBtn("bred", "Bred — expecting")}
-                  </div>
-                </div>
-              )}
-
-              {/* Expected due date — only when female + bred */}
-              {showDueDate && (
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="expectedDueDate">Expected Due Date</Label>
-                  <Input id="expectedDueDate" type="date" {...form.register("expectedDueDate")} className="font-medium" />
-                </div>
-              )}
+        {/* ── Identity ── */}
+        <div className="bg-card border-2 border-border rounded-2xl p-4 space-y-4">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Identity</p>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
+              <Input id="name" {...form.register("name")} placeholder="e.g. Bessie" />
+              {form.formState.errors.name && <p className="text-xs text-destructive font-semibold">{form.formState.errors.name.message}</p>}
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="tagNumber">Tag Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input id="tagNumber" {...form.register("tagNumber")} placeholder="e.g. 104" />
+            </div>
+          </div>
+        </div>
 
-            {/* ── Placement ── */}
-            {isAuthenticated && (
-              <div className="pt-2 border-t border-border/60 space-y-4">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Placement</h3>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="locationId">Pasture / Location</Label>
-                  <div className="relative">
-                    <select
-                      id="locationId"
-                      value={form.watch("locationId") ?? ""}
-                      onChange={e => form.setValue("locationId", e.target.value ? parseInt(e.target.value, 10) : null)}
-                      className={selectClass}
-                    >
-                      <option value="">— No location —</option>
-                      {locations.map(loc => (
-                        <option key={loc.id} value={loc.id}>{loc.name}</option>
-                      ))}
-                    </select>
-                    {chevron}
-                  </div>
-                  {locations.length === 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      No pastures configured yet. Add them in{" "}
-                      <a href="/settings" className="underline text-primary font-semibold">Ranch Settings</a>.
-                    </p>
-                  )}
+        {/* ── Type ── */}
+        <div className="bg-card border-2 border-border rounded-2xl p-4 space-y-4">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Animal Type</p>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="species">Species <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <select id="species" {...form.register("species")} className={selectClass}>
+                  {["Cattle", "Goat", "Sheep", "Pig", "Horse", "Other"].map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                {chevron}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sex">Sex <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <select id="sex" {...form.register("sex")} className={selectClass}>
+                  {sexOptions.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                {chevron}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="breed">Breed <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input id="breed" {...form.register("breed")} placeholder="e.g. Angus, Hereford" />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Details ── */}
+        <div className="bg-card border-2 border-border rounded-2xl p-4 space-y-4">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Details</p>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="dateOfBirth">Date of Birth <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input id="dateOfBirth" type="date" {...form.register("dateOfBirth")} className="font-medium" />
+            </div>
+            {isFemale && (
+              <div className="space-y-1.5">
+                <Label>Breeding Status</Label>
+                <div className="flex gap-2">
+                  {breedBtn("unknown", "Unknown")}
+                  {breedBtn("open", "Open")}
+                  {breedBtn("bred", "Bred")}
                 </div>
               </div>
             )}
+            {showDueDate && (
+              <div className="space-y-1.5">
+                <Label htmlFor="expectedDueDate">Expected Due Date</Label>
+                <Input id="expectedDueDate" type="date" {...form.register("expectedDueDate")} className="font-medium" />
+              </div>
+            )}
+          </div>
+        </div>
 
-            {/* ── Parentage ── */}
-            <div className="pt-2 border-t border-border/60">
-              {showParentage ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-muted-foreground" />
-                      <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Parentage</h3>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowParentage(false);
-                        form.setValue("sireId", null);
-                        form.setValue("sireName", "");
-                        form.setValue("damId", null);
-                        form.setValue("damName", "");
-                      }}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ParentField
-                      label="Sire (Father)"
-                      animals={sameSpeciesAnimals}
-                      idValue={form.watch("sireId")}
-                      nameValue={form.watch("sireName")}
-                      onIdChange={v => form.setValue("sireId", v)}
-                      onNameChange={v => form.setValue("sireName", v)}
-                    />
-                    <ParentField
-                      label="Dam (Mother)"
-                      animals={sameSpeciesAnimals}
-                      idValue={form.watch("damId")}
-                      nameValue={form.watch("damName")}
-                      onIdChange={v => form.setValue("damId", v)}
-                      onNameChange={v => form.setValue("damName", v)}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowParentage(true)}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+        {/* ── Location ── */}
+        {isAuthenticated && (
+          <div className="bg-card border-2 border-border rounded-2xl p-4 space-y-4">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Location <span className="normal-case font-normal text-muted-foreground/60">(optional)</span></p>
+            <div className="space-y-1.5">
+              <Label htmlFor="locationId">Pasture / Location</Label>
+              <div className="relative">
+                <select
+                  id="locationId"
+                  value={form.watch("locationId") ?? ""}
+                  onChange={e => form.setValue("locationId", e.target.value ? parseInt(e.target.value, 10) : null)}
+                  className={selectClass}
                 >
-                  <Users className="w-4 h-4" />
-                  <span className="font-medium">Add parentage <span className="text-xs opacity-60">(optional)</span></span>
-                </button>
+                  <option value="">— No location —</option>
+                  {locations.map(loc => (
+                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  ))}
+                </select>
+                {chevron}
+              </div>
+              {locations.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  No pastures yet. Add them in{" "}
+                  <a href="/settings" className="underline text-primary font-semibold">Ranch Settings</a>.
+                </p>
               )}
             </div>
+          </div>
+        )}
 
-            <div className="pt-2 border-t border-border flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => window.history.back()}>Cancel</Button>
-              <Button type="submit" isLoading={createMutation.isPending || updateMutation.isPending}>
-                {isEditing ? "Save Changes" : "Add Animal"}
-              </Button>
-            </div>
+        {/* ── Parentage ── */}
+        <div className="bg-card border-2 border-border rounded-2xl p-4 space-y-4">
+          {showParentage ? (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Parentage</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowParentage(false);
+                    form.setValue("sireId", null);
+                    form.setValue("sireName", "");
+                    form.setValue("damId", null);
+                    form.setValue("damName", "");
+                  }}
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors font-semibold"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="space-y-3">
+                <ParentField
+                  label="Sire (Father)"
+                  animals={sameSpeciesAnimals}
+                  idValue={form.watch("sireId")}
+                  nameValue={form.watch("sireName")}
+                  onIdChange={v => form.setValue("sireId", v)}
+                  onNameChange={v => form.setValue("sireName", v)}
+                />
+                <ParentField
+                  label="Dam (Mother)"
+                  animals={sameSpeciesAnimals}
+                  idValue={form.watch("damId")}
+                  nameValue={form.watch("damName")}
+                  onIdChange={v => form.setValue("damId", v)}
+                  onNameChange={v => form.setValue("damName", v)}
+                />
+              </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowParentage(true)}
+              className="w-full flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors py-1"
+            >
+              <Users className="w-4 h-4" />
+              Add parentage info
+              <span className="text-xs font-normal opacity-60 ml-1">(optional)</span>
+            </button>
+          )}
+        </div>
 
-          </form>
-        </CardContent>
-      </Card>
+        {/* ── Actions ── */}
+        <div className="flex gap-3 pt-1">
+          <Button type="button" variant="outline" className="flex-1" onClick={() => window.history.back()}>Cancel</Button>
+          <Button type="submit" className="flex-1" isLoading={createMutation.isPending || updateMutation.isPending}>
+            {isEditing ? "Save Changes" : "Add Animal"}
+          </Button>
+        </div>
+
+      </form>
     </div>
   );
 }
