@@ -37,7 +37,11 @@ function SeverityFolder({
           className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
           style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
         />
-        <span className="font-bold text-sm text-foreground flex-1">{label}</span>
+        <span className="font-bold text-sm text-foreground">{label}</span>
+        {!open && (
+          <span className="text-xs text-muted-foreground/50 flex-1 text-center">tap to expand</span>
+        )}
+        {open && <span className="flex-1" />}
         <span
           className="text-xs font-bold px-2 py-0.5 rounded-full"
           style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
