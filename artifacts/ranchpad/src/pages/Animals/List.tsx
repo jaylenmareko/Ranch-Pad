@@ -1,9 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare, Archive, FileDown } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
@@ -102,7 +100,7 @@ function SelectCheckbox({
   );
 }
 
-// ─── Animal Card ────────────────────────────────────────────────────────────
+// ─── Animal Row ────────────────────────────────────────────────────────────
 
 function AnimalCard({
   animal,
@@ -115,96 +113,61 @@ function AnimalCard({
   selected?: boolean;
   onToggle?: () => void;
 }) {
-  const cardContent = (
-    <Card className={`h-full transition-all duration-200 cursor-pointer group hover:shadow-md hover:border-primary/40 ${
-      selected ? "ring-2 ring-primary border-primary/50" : ""
-    }`}>
-      <CardContent className="p-4 flex flex-col h-full">
-        <div className="flex items-start gap-2.5 mb-3">
-          <HealthDot severity={animal.latestHealthSeverity} />
-          <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-base text-foreground leading-tight truncate group-hover:text-primary transition-colors">
-              {animal.name}
-            </h3>
-            {animal.tagNumber && (
-              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
-                #{animal.tagNumber}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="mt-auto space-y-1.5">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
-            {animal.breed && (
-              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
-            )}
-          </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-            {animal.dateOfBirth ? (
-              <span>{new Date(animal.dateOfBirth).toLocaleDateString()}</span>
-            ) : <span />}
-            <span>{formatAge(animal.dateOfBirth)}</span>
-          </div>
-          {animal.sex === "Female" && animal.expectedDueDate && (
-            <p className="text-xs font-semibold text-pink-600 dark:text-pink-400">
-              Due: {new Date(animal.expectedDueDate).toLocaleDateString()}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+  const accentBorder =
+    animal.latestHealthSeverity === "high"
+      ? "border-l-2 border-l-destructive"
+      : animal.latestHealthSeverity === "medium"
+      ? "border-l-2 border-l-yellow-500"
+      : "border-l-2 border-l-transparent";
+
+  const inner = (
+    <div className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/20 ${selected ? "bg-primary/5" : ""} ${accentBorder}`}>
+      {selectMode && (
+        <SelectCheckbox
+          checked={!!selected}
+          onClick={(e) => { e.stopPropagation(); onToggle?.(); }}
+        />
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-sm text-foreground leading-tight truncate">{animal.name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+          {[animal.tagNumber ? `#${animal.tagNumber}` : null, animal.sex, animal.breed].filter(Boolean).join(" · ")}
+        </p>
+        {animal.sex === "Female" && animal.expectedDueDate && (
+          <p className="text-xs font-semibold text-pink-400 mt-0.5">
+            Due {new Date(animal.expectedDueDate).toLocaleDateString()}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground">
+        <span>{formatAge(animal.dateOfBirth)}</span>
+        {!selectMode && <ChevronRight className="w-3.5 h-3.5 opacity-40" />}
+      </div>
+    </div>
   );
 
   if (selectMode) {
-    return (
-      <div className="relative" onClick={onToggle}>
-        <div className="absolute top-2.5 left-2.5 z-10">
-          <SelectCheckbox
-            checked={!!selected}
-            onClick={(e) => { e.stopPropagation(); onToggle?.(); }}
-          />
-        </div>
-        {cardContent}
-      </div>
-    );
+    return <div className="cursor-pointer" onClick={onToggle}>{inner}</div>;
   }
 
-  return <Link href={`/animals/${animal.id}`}>{cardContent}</Link>;
+  return <Link href={`/animals/${animal.id}`}>{inner}</Link>;
 }
 
 // ─── Guest Animal Card ─────────────────────────────────────────────────────────
 
 function GuestAnimalCard({ animal }: { animal: GuestAnimal }) {
   return (
-    <Card className="h-full border-dashed border-border/70">
-      <CardContent className="p-4 flex flex-col h-full">
-        <div className="flex items-start gap-2.5 mb-3">
-          <span className="text-lg leading-none">{SPECIES_ICONS[animal.species] ?? "🐾"}</span>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-base text-foreground leading-tight truncate">{animal.name}</h3>
-            {animal.tagNumber && (
-              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded mt-0.5 inline-block">
-                #{animal.tagNumber}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="mt-auto space-y-1.5">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.sex}</Badge>
-            {animal.breed && (
-              <Badge variant="outline" className="border-border text-muted-foreground text-xs py-0">{animal.breed}</Badge>
-            )}
-          </div>
-          {animal.dateOfBirth && (
-            <p className="text-xs text-muted-foreground font-medium">
-              {new Date(animal.dateOfBirth).toLocaleDateString()}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-3 px-4 py-3 border-l-2 border-l-transparent">
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-sm text-foreground leading-tight truncate">{animal.name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+          {[animal.tagNumber ? `#${animal.tagNumber}` : null, animal.sex, animal.breed].filter(Boolean).join(" · ")}
+        </p>
+        {animal.dateOfBirth && (
+          <p className="text-xs text-muted-foreground/60 mt-0.5">{formatAge(animal.dateOfBirth)}</p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -287,7 +250,7 @@ function GuestSpeciesFolder({ species, animals }: { species: string; animals: Gu
         </div>
       </button>
       {open && (
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="divide-y divide-border/40">
           {animals.map(a => <GuestAnimalCard key={a.id} animal={a} />)}
         </div>
       )}
@@ -489,7 +452,7 @@ function SpeciesFolder({
       </button>
 
       {open && (
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="divide-y divide-border/40">
           {animals.map(animal => (
             <AnimalCard
               key={animal.id}
@@ -1307,8 +1270,8 @@ export default function AnimalList() {
             {[1, 2].map(i => (
               <div key={i} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                 <div className="h-14 bg-muted/40 animate-pulse" />
-                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {[1, 2, 3].map(j => <div key={j} className="h-28 bg-muted rounded-xl animate-pulse" />)}
+                <div className="divide-y divide-border/40">
+                  {[1, 2, 3].map(j => <div key={j} className="h-12 bg-muted/20 animate-pulse" />)}
                 </div>
               </div>
             ))}
@@ -1348,8 +1311,8 @@ export default function AnimalList() {
           {[1, 2].map(i => (
             <div key={i} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
               <div className="h-14 bg-muted/40 animate-pulse" />
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {[1, 2, 3].map(j => <div key={j} className="h-28 bg-muted rounded-xl animate-pulse" />)}
+              <div className="divide-y divide-border/40">
+                {[1, 2, 3].map(j => <div key={j} className="h-12 bg-muted/20 animate-pulse" />)}
               </div>
             </div>
           ))}
