@@ -1177,17 +1177,6 @@ export default function AnimalList() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-black text-foreground whitespace-nowrap">Herd Directory</h1>
-          <p className="text-muted-foreground font-medium mt-1">
-            {isLoading
-              ? "Loading…"
-              : selectMode
-                ? selectedIds.size > 0
-                  ? `${selectedIds.size} selected`
-                  : "Tap animals to select"
-                : locationGrouped
-                  ? `${filteredAnimals.length} animals across ${locationGrouped.length} ${locationGrouped.length === 1 ? "location" : "locations"}`
-                  : `${(animals || []).length} animals across ${grouped.length} ${grouped.length === 1 ? "group" : "groups"}`}
-          </p>
         </div>
         <TooltipProvider delayDuration={300}>
           <div className="flex items-center gap-2">
