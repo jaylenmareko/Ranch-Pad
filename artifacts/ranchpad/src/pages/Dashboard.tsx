@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, BookOpen } from "lucide-react";
-import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, type Animal } from "@workspace/api-client-react";
+import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
@@ -391,6 +391,25 @@ function AuthDashboard() {
     }
   });
 
+  const [resolvingMedIds, setResolvingMedIds] = useState<Set<number>>(new Set());
+
+  const markMedResolved = async (med: { id: number; animalId: number; medicationName: string }) => {
+    setResolvingMedIds(prev => new Set(prev).add(med.id));
+    try {
+      await fetch(`/api/animals/${med.animalId}/medications/${med.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          medicationName: med.medicationName,
+          dateGiven: format(new Date(), "yyyy-MM-dd"),
+          nextDueDate: null,
+        }),
+      });
+      queryClient.invalidateQueries({ queryKey: getGetUpcomingQueryKey() });
+    } finally {
+      setResolvingMedIds(prev => { const s = new Set(prev); s.delete(med.id); return s; });
+    }
+  };
 
   const speciesCounts = React.useMemo(() => {
     if (!animals) return {};
@@ -610,16 +629,25 @@ function AuthDashboard() {
                   <div className="space-y-2">
                     {upcoming.medications.map(med => {
                       const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
+                      const isResolving = resolvingMedIds.has(med.id);
                       return (
-                        <Link key={med.id} href={`/animals/${med.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-muted/50 rounded-lg p-1.5 -mx-1.5 transition-colors">
-                          <div className="min-w-0">
+                        <div key={med.id} className="flex items-center gap-2 rounded-lg p-1.5 -mx-1.5 hover:bg-muted/50 transition-colors">
+                          <Link href={`/animals/${med.animalId}`} className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{med.animalName}</p>
                             <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
-                          </div>
+                          </Link>
                           <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${med.isOverdue ? "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400" : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400"}`}>
                             {med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`}
                           </span>
-                        </Link>
+                          <button
+                            onClick={() => markMedResolved(med)}
+                            disabled={isResolving}
+                            className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
+                          >
+                            {isResolving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                            {isResolving ? "Saving…" : "Mark Resolved"}
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
