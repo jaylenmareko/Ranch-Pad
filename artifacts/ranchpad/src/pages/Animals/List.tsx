@@ -235,7 +235,6 @@ function GuestSpeciesFolder({ species, animals }: { species: string; animals: Gu
         onClick={toggle}
         className="relative w-full flex items-center gap-3 px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors border-b border-border/50"
       >
-        <span className="text-2xl leading-none">{speciesIcon(species)}</span>
         <span className="font-black text-lg text-foreground font-display flex-1 text-left">{species}</span>
         {!open && (
           <span className="absolute left-1/2 -translate-x-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
@@ -435,7 +434,6 @@ function SpeciesFolder({
             className="w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200"
             style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           />
-          <span className="text-lg leading-none">{speciesIcon(species)}</span>
           <span className="text-sm font-semibold text-foreground flex-1 truncate">{species}</span>
           {highCount > 0 && <span className="text-xs font-bold text-destructive">⚠ {highCount}</span>}
           {medCount > 0 && highCount === 0 && <span className="text-xs font-bold text-yellow-500">⚠ {medCount}</span>}
@@ -476,7 +474,6 @@ function SpeciesFolder({
           className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
           style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
         />
-        <span className="text-xl leading-none">{speciesIcon(species)}</span>
         <span className="font-bold text-sm text-foreground flex-1 truncate">{species}</span>
         <div className="flex items-center gap-1.5">
           {highCount > 0 && (
