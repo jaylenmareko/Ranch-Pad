@@ -131,9 +131,12 @@ function AnimalCard({
         />
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm text-foreground leading-tight truncate">{animal.name}</p>
+        <p className="font-bold text-sm text-foreground leading-tight truncate">
+          {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
+          {animal.tagNumber && animal.name ? <span className="font-normal text-muted-foreground ml-1.5">{animal.name}</span> : null}
+        </p>
         <p className="text-xs text-muted-foreground mt-0.5 truncate">
-          {[animal.tagNumber ? `#${animal.tagNumber}` : null, animal.sex, animal.breed].filter(Boolean).join(" · ")}
+          {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
         </p>
         {animal.sex === "Female" && animal.expectedDueDate && (
           <p className="text-xs font-semibold text-pink-400 mt-0.5">

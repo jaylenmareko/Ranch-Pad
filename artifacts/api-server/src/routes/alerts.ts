@@ -23,6 +23,12 @@ function makeKey(...parts: (string | number | null | undefined)[]): string {
   return parts.map(String).join("|");
 }
 
+function animalLabel(animal: { name: string | null; tagNumber: string | null }): string {
+  if (animal.tagNumber) return `#${animal.tagNumber}`;
+  if (animal.name) return animal.name;
+  return "Unknown animal";
+}
+
 async function upsertAlert(alert: {
   ranchId: number;
   animalId?: number | null;
@@ -117,7 +123,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
         animalId: animal.id,
         alertType: "record",
         alertKey: key,
-        message: `${animal.name} had a high-severity health event on ${event.eventDate}: ${event.description}`,
+        message: `${animalLabel(animal)} had a high-severity health event on ${event.eventDate}: ${event.description}`,
         severity: "high",
       });
       if (wasCreated) created++;
@@ -147,7 +153,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
         animalId: animal.id,
         alertType: "record",
         alertKey: key,
-        message: `${animal.name} has had ${recentEvents.length} health events in the last 30 days — consider a vet visit`,
+        message: `${animalLabel(animal)} has had ${recentEvents.length} health events in the last 30 days — consider a vet visit`,
         severity: "high",
       });
       if (wasCreated) created++;
@@ -172,7 +178,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
           animalId: animal.id,
           alertType: "record",
           alertKey: key,
-          message: `${animal.name}'s FAMACHA scores are declining (${last3.map(s => s.score).join(" → ")}) — check for barber pole worm`,
+          message: `${animalLabel(animal)}'s FAMACHA scores are declining (${last3.map(s => s.score).join(" → ")}) — check for barber pole worm`,
           severity: "high",
         });
         if (wasCreated) created++;
@@ -211,7 +217,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
         animalId: animal.id,
         alertType: "record",
         alertKey: key,
-        message: `${animal.name} (${animal.species}) may be entering her heat cycle (~${cycleDays}-day cycle)`,
+        message: `${animalLabel(animal)} (${animal.species}) may be entering her heat cycle (~${cycleDays}-day cycle)`,
         severity: "low",
       });
       if (wasCreated) created++;
@@ -383,7 +389,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
           (new Date(animal.expectedDueDate + "T12:00:00").getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );
         if (daysUntil >= 0 && daysUntil <= 30) {
-          g.dueSoon.push(`${animal.name} (due in ${daysUntil} days)`);
+          g.dueSoon.push(`${animalLabel(animal)} (due in ${daysUntil} days)`);
         }
       }
     }
@@ -435,7 +441,8 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
         ? `${Math.round((today.getTime() - new Date(animal.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 30.44))} months old`
         : null;
 
-      let profile = `• ${tag} — ${animal.name} | ${animal.species}${animal.breed ? ` (${animal.breed})` : ""} | ${animal.sex}`;
+      const nameStr = animal.name ? ` — ${animal.name}` : "";
+      let profile = `• ${tag}${nameStr} | ${animal.species}${animal.breed ? ` (${animal.breed})` : ""} | ${animal.sex}`;
       if (age) profile += ` | ${age}`;
       if (isDueSoon && animal.expectedDueDate) {
         const daysUntil = Math.floor((new Date(animal.expectedDueDate + "T12:00:00").getTime() - today.getTime()) / (1000 * 60 * 60 * 24));

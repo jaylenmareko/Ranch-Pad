@@ -6,7 +6,7 @@ import { ranchesTable } from "./ranches";
 export const animalsTable = pgTable("animals", {
   id: serial("id").primaryKey(),
   ranchId: integer("ranch_id").notNull().references(() => ranchesTable.id),
-  name: text("name").notNull(),
+  name: text("name"),
   tagNumber: text("tag_number"),
   species: text("species").notNull(),
   breed: text("breed"),

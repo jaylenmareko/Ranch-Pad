@@ -56,7 +56,7 @@ const FEMALE_SEXES = new Set([
 
 // ─── Form schema ──────────────────────────────────────────────────────────────
 const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().nullable().optional(),
   tagNumber: z.string().nullable().optional(),
   species: z.string().min(1, "Species is required"),
   breed: z.string().nullable().optional(),
@@ -417,13 +417,12 @@ export default function AnimalForm() {
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Identity</p>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-              <Input id="name" {...form.register("name")} placeholder="e.g. Bessie" />
-              {form.formState.errors.name && <p className="text-xs text-destructive font-semibold">{form.formState.errors.name.message}</p>}
+              <Label htmlFor="tagNumber">Tag Number</Label>
+              <Input id="tagNumber" {...form.register("tagNumber")} placeholder="e.g. 104" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="tagNumber">Tag Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <Input id="tagNumber" {...form.register("tagNumber")} placeholder="e.g. 104" />
+              <Label htmlFor="name">Name <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input id="name" {...form.register("name")} placeholder="e.g. Bessie" />
             </div>
           </div>
         </div>

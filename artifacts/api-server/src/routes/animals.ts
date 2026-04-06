@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 const router: IRouter = Router();
 
 const createAnimalSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().nullable().optional(),
   tagNumber: z.string().nullable().optional(),
   species: z.string().min(1),
   breed: z.string().nullable().optional(),
@@ -74,7 +74,7 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   if (search) {
     const s = search.toLowerCase();
     animals = animals.filter(a =>
-      a.name.toLowerCase().includes(s) ||
+      a.name?.toLowerCase().includes(s) ||
       a.tagNumber?.toLowerCase().includes(s) ||
       a.breed?.toLowerCase().includes(s)
     );

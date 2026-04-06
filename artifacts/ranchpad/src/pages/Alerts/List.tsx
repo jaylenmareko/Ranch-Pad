@@ -230,13 +230,16 @@ export default function AlertsList() {
   };
 
   const buildAnimalLabel = (alert: Alert): string | null => {
-    const name = alert.animalName
-      ?? (alert.alertType === "record" ? extractNameFromMessage(alert.message) : null);
-    if (!name) return null;
-    const parts: string[] = [];
-    if (alert.animalTagNumber) parts.push(`#${alert.animalTagNumber}`);
-    if (alert.animalSpecies) parts.push(alert.animalSpecies);
-    return parts.length > 0 ? `${name} (${parts.join(", ")})` : name;
+    if (!alert.animalId) return null;
+    if (alert.animalTagNumber) {
+      const suffix = alert.animalSpecies ? ` · ${alert.animalSpecies}` : "";
+      return `#${alert.animalTagNumber}${suffix}`;
+    }
+    if (alert.animalName) {
+      const suffix = alert.animalSpecies ? ` · ${alert.animalSpecies}` : "";
+      return `${alert.animalName}${suffix}`;
+    }
+    return null;
   };
 
   // Guest users see a sign-up prompt
