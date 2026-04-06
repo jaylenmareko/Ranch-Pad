@@ -605,7 +605,7 @@ function AuthDashboard() {
               {[
                 { color: "bg-red-600", text: "Rosie (#114) — FAMACHA score has declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1\" of rain this week." },
                 { color: "bg-red-600", text: "Buck (#07, Goat) — 4 high-severity health events in 30 days including respiratory infection and bottle jaw. Immediate vet evaluation recommended." },
-                { color: "bg-red-600", text: "Daisy (#301, Cattle) — FAMACHA 5 confirmed yesterday with visible bottle jaw. Anthelmintic treatment critical — barber pole worm burden is severe." },
+                { color: "bg-red-600", text: "High barber pole worm risk — 3.4\" of rain forecast through Friday with temps staying above 68°F. Mae (#T-105) was treated 3 weeks ago and is due for a FAMACHA recheck before larvae counts spike." },
               ].map((ex, i) => (
                 <div key={i} className="p-4 flex gap-3">
                   <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${ex.color}`} /></div>
