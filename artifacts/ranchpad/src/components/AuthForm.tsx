@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { getGuestAnimals, clearGuestAnimals, getPostSignupCsv, clearPostSignupState } from "@/lib/guest-store";
-import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin, FolderOpen, Plus, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin, FolderOpen, Plus, X, Loader2 } from "lucide-react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLogin, useSignup } from "@workspace/api-client-react";
@@ -37,6 +37,7 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
   const [geocodeLabel, setGeocodeLabel] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Forgot password
@@ -58,13 +59,14 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
     setAddress(value);
     if (geocodedLat !== null) { setGeocodedLat(null); setGeocodedLon(null); setGeocodeLabel(null); }
     if (suggestTimer.current) clearTimeout(suggestTimer.current);
-    if (value.trim().length < 3) { setSuggestions([]); setShowSuggestions(false); return; }
+    if (value.trim().length < 3) { setSuggestions([]); setShowSuggestions(false); setAddressLoading(false); return; }
+    setAddressLoading(true);
     suggestTimer.current = setTimeout(async () => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5&countrycodes=us&addressdetails=0`,
           { headers: { "Accept-Language": "en" }, signal: controller.signal }
         );
         clearTimeout(timeout);
@@ -76,8 +78,10 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
         setSuggestions([]);
         setShowSuggestions(false);
         toast({ title: "Poor signal", description: "Couldn't load address suggestions — move to better coverage and try again." });
+      } finally {
+        setAddressLoading(false);
       }
-    }, 350);
+    }, 150);
   }
 
   function selectSuggestion(s: { display_name: string; lat: string; lon: string }) {
@@ -287,7 +291,13 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 autoComplete="off"
+                className="pr-8"
               />
+              {addressLoading && (
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
+              )}
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
                   {suggestions.map((s, i) => (
