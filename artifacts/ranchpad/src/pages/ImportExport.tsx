@@ -105,8 +105,8 @@ export function ImportExport() {
     setImportError(null);
     setImportSummary(null);
     const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
-    if (!isCSV) { setImportError("Please upload a CSV file. Download our template to get started."); return; }
-    if (file.size === 0) { setImportError("This file appears to be empty. Please fill in the template and try again."); return; }
+    if (!isCSV) { setImportError("Please upload a CSV (.csv) file."); return; }
+    if (file.size === 0) { setImportError("This file appears to be empty — no animals found to import."); return; }
     const hasAnimals = animals && (animals as Animal[]).length > 0;
     if (hasAnimals) {
       setPendingFile(file);

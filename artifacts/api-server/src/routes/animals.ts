@@ -354,13 +354,111 @@ router.post("/animals/:animalId/restore", requireAuth, requireOwner, async (req,
 
 // ─── CSV Import ───────────────────────────────────────────────────────────────
 
-const CSV_HEADERS = [
-  "name", "tag_number", "species", "breed", "sex", "date_of_birth",
-  "health_event_description", "health_event_date", "health_event_severity",
-  "medication_name", "dosage", "date_given", "next_due_date",
-] as const;
-
 const VALID_SEVERITIES = new Set(["low", "medium", "high"]);
+
+// Strip everything except lowercase letters and digits for fuzzy matching
+function normalizeKey(k: string): string {
+  return k.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+// Common column name aliases → canonical field names
+const COLUMN_ALIASES: Record<string, string> = {
+  // name
+  name: "name", animalname: "name", livestockname: "name",
+  animal: "name", cattlename: "name",
+
+  // species
+  species: "species", type: "species", animaltype: "species",
+  kind: "species", livestock: "species", cattletype: "species",
+
+  // tag_number
+  tagnumber: "tag_number", tag: "tag_number", tagno: "tag_number",
+  tagnum: "tag_number", eartag: "tag_number", eartagno: "tag_number",
+  tagid: "tag_number", animaltag: "tag_number", cattletag: "tag_number",
+  lotno: "tag_number", lotnumber: "tag_number",
+
+  // sex
+  sex: "sex", gender: "sex", mf: "sex", malefemale: "sex",
+
+  // breed
+  breed: "breed", breedtype: "breed", animalbreed: "breed",
+  cattlebreed: "breed", breedvariety: "breed",
+
+  // date_of_birth
+  dateofbirth: "date_of_birth", dob: "date_of_birth",
+  birthdate: "date_of_birth", borndate: "date_of_birth",
+  born: "date_of_birth", birthyear: "date_of_birth",
+  calveddate: "date_of_birth", calved: "date_of_birth",
+
+  // health_event_description
+  healtheventdescription: "health_event_description",
+  healthevent: "health_event_description",
+  healthnote: "health_event_description",
+  healthnotes: "health_event_description",
+  healthdescription: "health_event_description",
+  health: "health_event_description",
+  condition: "health_event_description",
+  diagnosis: "health_event_description",
+  illness: "health_event_description",
+  note: "health_event_description",
+  notes: "health_event_description",
+
+  // health_event_date
+  healtheventdate: "health_event_date",
+  healthdate: "health_event_date",
+  eventdate: "health_event_date",
+
+  // health_event_severity
+  healtheventserverity: "health_event_severity",
+  healtheventsecerity: "health_event_severity",
+  severity: "health_event_severity",
+  healthseverity: "health_event_severity",
+  urgency: "health_event_severity",
+
+  // medication_name
+  medicationname: "medication_name", medication: "medication_name",
+  medicine: "medication_name", drug: "medication_name",
+  med: "medication_name", medname: "medication_name",
+  medicinename: "medication_name", treatment: "medication_name",
+  vaccine: "medication_name", vaccination: "medication_name",
+
+  // date_given
+  dategiven: "date_given", givendate: "date_given",
+  administered: "date_given", dateadministered: "date_given",
+  treatmentdate: "date_given", vaccinedate: "date_given",
+
+  // dosage
+  dosage: "dosage", dose: "dosage", amount: "dosage",
+  quantity: "dosage", doseamount: "dosage",
+
+  // next_due_date
+  nextduedate: "next_due_date", nextdue: "next_due_date",
+  nextdose: "next_due_date", duedate: "next_due_date",
+  nextdosedate: "next_due_date", boosterdate: "next_due_date",
+  followup: "next_due_date", followupdate: "next_due_date",
+};
+
+// Build a remapping of actual CSV headers to canonical field names
+function buildHeaderMap(headers: string[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const h of headers) {
+    const norm = normalizeKey(h);
+    const canonical = COLUMN_ALIASES[norm];
+    if (canonical) map[h] = canonical;
+    else map[h] = h; // keep original if no alias found
+  }
+  return map;
+}
+
+// Remap a single row using the header map
+function remapRow(row: Record<string, string>, headerMap: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(row)) {
+    const canonical = headerMap[key] ?? key;
+    out[canonical] = value;
+  }
+  return out;
+}
 
 interface ImportSkip {
   row: number;
@@ -383,28 +481,33 @@ router.post("/animals/import-csv", requireAuth, requireNotViewer, upload.single(
   const ranchId = req.user!.ranchId;
   const shouldReplace = req.query.replace === "true";
 
-  let rows: Record<string, string>[];
+  let rawRows: Record<string, string>[];
   try {
-    rows = parseCsv(req.file.buffer.toString("utf-8"), {
+    rawRows = parseCsv(req.file.buffer.toString("utf-8"), {
       columns: true,
       skip_empty_lines: true,
       trim: true,
     }) as Record<string, string>[];
   } catch {
-    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
+    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "Could not read this file as a CSV. Make sure it is a valid spreadsheet file." });
     return;
   }
 
-  if (rows.length === 0) {
-    res.status(400).json({ error: true, errorType: "EMPTY_FILE", message: "This file appears to be empty. Please fill in the template and try again." });
+  if (rawRows.length === 0) {
+    res.status(400).json({ error: true, errorType: "EMPTY_FILE", message: "This file appears to be empty — no animals found to import." });
     return;
   }
 
-  // Verify the file uses RanchPad's column headers (at least name or species must be present)
-  const fileHeaders = new Set(Object.keys(rows[0]).map(k => k.toLowerCase().trim()));
-  const hasValidHeaders = CSV_HEADERS.some(h => fileHeaders.has(h));
-  if (!hasValidHeaders) {
-    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "This file doesn't match the RanchPad template. Please download our CSV template and use that format." });
+  // Build a fuzzy header map from whatever column names the file uses
+  const headerMap = buildHeaderMap(Object.keys(rawRows[0]));
+
+  // Remap all rows to canonical field names
+  const rows = rawRows.map(r => remapRow(r, headerMap));
+
+  // At minimum we need to be able to find an animal name or species column
+  const canonicalFields = new Set(Object.values(headerMap));
+  if (!canonicalFields.has("name") && !canonicalFields.has("species")) {
+    res.status(400).json({ error: true, errorType: "WRONG_FORMAT", message: "Could not find an animal name or species column in this file. Make sure your spreadsheet has columns for the animal's name and species." });
     return;
   }
 
