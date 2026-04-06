@@ -501,7 +501,9 @@ function PendingInviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () =
             {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+        <p className="text-xs text-muted-foreground">
+          Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {new Date(invite.expiresAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+        </p>
       </div>
       <RoleBadge role={invite.role} />
       <button
