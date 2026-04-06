@@ -394,7 +394,7 @@ export function ImportExport() {
             {isExportingPDF ? (
               <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Generating…</>
             ) : (
-              <><FileDown className="w-4 h-4 shrink-0" />Export Herd Report</>
+              <><FileDown className="w-4 h-4 shrink-0" />Export Herd Report PDF</>
             )}
           </button>
 
