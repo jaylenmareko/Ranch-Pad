@@ -639,7 +639,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Desktop Sidebar ──────────────────────────────────────────────── */}
       <aside
-        className={cn("hidden md:flex w-56 shrink-0 flex-col border-r border-border z-10 h-full")}
+        className={cn("hidden w-56 shrink-0 flex-col border-r border-border z-10 h-full", isLanding ? "" : "md:flex")}
         style={{ background: "hsl(var(--sidebar))" }}
       >
         <Link href="/" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity shrink-0">
@@ -649,12 +649,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
         </Link>
 
-        {isAuthenticated && (
-          <nav className="flex-1 px-3 pb-4 flex flex-col gap-0.5 overflow-y-auto">
-            {showFolderSidebar ? renderFolderNav() : renderFlatNav()}
-          </nav>
-        )}
-        {!isAuthenticated && <div className="flex-1" />}
+        <nav className="flex-1 px-3 pb-4 flex flex-col gap-0.5 overflow-y-auto">
+          {showFolderSidebar ? renderFolderNav() : renderFlatNav()}
+        </nav>
 
         {sidebarBottom}
       </aside>
@@ -697,7 +694,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className={cn("flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20 md:hidden")} style={{ background: "hsl(var(--sidebar))" }}>
+        <header className={cn("flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20", isLanding ? "hidden" : "md:hidden")} style={{ background: "hsl(var(--sidebar))" }}>
           <button
             onClick={() => setMenuOpen(true)}
             className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0"

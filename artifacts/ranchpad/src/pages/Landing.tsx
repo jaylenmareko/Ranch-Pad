@@ -10,7 +10,7 @@ const BULLETS = [
 ];
 
 export default function Landing() {
-  const { openSignup } = useAuthModal();
+  const { openSignup, openLogin } = useAuthModal();
 
   return (
     <div
@@ -59,13 +59,20 @@ export default function Landing() {
           ))}
         </ul>
 
-        {/* Action button */}
-        <div className="flex justify-center w-full">
+        {/* Action buttons */}
+        <div className="flex flex-col items-center gap-3 w-full">
           <button
             onClick={openSignup}
             className="inline-flex items-center justify-center h-12 px-10 rounded-xl font-bold text-base bg-white text-green-800 hover:bg-white/90 transition-colors shadow-md w-full"
           >
             Start Your Free 2-Week Trial
+          </button>
+          <button
+            onClick={openLogin}
+            className="text-sm font-semibold text-white/85 hover:text-white transition-colors underline underline-offset-2"
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}
+          >
+            Already have an account? Log in
           </button>
         </div>
       </div>
