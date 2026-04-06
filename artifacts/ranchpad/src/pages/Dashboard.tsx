@@ -604,9 +604,7 @@ function AuthDashboard() {
             <div className="divide-y divide-border/40 opacity-30 pointer-events-none select-none">
               {[
                 { color: "bg-red-600", text: "Rosie (#114) — FAMACHA score has declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1\" of rain this week." },
-                { color: "bg-red-600", text: "Duke (#22, Cattle) — 3 high-severity health events in 30 days. Temperature dropped 29°F in 48 hours — respiratory illness risk is elevated." },
                 { color: "bg-yellow-500", text: "Foot rot risk — pastures saturated after 3 consecutive days of rain and temps above 60°F. Inspect hooves on all cattle and goats." },
-                { color: "bg-yellow-500", text: "Barber pole worm pressure rising — humidity at 89% with warm rain forecast through Friday. FAMACHA-check all sheep and goats by end of week." },
                 { color: "bg-yellow-500", text: "Heat stress alert — high of 98°F forecast with humidity at 74%. Ensure water access and shade for all animals, especially cattle." },
               ].map((ex, i) => (
                 <div key={i} className="p-4 flex gap-3">

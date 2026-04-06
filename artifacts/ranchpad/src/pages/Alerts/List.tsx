@@ -220,12 +220,20 @@ export default function AlertsList() {
     return match ? match[1] : msg;
   };
 
+  const extractNameFromMessage = (msg: string): string | null => {
+    // Record alert messages start with the animal name followed by a keyword
+    const match = msg.match(/^([\w]+(?:\s+[\w]+)?)(?:\s+(?:had|has|may|is)|'s\s|\s+\()/);
+    return match ? match[1] : null;
+  };
+
   const buildAnimalLabel = (alert: Alert): string | null => {
-    if (!alert.animalName) return null;
+    const name = alert.animalName
+      ?? (alert.alertType === "record" ? extractNameFromMessage(alert.message) : null);
+    if (!name) return null;
     const parts: string[] = [];
     if (alert.animalTagNumber) parts.push(`#${alert.animalTagNumber}`);
     if (alert.animalSpecies) parts.push(alert.animalSpecies);
-    return parts.length > 0 ? `${alert.animalName} (${parts.join(", ")})` : alert.animalName;
+    return parts.length > 0 ? `${name} (${parts.join(", ")})` : name;
   };
 
   // Guest users see a sign-up prompt
