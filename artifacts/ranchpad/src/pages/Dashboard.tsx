@@ -120,6 +120,77 @@ function RanchNotesDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
     </SimpleDialog>
   );
 }
+// ─── Weather Alert Row ────────────────────────────────────────────────────────
+
+function WeatherAlertRow({ alert, onDismiss }: {
+  alert: { id: number; severity: string; summary?: string | null; message: string; alertType: string; generatedAt: string; animalId?: number | null; animalName?: string | null };
+  onDismiss: (id: number) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const dotColor = alert.severity === 'critical'
+    ? 'bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.6)]'
+    : alert.severity === 'high'
+      ? 'bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+      : alert.severity === 'moderate' || alert.severity === 'medium'
+        ? 'bg-yellow-500'
+        : 'bg-green-500';
+  const getFirstSentence = (msg: string) => msg.match(/^(.+?[.!?])(?:\s|$)/)?.[1] ?? msg;
+  const collapsedText = alert.summary ?? getFirstSentence(alert.message);
+  const hasDetail = !!(alert.summary || alert.message.length > collapsedText.length);
+
+  return (
+    <div className="border-b border-border/50 last:border-b-0">
+      <div
+        className="p-4 md:p-5 flex gap-4 hover:bg-muted/30 transition-colors group cursor-pointer"
+        onClick={() => hasDetail && setExpanded(v => !v)}
+      >
+        <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} /></div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground leading-snug">{collapsedText}</p>
+          {!expanded && hasDetail && (
+            <span className="text-xs font-semibold text-primary/70 mt-1 inline-flex items-center gap-0.5">
+              See details <ChevronDown className="w-3 h-3" />
+            </span>
+          )}
+        </div>
+        <div className="shrink-0 flex items-center gap-1">
+          <button
+            onClick={e => { e.stopPropagation(); onDismiss(alert.id); }}
+            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all flex items-center justify-center"
+            aria-label="Dismiss alert"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ maxHeight: expanded ? '400px' : '0px', opacity: expanded ? 1 : 0 }}
+      >
+        <div className="px-4 md:px-5 pb-4 pt-0 border-t border-border/40 ml-6 md:ml-7">
+          <div className="pt-3 space-y-2">
+            <p className="text-sm leading-relaxed text-foreground/85 whitespace-pre-line">{alert.message}</p>
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                {alert.alertType.replace(/_/g, ' ')}
+              </span>
+              <span className="text-[10px] text-muted-foreground/50">•</span>
+              <span className="text-[10px] text-muted-foreground">{formatDate(alert.generatedAt)}</span>
+              <button
+                onClick={() => onDismiss(alert.id)}
+                className="ml-auto text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" /> Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Auth Dashboard ───────────────────────────────────────────────────────────
 
 export default function Dashboard() {
