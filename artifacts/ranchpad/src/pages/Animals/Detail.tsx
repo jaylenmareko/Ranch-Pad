@@ -453,72 +453,9 @@ export default function AnimalDetail() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Link href="/animals" className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors self-start">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Herd
-        </Link>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-card min-h-[44px]"
-            onClick={exportPDF}
-            isLoading={isExporting}
-            aria-label="Export animal record as PDF"
-          >
-            <FileDown className="w-4 h-4 mr-2" />
-            Export PDF
-          </Button>
-          {(() => {
-            const a = animal as AnimalDetailWithArchive;
-            const isArchived = !!a.archivedAt;
-            return (
-              <>
-                {!isArchived && role !== "viewer" && (
-                  <Link href={`/animals/${animal.id}/edit`}>
-                    <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
-                  </Link>
-                )}
-                {!isArchived && role === "owner" && (
-                  <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={() => setArchiveDialogOpen(true)}>
-                    <Archive className="w-4 h-4 mr-1.5" /> Archive
-                  </Button>
-                )}
-                {!isArchived && role === "ranch_hand" && (
-                  <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={requestArchiveAnimal}>
-                    <Archive className="w-4 h-4 mr-1.5" /> Request Archive
-                  </Button>
-                )}
-                {isArchived && role === "owner" && (
-                  <>
-                    <Button variant="outline" size="sm" className="min-h-[44px] border-primary/40 text-primary hover:bg-primary/10" onClick={restoreAnimal} disabled={restoring}>
-                      {restoring ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
-                      Restore
-                    </Button>
-                    <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
-                      if(confirm("Permanently delete this animal? All records will be lost.")) {
-                        deleteMutation.mutate({ animalId });
-                      }
-                    }}><Trash2 className="w-4 h-4" /></Button>
-                  </>
-                )}
-                {!isArchived && role === "owner" && (
-                  <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
-                    if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
-                      deleteMutation.mutate({ animalId });
-                    }
-                  }}><Trash2 className="w-4 h-4" /></Button>
-                )}
-                {!isArchived && role === "ranch_hand" && (
-                  <Button variant="outline" size="sm" className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10" onClick={requestDeleteAnimal}>
-                    <Trash2 className="w-4 h-4 mr-1.5" /> Request Deletion
-                  </Button>
-                )}
-              </>
-            );
-          })()}
-        </div>
-      </div>
+      <Link href="/animals" className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors self-start">
+        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Herd
+      </Link>
 
       {/* Header Card */}
       {(() => {
@@ -613,6 +550,67 @@ export default function AnimalDetail() {
               )}
             </div>
           </Card>
+        );
+      })()}
+
+      {/* Action Buttons */}
+      {(() => {
+        const a = animal as AnimalDetailWithArchive;
+        const isArchived = !!a.archivedAt;
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-card min-h-[44px]"
+              onClick={exportPDF}
+              isLoading={isExporting}
+              aria-label="Export animal record as PDF"
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              Export PDF
+            </Button>
+            {!isArchived && role !== "viewer" && (
+              <Link href={`/animals/${animal.id}/edit`}>
+                <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
+              </Link>
+            )}
+            {!isArchived && role === "owner" && (
+              <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={() => setArchiveDialogOpen(true)}>
+                <Archive className="w-4 h-4 mr-1.5" /> Archive
+              </Button>
+            )}
+            {!isArchived && role === "ranch_hand" && (
+              <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={requestArchiveAnimal}>
+                <Archive className="w-4 h-4 mr-1.5" /> Request Archive
+              </Button>
+            )}
+            {isArchived && role === "owner" && (
+              <>
+                <Button variant="outline" size="sm" className="min-h-[44px] border-primary/40 text-primary hover:bg-primary/10" onClick={restoreAnimal} disabled={restoring}>
+                  {restoring ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
+                  Restore
+                </Button>
+                <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
+                  if(confirm("Permanently delete this animal? All records will be lost.")) {
+                    deleteMutation.mutate({ animalId });
+                  }
+                }}><Trash2 className="w-4 h-4" /></Button>
+              </>
+            )}
+            {!isArchived && role === "owner" && (
+              <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
+                if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
+                  deleteMutation.mutate({ animalId });
+                }
+              }}><Trash2 className="w-4 h-4" /></Button>
+            )}
+            {!isArchived && role === "ranch_hand" && (
+              <Button variant="outline" size="sm" className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10" onClick={requestDeleteAnimal}>
+                <Trash2 className="w-4 h-4 mr-1.5" /> Request Deletion
+              </Button>
+            )}
+          </div>
         );
       })()}
 
