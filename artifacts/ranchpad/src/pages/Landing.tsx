@@ -6,6 +6,8 @@ const BULLETS = [
   "Cross-references local weather and each animal's health history to warn you of disease risk before symptoms show up.",
   "Role-based team access — owners, ranch hands, and outside viewers each see exactly what they need and nothing they don't.",
   "Every animal's full history searchable from your phone in seconds — health events, medications, and records.",
+  "Health alerts — severity-ranked, species-specific, individual animal callouts.",
+  "FAMACHA scoring & trends — automatically flags when parasite burden is increasing before it becomes a crisis.",
   "Free 2-week trial, then $12/month. Cancel anytime.",
 ];
 
@@ -14,7 +16,7 @@ export default function Landing() {
 
   return (
     <div
-      className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center relative"
+      className="flex-1 flex flex-col items-center justify-start sm:justify-center px-5 py-10 text-center relative overflow-y-auto"
       style={{
         backgroundImage: "url('/landing-bg.jpg')",
         backgroundSize: "cover",
@@ -22,15 +24,15 @@ export default function Landing() {
       }}
     >
       {/* Base darkening overlay */}
-      <div className="absolute inset-0 bg-black/20" />
-      {/* Radial scrim — extra darkness centred on the text block */}
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 65% at 50% 48%, rgba(0,0,0,0.28) 0%, transparent 100%)" }} />
+      <div className="absolute inset-0 bg-black/30" />
+      {/* Radial scrim */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 70% at 50% 48%, rgba(0,0,0,0.30) 0%, transparent 100%)" }} />
 
       <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
-            <HoofIcon className="w-7 h-7 text-white" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} />
+          <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
+            <HoofIcon className="w-6 h-6 text-white" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} />
           </div>
           <span className="font-display font-bold text-4xl text-white tracking-tight" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}>
             RanchPad
@@ -38,7 +40,7 @@ export default function Landing() {
         </div>
 
         {/* Tagline */}
-        <div className="mb-8">
+        <div className="mb-6">
           <p className="text-base font-semibold text-white tracking-wide uppercase whitespace-nowrap" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
             Know before your animals get sick.
           </p>
@@ -47,17 +49,29 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* Bullets */}
-        <ul className="flex flex-col gap-3 mb-10 text-left w-full">
-          {BULLETS.map((point) => (
-            <li key={point} className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} />
-              <span className="text-white font-medium text-sm leading-relaxed" style={{ textShadow: "0 1px 5px rgba(0,0,0,0.85)" }}>
-                {point}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {/* Bullet list — frosted card */}
+        <div
+          className="w-full rounded-2xl mb-6 overflow-hidden"
+          style={{
+            background: "rgba(10, 30, 26, 0.55)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.10)",
+          }}
+        >
+          <ul className="flex flex-col divide-y divide-white/8">
+            {BULLETS.map((point, i) => (
+              <li key={i} className="flex items-start gap-3 px-4 py-3">
+                <CheckCircle2
+                  className="w-4.5 h-4.5 shrink-0 mt-0.5"
+                  style={{ color: "#42A96E", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))" }}
+                />
+                <span className="text-white/90 text-sm leading-snug text-left" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
+                  {point}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Action buttons */}
         <div className="flex flex-col items-center gap-3 w-full">
