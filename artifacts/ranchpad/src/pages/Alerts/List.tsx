@@ -299,7 +299,7 @@ export default function AlertsList() {
         <div className="px-3 pb-2.5 flex items-center justify-between gap-2">
           {alert.animalId ? (
             <button
-              onClick={e => { e.stopPropagation(); navigate(`/animals/${alert.animalId}`); }}
+              onClick={e => { e.stopPropagation(); navigate(`/animals/${alert.animalId}?from=alerts`); }}
               className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
             >
               View Animal →

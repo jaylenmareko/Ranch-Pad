@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { format, parseISO, isPast } from "date-fns";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useSearch } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -291,6 +291,8 @@ function PhotoGallery({ photos }: { photos: SavedPhoto[] }) {
 export default function AnimalDetail() {
   const params = useParams();
   const animalId = parseInt(params.id || "0", 10);
+  const search = useSearch();
+  const fromAlerts = new URLSearchParams(search).get("from") === "alerts";
   const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha">("health");
   const [isExporting, setIsExporting] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
@@ -480,8 +482,8 @@ export default function AnimalDetail() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20">
-      <Link href="/animals" className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors self-start">
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Herd
+      <Link href={fromAlerts ? "/alerts" : "/animals"} className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors self-start">
+        <ArrowLeft className="w-4 h-4 mr-1" /> {fromAlerts ? "Back to Alerts" : "Back to Herd"}
       </Link>
 
       {/* Header Card */}
