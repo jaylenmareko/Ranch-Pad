@@ -81,15 +81,13 @@ function TypeFolder({
     <div className="rounded-xl border border-border/60 bg-background/30 overflow-hidden">
       <button
         onClick={toggle}
-        className="relative w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/3 transition-colors text-left"
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/3 transition-colors text-left"
       >
         <span className="text-muted-foreground shrink-0">{icon}</span>
-        <span className="text-sm font-semibold text-foreground flex-1">{label}</span>
-        {!open && (
-          <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground/40 pointer-events-none">
-            tap to open
-          </span>
-        )}
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <span className="flex-1 text-center text-xs text-muted-foreground/40 pointer-events-none">
+          {!open ? "tap to open" : ""}
+        </span>
         <span className="text-xs text-muted-foreground font-medium">{count}</span>
         <ChevronDown
           className="w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200"
