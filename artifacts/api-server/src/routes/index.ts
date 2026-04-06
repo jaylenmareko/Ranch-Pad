@@ -1,4 +1,6 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
+import { db, ranchesTable, usersTable, ranchUsersTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 import healthRouter from "./health.js";
 import authRouter from "./auth.js";
 import ranchRouter from "./ranch.js";
@@ -36,5 +38,21 @@ router.use(locationsRouter);
 router.use(storageRouter);
 router.use(photosRouter);
 router.use(ranchNotesRouter);
+
+// TEMPORARY — remove after trial reset
+router.post("/admin-reset-trial-xK9mP2qR7v", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const [u] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, "marekodavis@gmail.com")).limit(1);
+    if (!u) { res.status(404).json({ error: "user not found" }); return; }
+    const [ru] = await db.select({ ranchId: ranchUsersTable.ranchId }).from(ranchUsersTable).where(eq(ranchUsersTable.userId, u.id)).limit(1);
+    if (!ru) { res.status(404).json({ error: "ranch not found" }); return; }
+    const [updated] = await db.update(ranchesTable)
+      .set({ trialEndsAt: sql`NOW() + INTERVAL '14 days'`, subscriptionStatus: null })
+      .where(eq(ranchesTable.id, ru.ranchId))
+      .returning({ id: ranchesTable.id, trialEndsAt: ranchesTable.trialEndsAt });
+    res.json({ ok: true, ranchId: updated.id, trialEndsAt: updated.trialEndsAt });
+  } catch (e) { res.status(500).json({ error: String(e) }); }
+});
+// END TEMPORARY
 
 export default router;
