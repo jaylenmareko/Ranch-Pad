@@ -582,8 +582,10 @@ FORMAT — hard limits, no exceptions:
 Return ONLY a valid JSON array. No markdown, no explanation outside the array. Return [] for no alerts.
 Each object: {"alertType":"weather","summary":"...","message":"...","severity":"...","alertKey":"..."}
 
+ANIMAL FORMATTING RULE — always write tag number first: "#T-105 (Mae, Nubian Goat)" not "Mae (#T-105)". If no tag number, use the name alone.
+
 EXAMPLE of correct output:
-[{"alertType":"weather","summary":"HIGH — Mae (Nubian Goat, #T-105): Check her FAMACHA score today and consider retreatment if she scores 3 or higher. Warm wet weather coming will bring barber pole worm larvae up on pasture.","message":"Pull Mae off wet pasture today and check her FAMACHA score. Temps are staying above 65°F with 80% humidity and 0.9 inches of rain forecast Wednesday — prime conditions for barber pole worm larvae. She was treated for barber pole worm on March 28th and has not fully recovered.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
+[{"alertType":"weather","summary":"HIGH — #T-105 (Mae, Nubian Goat): Check her FAMACHA score today and consider retreatment if she scores 3 or higher. Warm wet weather coming will bring barber pole worm larvae up on pasture.","message":"Pull #T-105 off wet pasture today and check her FAMACHA score. Temps are staying above 65°F with 80% humidity and 0.9 inches of rain forecast Wednesday — prime conditions for barber pole worm larvae. She was treated for barber pole worm on March 28th and has not fully recovered.","severity":"high","alertKey":"barber_pole_mae_t105"}]`;
 
     console.log(`[weather-alerts] Calling Claude for ranch ${ranchId} (${location}) — ${animals.length} animals, ${profileLines.length} with health history`);
 

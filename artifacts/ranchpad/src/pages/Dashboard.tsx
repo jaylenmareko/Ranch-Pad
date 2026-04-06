@@ -498,7 +498,9 @@ function AuthDashboard() {
                     return (
                       <div key={med.id} className="flex items-center gap-2">
                         <Link href={`/animals/${med.animalId}`} className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{med.animalName}</p>
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {med.animalName}{med.animalSubLabel ? <span className="font-normal text-muted-foreground ml-1">{med.animalSubLabel}</span> : null}
+                          </p>
                           <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
                         </Link>
                         <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${med.isOverdue ? "bg-destructive/10 text-destructive" : "bg-yellow-500/10 text-yellow-400"}`}>
@@ -529,7 +531,9 @@ function AuthDashboard() {
                     return (
                       <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-center justify-between gap-2 hover:bg-muted/40 rounded-lg px-2 py-1 -mx-2 transition-colors">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{preg.animalName}</p>
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {preg.animalName}{preg.animalSubLabel ? <span className="font-normal text-muted-foreground ml-1">{preg.animalSubLabel}</span> : null}
+                          </p>
                           <p className="text-xs text-muted-foreground">{preg.species}</p>
                         </div>
                         <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${daysUntil < 0 ? "bg-destructive/10 text-destructive" : daysUntil <= 7 ? "bg-yellow-500/10 text-yellow-400" : "bg-blue-500/10 text-blue-400"}`}>

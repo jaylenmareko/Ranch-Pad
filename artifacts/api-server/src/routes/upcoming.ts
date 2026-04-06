@@ -34,10 +34,13 @@ router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
     .filter(m => m.nextDueDate && m.nextDueDate <= in14DaysStr)
     .map(m => {
       const animal = animals.find(a => a.id === m.animalId);
+      const tag = animal?.tagNumber;
+      const name = animal?.name;
       return {
         id: m.id,
         animalId: m.animalId,
-        animalName: animal?.name ?? "Unknown",
+        animalName: tag ? `#${tag}` : (name ?? "Unknown"),
+        animalSubLabel: tag && name ? name : null,
         medicationName: m.medicationName,
         nextDueDate: m.nextDueDate!,
         isOverdue: m.nextDueDate! < todayStr,
@@ -49,7 +52,8 @@ router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
     .filter(a => FEMALE_SEXES.has(a.sex) && a.expectedDueDate && a.expectedDueDate >= todayStr && a.expectedDueDate <= in60DaysStr)
     .map(a => ({
       animalId: a.id,
-      animalName: a.name,
+      animalName: a.tagNumber ? `#${a.tagNumber}` : (a.name ?? "Unknown"),
+      animalSubLabel: a.tagNumber && a.name ? a.name : null,
       species: a.species,
       expectedDueDate: a.expectedDueDate!,
     }))
