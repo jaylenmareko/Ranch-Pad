@@ -558,7 +558,11 @@ function AuthDashboard() {
           <div className="flex items-center gap-2">
             <CloudLightning className="w-4 h-4 text-primary shrink-0" />
             <h3 className="font-bold text-sm text-foreground">
-              Disease Risk &middot; {format(new Date(), "MMM d")}–{format(addDays(new Date(), 6), "MMM d")}
+              Disease Risk &middot; {format(new Date(), "MMM d")}–{
+                weather?.forecast?.length
+                  ? format(parseISO(weather.forecast[weather.forecast.length - 1].date), "MMM d")
+                  : format(addDays(new Date(), 4), "MMM d")
+              }
             </h3>
             {weatherAlerts.length > 0 && (
               <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">{weatherAlerts.length}</span>
