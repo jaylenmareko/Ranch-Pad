@@ -18,3 +18,9 @@ id = "W4GpeFIlMgudz8aQNpCyc"
 uri = "file://test-data/ranchpad-test-5-animals.csv"
 type = "table"
 title = "RanchPad Test Animals (5 animals)"
+
+[[outputs]]
+id = "FyJO5e-fzNjKcBORexatr"
+uri = "file://exports/gardo-court-herd.csv"
+type = "table"
+title = "Gardo Court Herd — 10 Animals"
