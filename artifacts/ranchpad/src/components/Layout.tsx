@@ -31,27 +31,27 @@ interface NavItem {
 
 function getOwnerRanchItems(): NavItem[] {
   return [
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
   ];
 }
 
 function getViewerItems(): NavItem[] {
   return [
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
   ];
 }
 
 function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
   return [
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/settings", icon: Settings, label: "Ranch Settings" },
     { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
   ];
@@ -60,10 +60,10 @@ function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
 // Flat nav items for solo owners
 function getFlatNavItems(pendingDeleteRequests: number): NavItem[] {
   return [
+    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/animals", icon: CowIcon, label: "Herd" },
     { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
     { href: "/settings", icon: Settings, label: "Ranch Settings" },
     { href: "/account", icon: UserCog, label: "Account Settings" },
     { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
