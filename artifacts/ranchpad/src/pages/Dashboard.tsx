@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, BookOpen } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { format, differenceInDays, parseISO, addDays } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRanch } from "@/contexts/ranch-context";
@@ -557,7 +557,9 @@ function AuthDashboard() {
         <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <CloudLightning className="w-4 h-4 text-primary shrink-0" />
-            <h3 className="font-bold text-sm text-foreground">Disease Risk This Week</h3>
+            <h3 className="font-bold text-sm text-foreground">
+              Disease Risk &middot; {format(new Date(), "MMM d")}–{format(addDays(new Date(), 6), "MMM d")}
+            </h3>
             {weatherAlerts.length > 0 && (
               <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">{weatherAlerts.length}</span>
             )}
