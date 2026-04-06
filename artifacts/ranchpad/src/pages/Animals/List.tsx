@@ -994,15 +994,26 @@ export default function AnimalList() {
             <Archive className="w-4 h-4" />
             Archived
           </button>
-          {isOwnerOrHand && (
-            <button
-              onClick={() => setSelectMode(true)}
-              className="ml-auto flex items-center gap-1.5 py-1.5 px-3 text-sm font-semibold rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete
-            </button>
-          )}
+          <div className="ml-auto flex items-center gap-1">
+            {isOwnerOrHand && (
+              <button
+                onClick={() => setScanOpen(true)}
+                className="flex items-center gap-1.5 py-1.5 px-3 text-sm font-semibold rounded-lg text-primary hover:bg-primary/10 transition-colors"
+              >
+                <ScanLine className="w-3.5 h-3.5" />
+                Scan
+              </button>
+            )}
+            {isOwnerOrHand && (
+              <button
+                onClick={() => setSelectMode(true)}
+                className="flex items-center gap-1.5 py-1.5 px-3 text-sm font-semibold rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            )}
+          </div>
         </div>
       )}
 
