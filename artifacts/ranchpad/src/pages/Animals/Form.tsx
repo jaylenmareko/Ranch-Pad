@@ -10,7 +10,6 @@ import { useCreateAnimal, useGetAnimal, useUpdateAnimal, useListAnimals, getGetA
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { addGuestAnimal } from "@/lib/guest-store";
 
 interface PastureLocation { id: number; name: string; }
 
@@ -353,24 +352,6 @@ export default function AnimalForm() {
   });
 
   const onSubmit = (values: FormValues) => {
-    // Guest mode: save to localStorage
-    if (!isAuthenticated) {
-      addGuestAnimal({
-        name: values.name,
-        tagNumber: values.tagNumber || null,
-        species: values.species,
-        breed: values.breed || null,
-        sex: values.sex,
-        dateOfBirth: values.dateOfBirth || null,
-        expectedDueDate: showDueDate ? (values.expectedDueDate || null) : null,
-        notes: null,
-      });
-      toast({ title: "Animal added", description: "Saved locally — sign up to keep it forever." });
-      window.dispatchEvent(new CustomEvent("guest-save"));
-      setLocation("/animals");
-      return;
-    }
-
     const payload = {
       ...values,
       tagNumber: values.tagNumber || null,

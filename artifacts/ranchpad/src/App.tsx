@@ -11,14 +11,11 @@ import "@/lib/fetch-interceptor";
 // Providers
 import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
-import { AuthModalProvider, useAuthModal } from "@/contexts/auth-modal-context";
-import { NavigationProvider, useNavigation } from "@/contexts/navigation-context";
+import { AuthModalProvider } from "@/contexts/auth-modal-context";
 import { RanchProvider } from "@/contexts/ranch-context";
 
 // Components
 import { Layout } from "@/components/Layout";
-import { GuestFloatingCard } from "@/components/GuestFloatingCard";
-import { GuestSignupPrompt } from "@/components/GuestSignupPrompt";
 
 // Pages
 import Landing from "@/pages/Landing";
@@ -74,7 +71,6 @@ function SignupRedirect() {
 
 function SubscriptionGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, logout } = useAuth();
-  const { resetNavigation } = useNavigation();
   const qc = useQueryClient();
   const verifiedRef = useRef(false);
 
@@ -123,7 +119,7 @@ function SubscriptionGuard({ children }: { children: React.ReactNode }) {
         </p>
         <div className="flex gap-3">
           <button onClick={() => window.location.reload()} className="text-sm font-semibold text-primary underline underline-offset-2">Retry</button>
-          <button onClick={() => { resetNavigation(); logout(); }} className="text-sm font-semibold text-muted-foreground underline underline-offset-2">Sign out</button>
+          <button onClick={() => logout()} className="text-sm font-semibold text-muted-foreground underline underline-offset-2">Sign out</button>
         </div>
       </div>
     );
@@ -151,34 +147,28 @@ function DashboardRoute() {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
-  const { hasNavigated } = useNavigation();
-  const [location] = useLocation();
 
-  if (!hasNavigated && !isAuthenticated && location === "/") {
+  if (!isAuthenticated) {
     return <Landing />;
   }
 
-  const routes = (
-    <Switch>
-      <Route path="/" component={DashboardRoute} />
-      <Route path="/animals" component={AnimalList} />
-      <Route path="/animals/new" component={AnimalForm} />
-      <Route path="/animals/:id/edit" component={AnimalForm} />
-      <Route path="/animals/:id" component={AnimalDetail} />
-      <Route path="/alerts" component={AlertsList} />
-      <Route path="/import-export" component={ImportExport} />
-      <Route path="/settings" component={Settings} />
-      <Route path="/account" component={AccountSettings} />
-      <Route path="/team" component={Team} />
-      <Route component={NotFound} />
-    </Switch>
+  return (
+    <SubscriptionGuard>
+      <Switch>
+        <Route path="/" component={DashboardRoute} />
+        <Route path="/animals" component={AnimalList} />
+        <Route path="/animals/new" component={AnimalForm} />
+        <Route path="/animals/:id/edit" component={AnimalForm} />
+        <Route path="/animals/:id" component={AnimalDetail} />
+        <Route path="/alerts" component={AlertsList} />
+        <Route path="/import-export" component={ImportExport} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/account" component={AccountSettings} />
+        <Route path="/team" component={Team} />
+        <Route component={NotFound} />
+      </Switch>
+    </SubscriptionGuard>
   );
-
-  if (isAuthenticated) {
-    return <SubscriptionGuard>{routes}</SubscriptionGuard>;
-  }
-
-  return routes;
 }
 
 // ─── Router ────────────────────────────────────────────────────────────────────
@@ -210,12 +200,8 @@ function App() {
           <AuthProvider>
             <RanchProvider>
               <AuthModalProvider>
-                <NavigationProvider>
-                  <Router />
-                  <GuestFloatingCard />
-                  <GuestSignupPrompt />
-                  <Toaster />
-                </NavigationProvider>
+                <Router />
+                <Toaster />
               </AuthModalProvider>
             </RanchProvider>
           </AuthProvider>

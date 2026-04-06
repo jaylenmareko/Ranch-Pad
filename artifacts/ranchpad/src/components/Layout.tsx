@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useRanch, type RanchInfo } from "@/contexts/ranch-context";
 import { useAuthModal } from "@/contexts/auth-modal-context";
-import { useNavigation } from "@/contexts/navigation-context";
 import { SimpleDialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -451,7 +450,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { logout, isAuthenticated, role, isViewer, pendingDeleteRequests, userName } = useAuth();
   const { ranches, activeRanchId, activeRanch, hasPersonalRanch, setActiveRanch, refreshRanches } = useRanch();
   const { openLogin, openSignup } = useAuthModal();
-  const { hasNavigated, markNavigated, resetNavigation } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
 
@@ -489,11 +487,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const handleNavClick = (ranchId: number) => {
     if (ranchId !== activeRanchId) setActiveRanch(ranchId);
-    markNavigated();
   };
 
-
-  const isLanding = !hasNavigated && !isAuthenticated && location === "/";
+  const isLanding = !isAuthenticated;
   const isOwner = role === "owner";
 
   const isActive = (href: string) =>
@@ -513,7 +509,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           label={item.label}
           active={isActive(item.href)}
           badge={item.badge}
-          onClick={() => { markNavigated(); onItemClick?.(); }}
+          onClick={() => { onItemClick?.(); }}
         />
       );
     });
@@ -564,7 +560,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           icon={UserCog}
           label="Account Settings"
           active={isActive("/account")}
-          onClick={() => { markNavigated(); onItemClick?.(); }}
+          onClick={() => { onItemClick?.(); }}
         />
       </div>
     </>
@@ -577,7 +573,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ProfileBox userName={userName} />
           <div className="px-3 pb-3">
             <button
-              onClick={() => { resetNavigation(); logout(); }}
+              onClick={() => logout()}
               className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
               <LogOut className="w-4 h-4" />
@@ -611,7 +607,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ProfileBox userName={userName} />
           <div className="px-3 pb-3">
             <button
-              onClick={() => { setMenuOpen(false); resetNavigation(); logout(); }}
+              onClick={() => { setMenuOpen(false); logout(); }}
               className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
               <LogOut className="w-4 h-4" />

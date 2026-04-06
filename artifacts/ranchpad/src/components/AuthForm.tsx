@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { getGuestAnimals, clearGuestAnimals, getPostSignupCsv, clearPostSignupState } from "@/lib/guest-store";
 import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin, FolderOpen, Plus, X, Loader2 } from "lucide-react";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -140,51 +139,6 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
       },
       {
         onSuccess: async (data) => {
-          // Carry over any guest animals from this session into the new account
-          const guestAnimals = getGuestAnimals();
-          const pendingCsv = getPostSignupCsv();
-          try {
-            for (const animal of guestAnimals) {
-              await fetch("/api/animals", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${data.token}`,
-                },
-                body: JSON.stringify({
-                  name: animal.name,
-                  tagNumber: animal.tagNumber,
-                  species: animal.species,
-                  breed: animal.breed,
-                  sex: animal.sex,
-                  dateOfBirth: animal.dateOfBirth,
-                  expectedDueDate: animal.expectedDueDate,
-                  notes: animal.notes,
-                  locationId: null,
-                  sireId: null,
-                  damId: null,
-                  sireName: null,
-                  damName: null,
-                }),
-              });
-            }
-            if (guestAnimals.length > 0) clearGuestAnimals();
-            if (pendingCsv) {
-              const blob = new Blob([pendingCsv], { type: "text/csv" });
-              const formData = new FormData();
-              formData.append("file", blob, "import.csv");
-              await fetch("/api/animals/import-csv", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${data.token}` },
-                body: formData,
-              });
-            }
-          } catch {
-            // Non-blocking: auth still succeeds even if import fails
-          } finally {
-            // Clear CSV but keep "add" action for AnimalList redirect
-            if (pendingCsv) clearPostSignupState();
-          }
           setAuthContext(data.token);
           onDone();
         },

@@ -1,7 +1,6 @@
-import { useLocation } from "wouter";
 import { CheckCircle2 } from "lucide-react";
 import { HoofIcon } from "@/components/HoofIcon";
-import { useNavigation } from "@/contexts/navigation-context";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 
 const BULLETS = [
   "Cross-references local weather and each animal's health history to warn you of disease risk before symptoms show up.",
@@ -11,8 +10,7 @@ const BULLETS = [
 ];
 
 export default function Landing() {
-  const { markNavigated } = useNavigation();
-  const [, navigate] = useLocation();
+  const { openSignup } = useAuthModal();
 
   return (
     <div
@@ -64,7 +62,7 @@ export default function Landing() {
         {/* Action button */}
         <div className="flex justify-center w-full">
           <button
-            onClick={() => { markNavigated(); navigate("/"); }}
+            onClick={openSignup}
             className="inline-flex items-center justify-center h-12 px-10 rounded-xl font-bold text-base bg-white text-green-800 hover:bg-white/90 transition-colors shadow-md"
           >
             Start Your Free 2-Week Trial
