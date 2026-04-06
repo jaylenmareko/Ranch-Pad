@@ -495,15 +495,23 @@ function PendingInviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () =
   return (
     <div className="flex items-center gap-3 px-6 py-3">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <p className="text-xs font-mono text-foreground">{invite.token}</p>
-          <button onClick={copy} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors" title="Copy link">
-            {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+        <p className="text-xs font-mono text-foreground truncate mb-1">{invite.token}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-xs text-muted-foreground">
+            Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {new Date(invite.expiresAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+          </p>
+          <button
+            onClick={copy}
+            className={`inline-flex items-center gap-1 h-6 px-2.5 rounded-md text-xs font-semibold transition-colors border ${
+              copied
+                ? "bg-primary/10 border-primary/30 text-primary"
+                : "bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+            }`}
+          >
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            {copied ? "Copied!" : "Click to Copy"}
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {new Date(invite.expiresAt).toLocaleDateString([], { month: "short", day: "numeric" })}
-        </p>
       </div>
       <RoleBadge role={invite.role} />
       <button
