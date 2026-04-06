@@ -858,20 +858,20 @@ function HealthTab({ animalId }: { animalId: number }) {
                     </div>
                     <p className="text-foreground">{ev.description}</p>
                   </div>
-                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                  <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                     {role !== "viewer" && (
-                      <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); setPendingEditPhotos([]); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit event">
-                        <Edit2 className="w-4 h-4" />
+                      <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); setPendingEditPhotos([]); }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-primary bg-muted hover:bg-muted/80 border border-border rounded-lg transition-colors" aria-label="Edit event">
+                        <Edit2 className="w-3.5 h-3.5" /> Edit
                       </button>
                     )}
                     {role === "owner" && (
-                      <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete event">
-                        <Trash2 className="w-4 h-4" />
+                      <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Delete event">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
                     {role === "ranch_hand" && (
-                      <button onClick={() => requestDeleteEvent(ev.id, ev.eventDate)} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Request deletion" title="Request deletion">
-                        <Trash2 className="w-4 h-4" />
+                      <button onClick={() => requestDeleteEvent(ev.id, ev.eventDate)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
                   </div>
@@ -1053,20 +1053,20 @@ function MedsTab({ animalId }: { animalId: number }) {
                       })()}
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                  <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                     {role !== "viewer" && (
-                      <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); setPendingEditPhotos([]); }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-primary rounded-full hover:bg-muted flex items-center justify-center" aria-label="Edit medication">
-                        <Edit2 className="w-4 h-4" />
+                      <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); setPendingEditPhotos([]); }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-primary bg-muted hover:bg-muted/80 border border-border rounded-lg transition-colors" aria-label="Edit medication">
+                        <Edit2 className="w-3.5 h-3.5" /> Edit
                       </button>
                     )}
                     {role === "owner" && (
-                      <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Delete medication">
-                        <Trash2 className="w-4 h-4" />
+                      <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Delete medication">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
                     {role === "ranch_hand" && (
-                      <button onClick={() => requestDeleteMed(med.id, med.medicationName)} className="p-2 min-w-[44px] min-h-[44px] text-muted-foreground hover:text-destructive rounded-full hover:bg-muted flex items-center justify-center" aria-label="Request deletion" title="Request deletion">
-                        <Trash2 className="w-4 h-4" />
+                      <button onClick={() => requestDeleteMed(med.id, med.medicationName)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
                   </div>
