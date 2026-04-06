@@ -31,19 +31,16 @@ function SeverityFolder({
     <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
       <button
         onClick={toggle}
-        className="relative w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
       >
         <ChevronDown
           className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
           style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
         />
         <span className="font-bold text-sm text-foreground">{label}</span>
-        <span className="flex-1" />
-        {!open && (
-          <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground/40 pointer-events-none">
-            tap to open
-          </span>
-        )}
+        <span className="flex-1 text-center text-xs text-muted-foreground/40 pointer-events-none">
+          {!open ? "tap to open" : ""}
+        </span>
         <span
           className="text-xs font-bold px-2 py-0.5 rounded-full"
           style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
