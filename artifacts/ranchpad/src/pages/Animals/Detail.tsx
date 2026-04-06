@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { format, parseISO, isPast } from "date-fns";
 import { useParams, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -209,23 +209,51 @@ function PhotoUploadArea({
   );
 }
 
+function AuthImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    setError(false);
+    setBlobUrl(null);
+    fetch(src)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to load");
+        return res.blob();
+      })
+      .then(blob => {
+        objectUrl = URL.createObjectURL(blob);
+        setBlobUrl(objectUrl);
+      })
+      .catch(() => setError(true));
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  if (error) return <div className={`${className} bg-muted flex items-center justify-center`}><XCircle className="w-5 h-5 text-muted-foreground/50" /></div>;
+  if (!blobUrl) return <div className={`${className} bg-muted animate-pulse`} />;
+  return <img src={blobUrl} alt={alt} className={className} />;
+}
+
 function PhotoGallery({ photos }: { photos: SavedPhoto[] }) {
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   if (photos.length === 0) return null;
   return (
     <>
       <div className="flex gap-3 overflow-x-auto pb-1 mt-2">
-        {photos.map(photo => {
+        {photos.map((photo, idx) => {
           const src = `/api/storage${photo.objectPath}`;
           return (
             <button
               key={photo.id}
               type="button"
-              onClick={() => setLightboxSrc(src)}
+              onClick={() => setLightboxIdx(idx)}
               className="shrink-0 group"
             >
               <div className="w-20 h-20 rounded-xl overflow-hidden border border-border bg-muted">
-                <img
+                <AuthImage
                   src={src}
                   alt={photo.originalFilename}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
@@ -238,20 +266,19 @@ function PhotoGallery({ photos }: { photos: SavedPhoto[] }) {
           );
         })}
       </div>
-      {lightboxSrc && (
+      {lightboxIdx !== null && (
         <div
-          className="fixed inset-0 z-50 bg-black/92 flex items-center justify-center"
-          onClick={() => setLightboxSrc(null)}
+          className="fixed inset-0 z-[200] bg-black/92 flex items-center justify-center"
+          onClick={() => setLightboxIdx(null)}
         >
-          <img
-            src={lightboxSrc}
+          <AuthImage
+            src={`/api/storage${photos[lightboxIdx].objectPath}`}
             alt="Full size"
             className="max-w-[92vw] max-h-[92vh] object-contain rounded-xl shadow-2xl"
-            onClick={e => e.stopPropagation()}
           />
           <button
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors"
-            onClick={() => setLightboxSrc(null)}
+            onClick={() => setLightboxIdx(null)}
           >
             <X className="w-5 h-5" />
           </button>
