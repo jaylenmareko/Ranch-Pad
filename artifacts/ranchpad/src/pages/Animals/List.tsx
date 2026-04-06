@@ -1078,7 +1078,6 @@ export default function AnimalList() {
   }, [filteredAnimals]);
 
   const locationGrouped = React.useMemo(() => {
-    if (!filteredAnimals.some(a => a.locationId != null)) return null;
     const map = new Map<number | null, { name: string | null; animals: Animal[] }>();
     for (const a of filteredAnimals) {
       const locId = a.locationId ?? null;
