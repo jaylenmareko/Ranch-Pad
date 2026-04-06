@@ -6,8 +6,6 @@ const BULLETS = [
   "Cross-references local weather and each animal's health history to warn you of disease risk before symptoms show up.",
   "Role-based team access — owners, ranch hands, and outside viewers each see exactly what they need and nothing they don't.",
   "Every animal's full history searchable from your phone in seconds — health events, medications, and records.",
-  "Health alerts — severity-ranked, species-specific, individual animal callouts.",
-  "FAMACHA scoring & trends — automatically flags when parasite burden is increasing before it becomes a crisis.",
   "Free 2-week trial, then $12/month. Cancel anytime.",
 ];
 
