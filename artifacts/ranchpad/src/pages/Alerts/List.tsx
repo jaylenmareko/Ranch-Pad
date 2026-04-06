@@ -261,37 +261,40 @@ export default function AlertsList() {
     const animalLabel = buildAnimalLabel(alert);
     const firstSentence = getFirstSentence(alert.message);
     const hasMoreContent = alert.message.length > firstSentence.length;
-    const isClickable = !!alert.animalId;
 
     return (
       <div
-        className={`rounded-xl border-2 border-border bg-card overflow-hidden transition-colors ${isClickable ? "cursor-pointer hover:border-border/80 hover:bg-card/80 active:scale-[0.99]" : ""}`}
-        onClick={() => isClickable && navigate(`/animals/${alert.animalId}`)}
+        className="rounded-xl border-2 border-border bg-card overflow-hidden transition-colors cursor-pointer hover:border-border/80 hover:bg-card/80 active:scale-[0.99]"
+        onClick={() => setExpanded(v => !v)}
       >
         {/* Top: animal + date */}
         <div className="px-3 pt-3 pb-2 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            {animalLabel && (
-              <p className="text-xs font-bold text-foreground truncate">{animalLabel}</p>
-            )}
-            <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+            {animalLabel ? (
+              <p className="text-xs font-bold text-primary truncate mb-0.5">{animalLabel}</p>
+            ) : null}
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {expanded ? alert.message : firstSentence}
             </p>
           </div>
-          <span className="text-xs text-muted-foreground/50 shrink-0 whitespace-nowrap">
-            {format(new Date(alert.generatedAt), "MMM d")}
-          </span>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="text-xs text-muted-foreground/50 whitespace-nowrap">
+              {format(new Date(alert.generatedAt), "MMM d")}
+            </span>
+            {hasMoreContent && (
+              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-150 ${expanded ? "rotate-180" : ""}`} />
+            )}
+          </div>
         </div>
 
         {/* Action bar — always visible */}
-        <div className="px-3 pb-2.5 flex items-center justify-between">
-          {hasMoreContent ? (
+        <div className="px-3 pb-2.5 flex items-center justify-between gap-2">
+          {alert.animalId ? (
             <button
-              onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              onClick={e => { e.stopPropagation(); navigate(`/animals/${alert.animalId}`); }}
+              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
             >
-              {expanded ? "Collapse" : "See details"}
-              <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${expanded ? "rotate-180" : ""}`} />
+              View Animal →
             </button>
           ) : <span />}
           <button
