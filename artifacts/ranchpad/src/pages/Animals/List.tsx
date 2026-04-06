@@ -154,6 +154,285 @@ function AnimalCard({
 
   return <Link href={`/animals/${animal.id}`}>{inner}</Link>;
 }
+const FOLDER_STORAGE_KEY = "ranchpad:folderOpen";
+
+function getFolderOpen(species: string): boolean {
+  try {
+    const stored = localStorage.getItem(FOLDER_STORAGE_KEY);
+    if (!stored) return false;
+    const map = JSON.parse(stored) as Record<string, boolean>;
+    return map[species] ?? false;
+  } catch {
+    return false;
+  }
+}
+
+function setFolderOpen(species: string, value: boolean): void {
+  try {
+    const stored = localStorage.getItem(FOLDER_STORAGE_KEY);
+    const map = stored ? (JSON.parse(stored) as Record<string, boolean>) : {};
+    map[species] = value;
+    localStorage.setItem(FOLDER_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
+}
+
+// ─── Species Folder ────────────────────────────────────────────────────────────
+
+function SpeciesFolder({
+  species,
+  animals,
+  initialOpen,
+  selectMode,
+  selectedIds,
+  onToggleAnimal,
+  onToggleSpecies,
+  nested,
+}: {
+  species: string;
+  animals: Animal[];
+  initialOpen?: boolean;
+  selectMode?: boolean;
+  selectedIds?: Set<number>;
+  onToggleAnimal?: (id: number) => void;
+  onToggleSpecies?: (ids: number[], allSelected: boolean) => void;
+  nested?: boolean;
+}) {
+  const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(species));
+
+  function toggle() {
+    setOpen(o => {
+      const next = !o;
+      setFolderOpen(species, next);
+      return next;
+    });
+  }
+
+  const highCount = animals.filter(a => a.latestHealthSeverity === "high").length;
+  const medCount = animals.filter(a => a.latestHealthSeverity === "medium").length;
+  const accentColor = highCount > 0 ? "#ef4444" : medCount > 0 ? "#eab308" : "transparent";
+
+  const animalIds = animals.map(a => a.id);
+  const selectedCount = selectMode && selectedIds ? animalIds.filter(id => selectedIds.has(id)).length : 0;
+  const allSelected = selectMode ? selectedCount === animals.length : false;
+  const someSelected = selectMode ? selectedCount > 0 && selectedCount < animals.length : false;
+
+  if (nested) {
+    // Inner style — matches Alerts TypeFolder
+    return (
+      <div className="rounded-xl border border-border/60 bg-background/30 overflow-hidden">
+        <button
+          onClick={toggle}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/3 transition-colors text-left"
+        >
+          {selectMode && (
+            <SelectCheckbox
+              checked={allSelected}
+              indeterminate={someSelected}
+              onClick={(e) => { e.stopPropagation(); onToggleSpecies?.(animalIds, allSelected); }}
+            />
+          )}
+          <ChevronDown
+            className="w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200"
+            style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+          />
+          <span className="text-sm font-semibold text-foreground flex-1 truncate">{species}</span>
+          {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
+          {highCount > 0 && <span className="text-xs font-bold text-destructive">⚠ {highCount}</span>}
+          {medCount > 0 && highCount === 0 && <span className="text-xs font-bold text-yellow-500">⚠ {medCount}</span>}
+          <span className="text-xs text-muted-foreground font-medium">{animals.length}</span>
+        </button>
+        {open && (
+          <div className="px-2.5 pb-2.5 space-y-2 border-t border-border/40 pt-2.5">
+            {animals.map(animal => (
+              <AnimalCard
+                key={animal.id}
+                animal={animal}
+                selectMode={selectMode}
+                selected={selectedIds?.has(animal.id)}
+                onToggle={() => onToggleAnimal?.(animal.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Outer/standalone style — matches Alerts SeverityFolder
+  return (
+    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
+      <button
+        onClick={toggle}
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
+      >
+        {selectMode && (
+          <SelectCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onClick={(e) => { e.stopPropagation(); onToggleSpecies?.(animalIds, allSelected); }}
+          />
+        )}
+        <ChevronDown
+          className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+        />
+        <span className="font-bold text-sm text-foreground flex-1 truncate">{species}</span>
+        {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
+        <div className="flex items-center gap-1.5">
+          {highCount > 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+              {highCount} urgent
+            </span>
+          )}
+          {medCount > 0 && highCount === 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eab30820", color: "#eab308" }}>
+              {medCount} watch
+            </span>
+          )}
+          <span
+            className="text-xs font-bold px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: `${accentColor === "transparent" ? "#ffffff" : accentColor}15`, color: accentColor === "transparent" ? "var(--muted-foreground)" : accentColor }}
+          >
+            {animals.length} {animals.length === 1 ? "animal" : "animals"}
+          </span>
+        </div>
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-3">
+          {animals.map(animal => (
+            <AnimalCard
+              key={animal.id}
+              animal={animal}
+              selectMode={selectMode}
+              selected={selectedIds?.has(animal.id)}
+              onToggle={() => onToggleAnimal?.(animal.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Location Folder ───────────────────────────────────────────────────────────
+
+function LocationFolder({
+  locationId,
+  locationName,
+  animals,
+  initialOpen,
+  selectMode,
+  selectedIds,
+  onToggleAnimal,
+  onToggleSpecies,
+}: {
+  locationId: number | null;
+  locationName: string | null;
+  animals: Animal[];
+  initialOpen?: boolean;
+  selectMode?: boolean;
+  selectedIds?: Set<number>;
+  onToggleAnimal?: (id: number) => void;
+  onToggleSpecies?: (ids: number[], allSelected: boolean) => void;
+}) {
+  const folderKey = locationId != null ? `loc:${locationId}` : "loc:unassigned";
+  const [open, setOpen] = useState(() => initialOpen !== undefined ? initialOpen : getFolderOpen(folderKey));
+
+  function toggle() {
+    setOpen(o => {
+      const next = !o;
+      setFolderOpen(folderKey, next);
+      return next;
+    });
+  }
+
+  const bySpecies = React.useMemo(() => {
+    const map: Record<string, Animal[]> = {};
+    for (const a of animals) {
+      if (!map[a.species]) map[a.species] = [];
+      map[a.species].push(a);
+    }
+    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
+  }, [animals]);
+
+  const highCount = animals.filter(a => a.latestHealthSeverity === "high").length;
+  const medCount = animals.filter(a => a.latestHealthSeverity === "medium").length;
+  const isUnassigned = locationId == null;
+
+  const allIds = animals.map(a => a.id);
+  const selectedCount = selectMode && selectedIds ? allIds.filter(id => selectedIds.has(id)).length : 0;
+  const allSelected = selectMode ? selectedCount === animals.length : false;
+  const someSelected = selectMode ? selectedCount > 0 && selectedCount < animals.length : false;
+
+  const accentColor = highCount > 0 ? "#ef4444" : medCount > 0 ? "#eab308" : "transparent";
+
+  return (
+    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
+      <button
+        onClick={toggle}
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
+      >
+        {selectMode && (
+          <SelectCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSpecies?.(allIds, allSelected);
+            }}
+          />
+        )}
+        <ChevronDown
+          className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+        />
+        <MapPin className={`w-4 h-4 shrink-0 ${isUnassigned ? "text-muted-foreground/40" : "text-primary"}`} />
+        <span className="font-bold text-sm text-foreground flex-1 truncate">
+          {isUnassigned ? "No Location Set" : locationName}
+        </span>
+        {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
+        <div className="flex items-center gap-1.5">
+          {highCount > 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+              {highCount} urgent
+            </span>
+          )}
+          {medCount > 0 && highCount === 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eab30820", color: "#eab308" }}>
+              {medCount} watch
+            </span>
+          )}
+          <span
+            className="text-xs font-bold px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: `${accentColor === "transparent" ? "#ffffff" : accentColor}15`, color: accentColor === "transparent" ? "var(--muted-foreground)" : accentColor }}
+          >
+            {animals.length} {animals.length === 1 ? "animal" : "animals"}
+          </span>
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-3">
+          {bySpecies.map(([species, speciesAnimals]) => (
+            <SpeciesFolder
+              key={`${folderKey}-${species}`}
+              species={species}
+              animals={speciesAnimals}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggleAnimal={onToggleAnimal}
+              onToggleSpecies={onToggleSpecies}
+              nested
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Animal List ──────────────────────────────────────────────────────────
 
 export default function AnimalList() {
