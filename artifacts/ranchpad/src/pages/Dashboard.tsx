@@ -604,8 +604,8 @@ function AuthDashboard() {
             <div className="divide-y divide-border/40 opacity-30 pointer-events-none select-none">
               {[
                 { color: "bg-red-600", text: "Rosie (#114) — FAMACHA score has declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1\" of rain this week." },
-                { color: "bg-yellow-500", text: "Foot rot risk — pastures saturated after 3 consecutive days of rain and temps above 60°F. Inspect hooves on all cattle and goats." },
-                { color: "bg-yellow-500", text: "Heat stress alert — high of 98°F forecast with humidity at 74%. Ensure water access and shade for all animals, especially cattle." },
+                { color: "bg-red-600", text: "Foot rot risk — pastures saturated after 3 consecutive days of rain and temps above 60°F. Inspect hooves on all cattle and goats." },
+                { color: "bg-red-600", text: "Heat stress alert — high of 98°F forecast with humidity at 74%. Ensure water access and shade for all animals, especially cattle." },
               ].map((ex, i) => (
                 <div key={i} className="p-4 flex gap-3">
                   <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${ex.color}`} /></div>

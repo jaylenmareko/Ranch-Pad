@@ -491,7 +491,7 @@ export default function AnimalDetail() {
         {role !== "viewer" && (
           <Button variant="outline" size="sm" className="bg-card min-h-[36px] gap-1.5" onClick={() => setScanRecordsOpen(true)}>
             <ScanLine className="w-4 h-4" />
-            Scan Records
+            Add from Photo
           </Button>
         )}
       </div>
