@@ -526,30 +526,6 @@ function AuthDashboard() {
         <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(), "EEEE, MMMM d")}</p>
       </div>
 
-      {/* Stat tiles — 2×2 grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link href="/animals">
-          <div className="bg-card border-2 border-border rounded-2xl p-4 hover:border-border/70 transition-colors">
-            <p className="text-3xl font-black text-foreground leading-none">{animalsLoading ? "—" : totalAnimals}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Animals</p>
-          </div>
-        </Link>
-        <Link href="/alerts">
-          <div className={`bg-card border-2 rounded-2xl p-4 hover:border-border/70 transition-colors ${activeAlertCount > 0 ? "border-red-500/40" : "border-border"}`}>
-            <p className={`text-3xl font-black leading-none ${activeAlertCount > 0 ? "text-destructive" : "text-foreground"}`}>{alertsLoading ? "—" : activeAlertCount}</p>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Active Alerts</p>
-          </div>
-        </Link>
-        <div className={`bg-card border-2 rounded-2xl p-4 ${overdueMedsCount > 0 ? "border-red-500/40" : "border-border"}`}>
-          <p className={`text-3xl font-black leading-none ${overdueMedsCount > 0 ? "text-destructive" : "text-foreground"}`}>{upcomingLoading ? "—" : overdueMedsCount}</p>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Overdue Meds</p>
-        </div>
-        <div className={`bg-card border-2 rounded-2xl p-4 ${dueSoonCount > 0 ? "border-yellow-500/40" : "border-border"}`}>
-          <p className={`text-3xl font-black leading-none ${dueSoonCount > 0 ? "text-yellow-400" : "text-foreground"}`}>{upcomingLoading ? "—" : dueSoonCount}</p>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Due This Week</p>
-        </div>
-      </div>
-
       {/* Import feedback */}
       {importError && (
         <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">{importError}</p>
