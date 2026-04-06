@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/utils";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
+import { SimpleDialog } from "@/components/ui/dialog";
 
 type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
@@ -25,17 +26,18 @@ function pluralizeSpecies(species: string) {
 
 // ─── Guest Dashboard ──────────────────────────────────────────────────────────
 
-// ─── Field Notes Section ─────────────────────────────────────────────────────
+// ─── Ranch Notes Dialog ───────────────────────────────────────────────────────
 
 type RanchNote = { id: number; noteDate: string; noteText: string; createdAt: string };
 
-function FieldNotesSection() {
+function RanchNotesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [noteText, setNoteText] = useState("");
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState<RanchNote[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchNotes = React.useCallback(async () => {
+    setLoading(true);
     try {
       const res = await fetch("/api/ranch-notes");
       if (res.ok) setNotes(await res.json());
@@ -44,7 +46,7 @@ function FieldNotesSection() {
     }
   }, []);
 
-  useEffect(() => { fetchNotes(); }, [fetchNotes]);
+  useEffect(() => { if (open) fetchNotes(); }, [open, fetchNotes]);
 
   const handleSave = async () => {
     if (!noteText.trim()) return;
@@ -66,60 +68,57 @@ function FieldNotesSection() {
 
   const formatNoteTimestamp = (createdAt: string) => {
     try {
-      const d = new Date(createdAt);
-      return format(d, "MMM d · h:mm a");
+      return format(new Date(createdAt), "MMM d · h:mm a");
     } catch {
       return createdAt;
     }
   };
 
   return (
-    <div className="rounded-2xl border-2 border-border overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <BookOpen className="w-4 h-4 text-primary shrink-0" />
-        <h3 className="font-bold text-sm text-foreground">Ranch Journal</h3>
+    <SimpleDialog open={open} onOpenChange={onOpenChange} title="Ranch Notes">
+      <div className="flex flex-col gap-4">
+        {/* Input area */}
+        <div className="flex flex-col gap-3">
+          <textarea
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave(); }}
+            placeholder="What happened on the ranch today?"
+            rows={3}
+            className="w-full px-3 py-2.5 rounded-xl border border-border bg-muted/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={saving || !noteText.trim()}
+              className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
+            </button>
+          </div>
+        </div>
+
+        {/* Notes list */}
+        {loading ? (
+          <div className="space-y-3">{[1, 2].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
+        ) : notes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <BookOpen className="w-8 h-8 text-muted-foreground/30 mb-2" />
+            <p className="text-sm text-muted-foreground font-medium">No notes yet</p>
+            <p className="text-xs text-muted-foreground/60 mt-0.5">Log daily observations above</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/40 -mx-6">
+            {notes.map(note => (
+              <div key={note.id} className="px-6 py-3.5">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{formatNoteTimestamp(note.createdAt)}</p>
+                <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      {/* Input area */}
-      <div className="p-4 border-b border-border/60 flex flex-col gap-3">
-        <textarea
-          value={noteText}
-          onChange={e => setNoteText(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave(); }}
-          placeholder="What happened on the ranch today?"
-          rows={3}
-          className="w-full px-3 py-2.5 rounded-xl border border-border bg-muted/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
-        />
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={saving || !noteText.trim()}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
-          </button>
-        </div>
-      </div>
-      {/* Notes list */}
-      {loading ? (
-        <div className="p-4 space-y-3">{[1, 2].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
-      ) : notes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-8 text-center">
-          <BookOpen className="w-8 h-8 text-muted-foreground/30 mb-2" />
-          <p className="text-sm text-muted-foreground font-medium">No entries yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-0.5">Log daily observations above</p>
-        </div>
-      ) : (
-        <div className="divide-y divide-border/40">
-          {notes.map(note => (
-            <div key={note.id} className="px-4 py-3.5">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{formatNoteTimestamp(note.createdAt)}</p>
-              <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </SimpleDialog>
   );
 }
 
@@ -367,6 +366,7 @@ function AuthDashboard() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useListAlerts();
   const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
@@ -685,9 +685,18 @@ function AuthDashboard() {
         )}
       </div>
 
-      {/* Field Notes — owners and ranch hands only */}
+      {/* Ranch Notes button + dialog — owners and ranch hands only */}
       {(role === "owner" || role === "ranch_hand") && (
-        <FieldNotesSection />
+        <>
+          <button
+            onClick={() => setNotesOpen(true)}
+            className="w-full flex items-center justify-center gap-2 h-11 rounded-2xl border-2 border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <BookOpen className="w-4 h-4" />
+            Ranch Notes
+          </button>
+          <RanchNotesDialog open={notesOpen} onOpenChange={setNotesOpen} />
+        </>
       )}
 
       </>
