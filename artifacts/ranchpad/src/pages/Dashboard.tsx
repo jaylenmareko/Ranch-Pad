@@ -299,15 +299,6 @@ function WeatherAlertRow({ alert, onDismiss }: {
           )}
         </div>
         <div className="shrink-0 flex items-center gap-1">
-          {hasDetail && (
-            <button
-              onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-all"
-              aria-label={expanded ? "Collapse" : "Expand"}
-            >
-              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
-            </button>
-          )}
           <button
             onClick={e => { e.stopPropagation(); onDismiss(alert.id); }}
             className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all flex items-center justify-center"
