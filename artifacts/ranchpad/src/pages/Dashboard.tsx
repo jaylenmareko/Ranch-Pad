@@ -74,56 +74,52 @@ function FieldNotesSection() {
   };
 
   return (
-    <Card className="flex flex-col shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-          <BookOpen className="w-5 h-5 text-primary" /> Ranch Journal
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0 flex flex-col">
-        {/* Input area */}
-        <div className="p-5 border-b border-border/60 flex flex-col gap-3">
-          <textarea
-            value={noteText}
-            onChange={e => setNoteText(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave(); }}
-            placeholder="What happened on the ranch today?"
-            rows={3}
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-          />
-          <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saving || !noteText.trim()}
-              className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
-            </button>
-          </div>
+    <div className="rounded-2xl border-2 border-border overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+        <BookOpen className="w-4 h-4 text-primary shrink-0" />
+        <h3 className="font-bold text-sm text-foreground">Ranch Journal</h3>
+      </div>
+      {/* Input area */}
+      <div className="p-4 border-b border-border/60 flex flex-col gap-3">
+        <textarea
+          value={noteText}
+          onChange={e => setNoteText(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave(); }}
+          placeholder="What happened on the ranch today?"
+          rows={3}
+          className="w-full px-3 py-2.5 rounded-xl border border-border bg-muted/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+        />
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving || !noteText.trim()}
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
+          </button>
         </div>
-        {/* Notes list */}
-        {loading ? (
-          <div className="p-5 space-y-3">{[1, 2].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
-        ) : notes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center">
-            <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-3">
-              <BookOpen className="w-7 h-7 text-primary/60" />
+      </div>
+      {/* Notes list */}
+      {loading ? (
+        <div className="p-4 space-y-3">{[1, 2].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
+      ) : notes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <BookOpen className="w-8 h-8 text-muted-foreground/30 mb-2" />
+          <p className="text-sm text-muted-foreground font-medium">No entries yet</p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5">Log daily observations above</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-border/40">
+          {notes.map(note => (
+            <div key={note.id} className="px-4 py-3.5">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{formatNoteTimestamp(note.createdAt)}</p>
+              <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
             </div>
-            <p className="text-muted-foreground text-sm font-medium">No field notes yet.</p>
-            <p className="text-muted-foreground text-xs mt-1">Start logging daily observations above.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border/40">
-            {notes.map(note => (
-              <div key={note.id} className="px-5 py-4">
-                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{formatNoteTimestamp(note.createdAt)}</p>
-                <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -505,7 +501,7 @@ function AuthDashboard() {
   const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 max-w-lg mx-auto pb-20">
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
       <ImportModeDialog
         open={modeDialogOpen}
@@ -524,160 +520,194 @@ function AuthDashboard() {
       ) : (
       <>
 
-      {/* Herd Health Forecast — full width */}
-      <Card className="flex flex-col shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-                <CloudLightning className="w-5 h-5 text-primary" /> Disease Risk This Week
-              </CardTitle>
-              <Badge variant="outline" className="font-bold">{weatherAlerts.length}</Badge>
-            </div>
-            <button
-              onClick={() => generateMutation.mutate()}
-              disabled={generateMutation.isPending}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50 shrink-0"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${generateMutation.isPending ? "animate-spin" : ""}`} />
-              Refresh Alerts
-            </button>
+      {/* Greeting */}
+      <div>
+        <h1 className="text-xl font-black text-foreground">{activeRanch?.name ?? "Dashboard"}</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(), "EEEE, MMMM d")}</p>
+      </div>
+
+      {/* Stat tiles — 2×2 grid */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href="/animals">
+          <div className="bg-card border-2 border-border rounded-2xl p-4 hover:border-border/70 transition-colors">
+            <p className="text-3xl font-black text-foreground leading-none">{animalsLoading ? "—" : totalAnimals}</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Animals</p>
           </div>
-        </CardHeader>
-        <CardContent className="flex-1 p-0 flex flex-col">
-          {/* Slim weather context row */}
-          {!weatherLoading && weather && (
-            <div className="px-5 py-2.5 bg-muted/20 border-b border-border/40 flex items-center gap-2.5 flex-wrap text-xs text-muted-foreground">
-              <img src={`https://openweathermap.org/img/wn/${weather.current.icon}.png`} alt="" className="w-5 h-5 opacity-70 -ml-0.5" />
-              <span className="font-bold text-foreground text-sm">{Math.round(weather.current.temp)}°F</span>
-              <span className="capitalize">{weather.current.description}</span>
-              <span className="opacity-40">·</span>
-              <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.current.humidity}%</span>
-              <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{Math.round(weather.current.windSpeed)} mph</span>
-            </div>
+        </Link>
+        <Link href="/alerts">
+          <div className={`bg-card border-2 rounded-2xl p-4 hover:border-border/70 transition-colors ${activeAlertCount > 0 ? "border-red-500/40" : "border-border"}`}>
+            <p className={`text-3xl font-black leading-none ${activeAlertCount > 0 ? "text-destructive" : "text-foreground"}`}>{alertsLoading ? "—" : activeAlertCount}</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Active Alerts</p>
+          </div>
+        </Link>
+        <div className={`bg-card border-2 rounded-2xl p-4 ${overdueMedsCount > 0 ? "border-red-500/40" : "border-border"}`}>
+          <p className={`text-3xl font-black leading-none ${overdueMedsCount > 0 ? "text-destructive" : "text-foreground"}`}>{upcomingLoading ? "—" : overdueMedsCount}</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Overdue Meds</p>
+        </div>
+        <div className={`bg-card border-2 rounded-2xl p-4 ${dueSoonCount > 0 ? "border-yellow-500/40" : "border-border"}`}>
+          <p className={`text-3xl font-black leading-none ${dueSoonCount > 0 ? "text-yellow-400" : "text-foreground"}`}>{upcomingLoading ? "—" : dueSoonCount}</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1.5">Due This Week</p>
+        </div>
+      </div>
+
+      {/* Import feedback */}
+      {importError && (
+        <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">{importError}</p>
+      )}
+      {importSummary && (
+        <div className="text-sm bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
+          <p className="font-semibold text-green-400">{importSummary.animalsCreated} animal{importSummary.animalsCreated !== 1 ? "s" : ""} imported</p>
+          {importSummary.skipped.length > 0 && (
+            <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground list-disc list-inside">
+              {importSummary.skipped.map((s, i) => <li key={i}>Row {s.row}: {plainEnglishSkipReason(s.reason)}</li>)}
+            </ul>
           )}
-          {alertsLoading ? (
-            <div className="p-6 space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-xl" />)}</div>
-          ) : sortedWeatherAlerts.length === 0 ? (
-            <div className="flex flex-col">
-              <div className="flex flex-col items-center justify-center py-6 text-center px-5">
-                <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3"><CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" /></div>
-                <h3 className="font-bold text-base text-foreground">All clear!</h3>
-                <p className="text-muted-foreground text-sm mt-1">No active weather alerts for your herd.</p>
-              </div>
-              <div className="mx-5 border-t border-dashed border-border/60" />
-              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-5 pt-3 pb-1">Example alerts</p>
-              <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
-                <div className="p-4 flex gap-4">
-                  <div className="mt-0.5 shrink-0"><div className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" /></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-tight">Clyde (TXS-010) — Bottle jaw and FAMACHA 5 recorded 3 days ago. Barber pole worm burden likely critical given heavy rain forecast.</p>
-                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">weather forecast</p>
-                  </div>
-                </div>
-                <div className="p-4 flex gap-4">
-                  <div className="mt-0.5 shrink-0"><div className="w-3 h-3 rounded-full bg-destructive shadow-[0_0_8px_rgba(255,0,0,0.4)]" /></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-tight">High humidity and warm temps forecast this week — ideal conditions for barber pole worm larvae. Check FAMACHA scores on all sheep and goats.</p>
-                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">weather forecast</p>
-                  </div>
-                </div>
-                <div className="p-4 flex gap-4">
-                  <div className="mt-0.5 shrink-0"><div className="w-3 h-3 rounded-full bg-yellow-500" /></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-tight">Freezing overnight temps expected — animals with respiratory history are at elevated risk. Ensure shelter access for Bella and Rex.</p>
-                    <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">weather forecast</p>
-                  </div>
-                </div>
-              </div>
+        </div>
+      )}
+
+      {/* Disease Risk This Week */}
+      <div className="rounded-2xl border-2 border-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CloudLightning className="w-4 h-4 text-primary shrink-0" />
+            <h3 className="font-bold text-sm text-foreground">Disease Risk This Week</h3>
+            {weatherAlerts.length > 0 && (
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">{weatherAlerts.length}</span>
+            )}
+          </div>
+          <button
+            onClick={() => generateMutation.mutate()}
+            disabled={generateMutation.isPending}
+            className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50 shrink-0"
+          >
+            <RefreshCw className={`w-3 h-3 ${generateMutation.isPending ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+        </div>
+
+        {/* Weather strip */}
+        {!weatherLoading && weather && (
+          <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+            <img src={`https://openweathermap.org/img/wn/${weather.current.icon}.png`} alt="" className="w-5 h-5 opacity-70" />
+            <span className="font-bold text-foreground">{Math.round(weather.current.temp)}°F</span>
+            <span className="capitalize">{weather.current.description}</span>
+            <span className="opacity-40">·</span>
+            <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.current.humidity}%</span>
+            <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{Math.round(weather.current.windSpeed)} mph</span>
+          </div>
+        )}
+
+        {alertsLoading ? (
+          <div className="p-4 space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-muted animate-pulse rounded-xl" />)}</div>
+        ) : sortedWeatherAlerts.length === 0 ? (
+          <div className="flex flex-col">
+            <div className="flex flex-col items-center justify-center py-5 text-center px-4 gap-1">
+              <CheckCircle2 className="w-7 h-7 text-green-500/50 mb-0.5" />
+              <p className="font-bold text-sm text-foreground">All clear</p>
+              <p className="text-xs text-muted-foreground">No active weather alerts for your herd.</p>
             </div>
-          ) : (
-            <div className="divide-y-0">
-              {sortedWeatherAlerts.map(alert => (
-                <WeatherAlertRow
-                  key={alert.id}
-                  alert={alert}
-                  onDismiss={(id) => dismissMutation.mutate({ alertId: id })}
-                />
+            <div className="border-t border-dashed border-border/50 mx-4" />
+            <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-4 pt-3 pb-1">Example alerts</p>
+            <div className="divide-y divide-border/40 opacity-30 pointer-events-none select-none">
+              {[
+                { color: "bg-red-600", text: "Clyde (TXS-010) — Bottle jaw and FAMACHA 5 recorded 3 days ago. Barber pole worm burden likely critical given heavy rain forecast." },
+                { color: "bg-yellow-500", text: "High humidity forecast — ideal conditions for barber pole worm. Check FAMACHA scores on all sheep and goats." },
+              ].map((ex, i) => (
+                <div key={i} className="p-4 flex gap-3">
+                  <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${ex.color}`} /></div>
+                  <p className="text-sm text-foreground leading-snug">{ex.text}</p>
+                </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        ) : (
+          <div>
+            {sortedWeatherAlerts.map(alert => (
+              <WeatherAlertRow
+                key={alert.id}
+                alert={alert}
+                onDismiss={(id) => dismissMutation.mutate({ alertId: id })}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Upcoming — full width */}
-      <Card className="flex flex-col shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-xl flex items-center gap-2 text-foreground">
-            <Stethoscope className="w-5 h-5 text-primary" /> Upcoming
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 flex flex-col">
-          {upcomingLoading ? (
-            <div className="p-6 space-y-3">{[1,2,3].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
-          ) : (!upcoming || (upcoming.medications.length === 0 && upcoming.pregnancies.length === 0)) ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3"><CheckCircle2 className="w-7 h-7 text-green-600 dark:text-green-400" /></div>
-              <h3 className="font-bold text-base text-foreground">All clear!</h3>
-              <p className="text-muted-foreground text-sm mt-1">No medications or births due soon.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
-              {upcoming.medications.length > 0 && (
-                <div className="p-4">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5"><Pill className="w-3.5 h-3.5" /> Medications</p>
-                  <div className="space-y-2">
-                    {upcoming.medications.map(med => {
-                      const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
-                      const isResolving = resolvingMedIds.has(med.id);
-                      return (
-                        <div key={med.id} className="flex items-center gap-2 rounded-lg p-1.5 -mx-1.5 hover:bg-muted/50 transition-colors">
-                          <Link href={`/animals/${med.animalId}`} className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">{med.animalName}</p>
-                            <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
-                          </Link>
-                          <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${med.isOverdue ? "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400" : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400"}`}>
-                            {med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`}
-                          </span>
-                          <button
-                            onClick={() => markMedResolved(med)}
-                            disabled={isResolving}
-                            className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
-                          >
-                            {isResolving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                            {isResolving ? "Saving…" : "Mark Resolved"}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              {upcoming.pregnancies.length > 0 && (
-                <div className="p-4">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5"><Baby className="w-3.5 h-3.5" /> Expected Births</p>
-                  <div className="space-y-2">
-                    {upcoming.pregnancies.map(preg => {
-                      const daysUntil = differenceInDays(parseISO(preg.expectedDueDate), new Date());
-                      return (
-                        <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-start justify-between gap-2 group hover:bg-muted/50 rounded-lg p-1.5 -mx-1.5 transition-colors">
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">{preg.animalName}</p>
-                            <p className="text-xs text-muted-foreground">{preg.species}</p>
-                          </div>
-                          <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${daysUntil < 0 ? "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400" : daysUntil <= 7 ? "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400" : "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400"}`}>
-                            {daysUntil < 0 ? "Overdue" : daysUntil === 0 ? "Today" : `${daysUntil}d`}
-                          </span>
+      {/* Upcoming */}
+      <div className="rounded-2xl border-2 border-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <Stethoscope className="w-4 h-4 text-primary shrink-0" />
+          <h3 className="font-bold text-sm text-foreground">Upcoming</h3>
+        </div>
+
+        {upcomingLoading ? (
+          <div className="p-4 space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
+        ) : (!upcoming || (upcoming.medications.length === 0 && upcoming.pregnancies.length === 0)) ? (
+          <div className="flex flex-col items-center justify-center p-7 text-center gap-1">
+            <CheckCircle2 className="w-7 h-7 text-green-500/50 mb-0.5" />
+            <p className="font-bold text-sm text-foreground">All clear</p>
+            <p className="text-xs text-muted-foreground">No medications or births due soon.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/40">
+            {upcoming.medications.length > 0 && (
+              <div className="p-4">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <Pill className="w-3.5 h-3.5" /> Medications
+                </p>
+                <div className="space-y-2.5">
+                  {upcoming.medications.map(med => {
+                    const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
+                    const isResolving = resolvingMedIds.has(med.id);
+                    return (
+                      <div key={med.id} className="flex items-center gap-2">
+                        <Link href={`/animals/${med.animalId}`} className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{med.animalName}</p>
+                          <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
                         </Link>
-                      );
-                    })}
-                  </div>
+                        <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${med.isOverdue ? "bg-destructive/10 text-destructive" : "bg-yellow-500/10 text-yellow-400"}`}>
+                          {med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`}
+                        </span>
+                        <button
+                          onClick={() => markMedResolved(med)}
+                          disabled={isResolving}
+                          className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
+                        >
+                          {isResolving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                          {isResolving ? "…" : "Done"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+            )}
+            {upcoming.pregnancies.length > 0 && (
+              <div className="p-4">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <Baby className="w-3.5 h-3.5" /> Expected Births
+                </p>
+                <div className="space-y-2">
+                  {upcoming.pregnancies.map(preg => {
+                    const daysUntil = differenceInDays(parseISO(preg.expectedDueDate), new Date());
+                    return (
+                      <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-center justify-between gap-2 hover:bg-muted/40 rounded-lg px-2 py-1 -mx-2 transition-colors">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{preg.animalName}</p>
+                          <p className="text-xs text-muted-foreground">{preg.species}</p>
+                        </div>
+                        <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${daysUntil < 0 ? "bg-destructive/10 text-destructive" : daysUntil <= 7 ? "bg-yellow-500/10 text-yellow-400" : "bg-blue-500/10 text-blue-400"}`}>
+                          {daysUntil < 0 ? "Overdue" : daysUntil === 0 ? "Today" : `${daysUntil}d`}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Field Notes — owners and ranch hands only */}
       {(role === "owner" || role === "ranch_hand") && (
@@ -689,3 +719,4 @@ function AuthDashboard() {
     </div>
   );
 }
+
