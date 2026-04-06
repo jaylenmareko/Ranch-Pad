@@ -720,4 +720,111 @@ Rules:
   }
 });
 
+// ─── Record scan: extract health events + medications from a photo ─────────────
+
+router.post("/animals/:animalId/scan-records", requireAuth, requireNotViewer, photoUpload.single("photo"), async (req, res): Promise<void> => {
+  const apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+  const baseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+  if (!apiKey) {
+    res.status(500).json({ error: true, message: "AI features not configured" });
+    return;
+  }
+  if (!req.file) {
+    res.status(400).json({ error: true, message: "No image file provided" });
+    return;
+  }
+
+  const base64 = req.file.buffer.toString("base64");
+  const mimeType = req.file.mimetype as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  const today = new Date().toISOString().split("T")[0];
+
+  try {
+    const anthropic = new Anthropic({ apiKey, ...(baseURL ? { baseURL } : {}) });
+
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 4096,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: { type: "base64", media_type: mimeType, data: base64 },
+            },
+            {
+              type: "text",
+              text: `You are reading a livestock health record, vet invoice, treatment log, medication log, or handwritten farm notes.
+
+Extract all health events and medication records from this image.
+
+Return a single JSON object with two arrays:
+
+"healthEvents": array of objects with:
+- "eventDate": date in YYYY-MM-DD format (required — if only month/day is given, assume year ${today.slice(0,4)})
+- "description": a concise description of the health event, condition, or observation (required)
+- "severity": exactly "low", "medium", or "high" (required — "high" for serious illness/injury/surgery, "medium" for moderate issues/treatments, "low" for routine checks/mild issues)
+- "veterinarian": vet name if mentioned, otherwise null
+
+"medications": array of objects with:
+- "medicationName": name of medication, vaccine, or treatment product (required)
+- "dosage": dose amount and unit if visible, otherwise null
+- "dateGiven": date in YYYY-MM-DD format (required — if only month/day is given, assume year ${today.slice(0,4)})
+- "nextDueDate": next due or booster date in YYYY-MM-DD format if mentioned, otherwise null
+- "notes": any additional administration notes, otherwise null
+
+Rules:
+- Today is ${today}. Use this to resolve ambiguous or partial dates.
+- Return raw JSON only. No explanation, no markdown, no code blocks.
+- If you cannot find any records, return: {"healthEvents":[],"medications":[]}`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const content = response.content[0];
+    if (content.type !== "text") {
+      res.json({ healthEvents: [], medications: [] });
+      return;
+    }
+
+    let extracted: { healthEvents: unknown[]; medications: unknown[] };
+    try {
+      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) { res.json({ healthEvents: [], medications: [] }); return; }
+      extracted = JSON.parse(jsonMatch[0]);
+    } catch {
+      res.json({ healthEvents: [], medications: [] });
+      return;
+    }
+
+    const healthEvents = (Array.isArray(extracted?.healthEvents) ? extracted.healthEvents : [])
+      .filter((e): e is Record<string, unknown> => !!e && typeof e === "object")
+      .map(e => ({
+        eventDate: String(e.eventDate ?? "").trim(),
+        description: String(e.description ?? "").trim().slice(0, 500),
+        severity: (["low", "medium", "high"].includes(String(e.severity)) ? String(e.severity) : "medium") as "low" | "medium" | "high",
+        veterinarian: e.veterinarian ? String(e.veterinarian).trim().slice(0, 100) : null,
+      }))
+      .filter(e => e.eventDate && e.description);
+
+    const medications = (Array.isArray(extracted?.medications) ? extracted.medications : [])
+      .filter((m): m is Record<string, unknown> => !!m && typeof m === "object")
+      .map(m => ({
+        medicationName: String(m.medicationName ?? "").trim().slice(0, 100),
+        dosage: m.dosage ? String(m.dosage).trim().slice(0, 100) : null,
+        dateGiven: String(m.dateGiven ?? "").trim(),
+        nextDueDate: m.nextDueDate ? String(m.nextDueDate).trim() : null,
+        notes: m.notes ? String(m.notes).trim().slice(0, 300) : null,
+      }))
+      .filter(m => m.medicationName && m.dateGiven);
+
+    res.json({ healthEvents, medications });
+  } catch (err) {
+    console.error("Record scan failed:", err);
+    res.status(500).json({ error: true, message: "Record scan failed. Please try again." });
+  }
+});
+
 export default router;

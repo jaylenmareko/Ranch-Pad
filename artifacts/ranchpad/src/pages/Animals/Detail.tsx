@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw } from "lucide-react";
+import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw, ScanLine } from "lucide-react";
 import { 
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
@@ -22,6 +22,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { ScanRecordsDialog } from "@/components/ScanRecordsDialog";
 
 // ─── Photo helpers ────────────────────────────────────────────────────────────
 
@@ -295,6 +296,7 @@ export default function AnimalDetail() {
   const fromAlerts = new URLSearchParams(search).get("from") === "alerts";
   const [activeTab, setActiveTab] = useState<"health" | "meds" | "famacha">("health");
   const [isExporting, setIsExporting] = useState(false);
+  const [scanRecordsOpen, setScanRecordsOpen] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [archiveReason, setArchiveReason] = useState<ArchiveReason>("sold");
   const [archiveDate, setArchiveDate] = useState(() => new Date().toISOString().split("T")[0]);
@@ -482,9 +484,17 @@ export default function AnimalDetail() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20">
-      <Link href={fromAlerts ? "/alerts" : "/animals"} className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors self-start">
-        <ArrowLeft className="w-4 h-4 mr-1" /> {fromAlerts ? "Back to Alerts" : "Back to Herd"}
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href={fromAlerts ? "/alerts" : "/animals"} className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4 mr-1" /> {fromAlerts ? "Back to Alerts" : "Back to Herd"}
+        </Link>
+        {role !== "viewer" && (
+          <Button variant="outline" size="sm" className="bg-card min-h-[36px] gap-1.5" onClick={() => setScanRecordsOpen(true)}>
+            <ScanLine className="w-4 h-4" />
+            Scan Records
+          </Button>
+        )}
+      </div>
 
       {/* Header Card */}
       {(() => {
@@ -1342,6 +1352,13 @@ function FamachaTab({ animalId }: { animalId: number }) {
           <span>If you dismiss an alert and then log another worse score, a new alert will appear automatically.</span>
         </div>
       </div>
+
+      <ScanRecordsDialog
+        animalId={animalId}
+        animalName={animal.name}
+        open={scanRecordsOpen}
+        onOpenChange={setScanRecordsOpen}
+      />
     </div>
   );
 }
