@@ -595,7 +595,6 @@ function ViewerAssignmentRow({
       <div className="flex items-center gap-2">
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">{viewer.name}</p>
-          <p className="text-xs text-muted-foreground">{viewer.email}</p>
         </div>
         <span className="text-xs text-muted-foreground">{viewer.assignments.length} assigned</span>
       </div>
