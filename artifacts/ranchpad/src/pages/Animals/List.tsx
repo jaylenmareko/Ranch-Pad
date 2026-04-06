@@ -435,6 +435,7 @@ function SpeciesFolder({
             style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           />
           <span className="text-sm font-semibold text-foreground flex-1 truncate">{species}</span>
+          {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
           {highCount > 0 && <span className="text-xs font-bold text-destructive">⚠ {highCount}</span>}
           {medCount > 0 && highCount === 0 && <span className="text-xs font-bold text-yellow-500">⚠ {medCount}</span>}
           <span className="text-xs text-muted-foreground font-medium">{animals.length}</span>
@@ -475,6 +476,7 @@ function SpeciesFolder({
           style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
         />
         <span className="font-bold text-sm text-foreground flex-1 truncate">{species}</span>
+        {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
         <div className="flex items-center gap-1.5">
           {highCount > 0 && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
@@ -587,6 +589,7 @@ function LocationFolder({
         <span className="font-bold text-sm text-foreground flex-1 truncate">
           {isUnassigned ? "No Location Set" : locationName}
         </span>
+        {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
         <div className="flex items-center gap-1.5">
           {highCount > 0 && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
