@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { AlertTriangle, Info, CheckCircle2, ChevronDown } from "lucide-react";
 import { useListAlerts, useDismissAlert, useListAnimals, useGenerateAlerts, type Alert, type Animal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -256,24 +256,23 @@ export default function AlertsList() {
 
   const AlertRow = ({ alert }: { alert: Alert }) => {
     const [expanded, setExpanded] = useState(false);
+    const [, navigate] = useLocation();
 
     const animalLabel = buildAnimalLabel(alert);
     const firstSentence = getFirstSentence(alert.message);
     const hasMoreContent = alert.message.length > firstSentence.length;
+    const isClickable = !!alert.animalId;
 
     return (
-      <div className="rounded-xl border-2 border-border bg-card overflow-hidden">
+      <div
+        className={`rounded-xl border-2 border-border bg-card overflow-hidden transition-colors ${isClickable ? "cursor-pointer hover:border-border/80 hover:bg-card/80 active:scale-[0.99]" : ""}`}
+        onClick={() => isClickable && navigate(`/animals/${alert.animalId}`)}
+      >
         {/* Top: animal + date */}
         <div className="px-3 pt-3 pb-2 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {animalLabel && (
-              alert.animalId ? (
-                <Link href={`/animals/${alert.animalId}`} className="text-xs font-bold text-foreground hover:text-primary transition-colors truncate block">
-                  {animalLabel}
-                </Link>
-              ) : (
-                <p className="text-xs font-bold text-foreground truncate">{animalLabel}</p>
-              )
+              <p className="text-xs font-bold text-foreground truncate">{animalLabel}</p>
             )}
             <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
               {expanded ? alert.message : firstSentence}
@@ -288,7 +287,7 @@ export default function AlertsList() {
         <div className="px-3 pb-2.5 flex items-center justify-between">
           {hasMoreContent ? (
             <button
-              onClick={() => setExpanded(v => !v)}
+              onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
               className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             >
               {expanded ? "Collapse" : "See details"}
@@ -296,7 +295,7 @@ export default function AlertsList() {
             </button>
           ) : <span />}
           <button
-            onClick={() => dismissMutation.mutate({ alertId: alert.id })}
+            onClick={e => { e.stopPropagation(); dismissMutation.mutate({ alertId: alert.id }); }}
             className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-accent px-2.5 py-1 rounded-lg transition-colors"
           >
             <CheckCircle2 className="w-3 h-3" /> Mark Resolved
