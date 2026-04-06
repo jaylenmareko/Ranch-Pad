@@ -39,18 +39,34 @@ router.use(storageRouter);
 router.use(photosRouter);
 router.use(ranchNotesRouter);
 
-// TEMPORARY — remove after trial reset
+// TEMPORARY — remove after account deletion
 router.post("/admin-reset-trial-xK9mP2qR7v", async (_req: Request, res: Response): Promise<void> => {
+  const email = "marekodavis@gmail.com";
   try {
-    const [u] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, "marekodavis@gmail.com")).limit(1);
+    const [u] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)).limit(1);
     if (!u) { res.status(404).json({ error: "user not found" }); return; }
-    const [ru] = await db.select({ ranchId: ranchUsersTable.ranchId }).from(ranchUsersTable).where(eq(ranchUsersTable.userId, u.id)).limit(1);
-    if (!ru) { res.status(404).json({ error: "ranch not found" }); return; }
-    const [updated] = await db.update(ranchesTable)
-      .set({ trialEndsAt: sql`NOW() + INTERVAL '14 days'`, subscriptionStatus: null })
-      .where(eq(ranchesTable.id, ru.ranchId))
-      .returning({ id: ranchesTable.id, trialEndsAt: ranchesTable.trialEndsAt });
-    res.json({ ok: true, ranchId: updated.id, trialEndsAt: updated.trialEndsAt });
+    const ownedRanches = await db.select({ ranchId: ranchUsersTable.ranchId }).from(ranchUsersTable).where(eq(ranchUsersTable.userId, u.id));
+    for (const { ranchId } of ownedRanches) {
+      await db.execute(sql`DELETE FROM animal_assignments WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM famacha_scores WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM field_notes WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM medication_records WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM health_events WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM alerts WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM animals WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM team_invites WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM delete_requests WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM ranch_notes WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM pasture_locations WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM ranch_users WHERE ranch_id = ${ranchId}`);
+      await db.execute(sql`DELETE FROM ranches WHERE id = ${ranchId}`);
+    }
+    await db.execute(sql`DELETE FROM team_invites WHERE created_by = ${u.id} OR used_by = ${u.id}`);
+    await db.execute(sql`DELETE FROM delete_requests WHERE requested_by = ${u.id} OR reviewed_by = ${u.id}`);
+    await db.execute(sql`DELETE FROM animal_assignments WHERE viewer_user_id = ${u.id}`);
+    await db.execute(sql`DELETE FROM ranch_users WHERE user_id = ${u.id}`);
+    await db.delete(usersTable).where(eq(usersTable.id, u.id));
+    res.json({ ok: true, deleted: email, ranchIds: ownedRanches.map(r => r.ranchId) });
   } catch (e) { res.status(500).json({ error: String(e) }); }
 });
 // END TEMPORARY
