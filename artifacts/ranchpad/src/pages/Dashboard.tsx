@@ -521,9 +521,20 @@ function AuthDashboard() {
       <>
 
       {/* Greeting */}
-      <div>
-        <h1 className="text-xl font-black text-foreground">{activeRanch?.name ?? "Dashboard"}</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(), "EEEE, MMMM d")}</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-black text-foreground">{activeRanch?.name ?? "Dashboard"}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(), "EEEE, MMMM d")}</p>
+        </div>
+        {(role === "owner" || role === "ranch_hand") && (
+          <button
+            onClick={() => setNotesOpen(true)}
+            className="shrink-0 flex items-center gap-1.5 h-9 px-4 rounded-xl text-sm font-semibold transition-colors border bg-primary border-primary text-primary-foreground hover:bg-primary/90"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            Ranch Notes
+          </button>
+        )}
       </div>
 
       {/* Import feedback */}
@@ -685,19 +696,8 @@ function AuthDashboard() {
         )}
       </div>
 
-      {/* Ranch Notes button + dialog — owners and ranch hands only */}
-      {(role === "owner" || role === "ranch_hand") && (
-        <>
-          <button
-            onClick={() => setNotesOpen(true)}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-2xl border-2 border-border bg-card text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            Ranch Notes
-          </button>
-          <RanchNotesDialog open={notesOpen} onOpenChange={setNotesOpen} />
-        </>
-      )}
+      {/* Ranch Notes dialog */}
+      <RanchNotesDialog open={notesOpen} onOpenChange={setNotesOpen} />
 
       </>
       )}
