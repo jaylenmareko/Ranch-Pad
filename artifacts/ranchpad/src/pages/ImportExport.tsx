@@ -373,18 +373,10 @@ export function ImportExport() {
               {importing ? (
                 <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
               ) : (
-                <><Upload className="w-4 h-4 shrink-0" />Upload CSV</>
+                <><Upload className="w-4 h-4 shrink-0" />Upload CSV Spreadsheet</>
               )}
             </button>
           )}
-
-          <button
-            onClick={downloadTemplate}
-            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full"
-          >
-            <Download className="w-4 h-4 shrink-0" />
-            Download CSV Template
-          </button>
 
           <button
             onClick={generateHerdReport}
