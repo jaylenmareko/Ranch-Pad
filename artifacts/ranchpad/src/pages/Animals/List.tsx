@@ -140,6 +140,16 @@ function AnimalCard({
             Due {new Date(animal.expectedDueDate).toLocaleDateString()}
           </p>
         )}
+        {animal.latestHealthSeverity === "high" && (
+          <span className="inline-flex items-center gap-1 mt-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+            ⚠ Urgent health event
+          </span>
+        )}
+        {animal.latestHealthSeverity === "medium" && (
+          <span className="inline-flex items-center gap-1 mt-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eab30820", color: "#eab308" }}>
+            ⚠ Needs monitoring
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground">
         <span>{formatAge(animal.dateOfBirth)}</span>
