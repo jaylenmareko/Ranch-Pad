@@ -463,7 +463,7 @@ function SpeciesFolder({
     <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
       <button
         onClick={toggle}
-        className="relative w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
       >
         {selectMode && (
           <SelectCheckbox
@@ -478,11 +478,6 @@ function SpeciesFolder({
         />
         <span className="text-xl leading-none">{speciesIcon(species)}</span>
         <span className="font-bold text-sm text-foreground flex-1 truncate">{species}</span>
-        {!open && !selectMode && (
-          <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground/40 pointer-events-none">
-            tap to expand
-          </span>
-        )}
         <div className="flex items-center gap-1.5">
           {highCount > 0 && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
@@ -575,7 +570,7 @@ function LocationFolder({
     <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
       <button
         onClick={toggle}
-        className="relative w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
       >
         {selectMode && (
           <SelectCheckbox
@@ -595,11 +590,6 @@ function LocationFolder({
         <span className="font-bold text-sm text-foreground flex-1 truncate">
           {isUnassigned ? "No Location Set" : locationName}
         </span>
-        {!open && !selectMode && (
-          <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground/40 pointer-events-none">
-            tap to expand
-          </span>
-        )}
         <div className="flex items-center gap-1.5">
           {highCount > 0 && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
