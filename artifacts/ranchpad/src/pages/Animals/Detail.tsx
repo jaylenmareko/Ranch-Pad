@@ -854,7 +854,11 @@ function HealthTab({ animalId }: { animalId: number }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-bold text-sm text-foreground">{formatDate(ev.eventDate)}</span>
-                      <Badge variant="outline" className="text-[10px] py-0">{ev.severity.toUpperCase()}</Badge>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                        ev.severity === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
+                        ev.severity === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
+                        'bg-green-500/15 text-green-400 border border-green-500/30'
+                      }`}>{ev.severity}</span>
                     </div>
                     <p className="text-foreground">{ev.description}</p>
                   </div>
@@ -865,12 +869,12 @@ function HealthTab({ animalId }: { animalId: number }) {
                       </button>
                     )}
                     {role === "owner" && (
-                      <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Delete event">
+                      <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Delete event">
                         <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
                     {role === "ranch_hand" && (
-                      <button onClick={() => requestDeleteEvent(ev.id, ev.eventDate)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
+                      <button onClick={() => requestDeleteEvent(ev.id, ev.eventDate)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
                         <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
@@ -1060,12 +1064,12 @@ function MedsTab({ animalId }: { animalId: number }) {
                       </button>
                     )}
                     {role === "owner" && (
-                      <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Delete medication">
+                      <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Delete medication">
                         <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
                     {role === "ranch_hand" && (
-                      <button onClick={() => requestDeleteMed(med.id, med.medicationName)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-destructive bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/40 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
+                      <button onClick={() => requestDeleteMed(med.id, med.medicationName)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
                         <Trash2 className="w-3.5 h-3.5" /> Delete
                       </button>
                     )}
