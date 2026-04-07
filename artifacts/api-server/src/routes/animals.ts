@@ -51,9 +51,16 @@ async function getLatestHealthSeverity(animalId: number, ranchId: number): Promi
 
 router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
   const { species, sex, breed, search, archived, cull } = req.query as Record<string, string>;
   const showArchived = archived === "true";
   const showCull = cull === "true";
+
+  // Viewers never see archived or cull lists — those are owner/ranch_hand only
+  if (role === "viewer" && (showArchived || showCull)) {
+    res.json([]);
+    return;
+  }
 
   let whereCondition;
   if (showArchived) {
@@ -88,7 +95,6 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   }
 
   // Viewer: filter to assigned animals only
-  const { userId, role } = req.user!;
   if (role === "viewer") {
     const assignments = await db
       .select({ animalId: animalAssignmentsTable.animalId })
