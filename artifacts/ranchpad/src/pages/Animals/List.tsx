@@ -905,7 +905,7 @@ export default function AnimalList() {
     return [...assigned, ...unassigned] as Array<[number | null, { name: string | null; animals: Animal[] }]>;
   }, [filteredAnimals]);
 
-  const hasNoAnimals = !showArchived && isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0 && search.length === 0;
+  const hasNoAnimals = !showArchived && isAuthenticated && !isLoading && animals !== undefined && (animals as Animal[]).length === 0 && search.length === 0 && Array.isArray(cullAnimals) && cullAnimals.length === 0;
 
   const isOwnerOrHand = role === "owner" || role === "ranch_hand";
 

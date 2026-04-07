@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { AlertTriangle, Info, CheckCircle2, ChevronDown } from "lucide-react";
 import { useListAlerts, useDismissAlert, useListAnimals, useGenerateAlerts, type Alert, type Animal } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
@@ -133,6 +133,15 @@ export default function AlertsList() {
 
   const { data: alerts, isLoading } = useListAlerts({ query: { enabled: isAuthenticated } });
   const { data: animals, isLoading: animalsLoading } = useListAnimals({ query: { enabled: isAuthenticated } });
+  const { data: cullAnimals } = useQuery<Animal[]>({
+    queryKey: ["/api/animals", { cull: true }],
+    queryFn: async () => {
+      const res = await fetch("/api/animals?cull=true");
+      if (!res.ok) throw new Error("Failed to load cull animals");
+      return res.json();
+    },
+    enabled: isAuthenticated,
+  });
 
   const generateMutation = useGenerateAlerts({
     mutation: {
@@ -320,7 +329,7 @@ export default function AlertsList() {
     );
   };
 
-  const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
+  const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0 && Array.isArray(cullAnimals) && cullAnimals.length === 0;
 
   return (
     <div className="space-y-5 max-w-lg mx-auto pb-20">

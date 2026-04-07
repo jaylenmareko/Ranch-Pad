@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, BookOpen } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO, addDays } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
@@ -200,6 +200,14 @@ function AuthDashboard() {
   const queryClient = useQueryClient();
   const [notesOpen, setNotesOpen] = useState(false);
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
+  const { data: cullAnimals } = useQuery<Animal[]>({
+    queryKey: ["/api/animals", { cull: true }],
+    queryFn: async () => {
+      const res = await fetch("/api/animals?cull=true");
+      if (!res.ok) throw new Error("Failed to load cull animals");
+      return res.json();
+    },
+  });
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useListAlerts();
   const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
   const { data: upcoming, isLoading: upcomingLoading } = useGetUpcoming();
@@ -275,7 +283,7 @@ function AuthDashboard() {
   const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
   const dueSoonCount = upcoming?.dueSoonCount ?? 0;
 
-  const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
+  const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0 && Array.isArray(cullAnimals) && cullAnimals.length === 0;
 
   return (
     <div className="space-y-5 max-w-lg mx-auto pb-20">
