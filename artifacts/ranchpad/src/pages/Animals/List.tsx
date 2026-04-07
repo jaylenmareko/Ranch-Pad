@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Check, Minus, Trash2, CheckSquare, Archive, FileDown, Scissors } from "lucide-react";
+import { Search, Plus, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Check, Minus, Trash2, CheckSquare, Archive, FileDown, Scissors } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useRanch } from "@/contexts/ranch-context";
@@ -485,8 +485,6 @@ export default function AnimalList() {
 
   // ─── Cull section ───────────────────────────────────────────────────────────
   const [showCull, setShowCull] = useState(false);
-  const [openNoteId, setOpenNoteId] = useState<number | null>(null);
-  const [noteDraft, setNoteDraft] = useState("");
 
   const { data: cullAnimals } = useQuery<Animal[]>({
     queryKey: ["/api/animals", { cull: true }],
@@ -1220,86 +1218,26 @@ export default function AnimalList() {
           </button>
           {showCull && (
             <div className="px-3 pb-3 space-y-2">
-              {cullAnimals.map(animal => {
-                const noteOpen = openNoteId === animal.id;
-                return (
-                  <div key={animal.id} className="rounded-xl border-2 bg-card overflow-hidden" style={{ borderColor: "rgba(234,88,12,0.25)", borderLeftColor: "#f97316", borderLeftWidth: 4 }}>
-                    {/* Card header row — toggles note, or navigate via arrow */}
-                    <div className="flex items-center gap-3 px-4 py-3">
-                      <div
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() => {
-                          if (role !== "viewer") {
-                            if (noteOpen) { setOpenNoteId(null); }
-                            else { setOpenNoteId(animal.id); setNoteDraft(animal.cullNote ?? ""); }
-                          }
-                        }}
-                      >
-                        <p className="font-bold text-sm text-foreground leading-tight truncate">
-                          {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
-                          {animal.tagNumber && animal.name ? <span className="font-normal text-muted-foreground ml-1.5">{animal.name}</span> : null}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                          {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
-                        </p>
-                      </div>
-                      {role !== "viewer" && !noteOpen && (
-                        <span className="text-xs text-muted-foreground/50 font-medium shrink-0 whitespace-nowrap">
-                          {animal.cullNote ? "tap to edit note" : "tap to open note"}
-                        </span>
-                      )}
-                      {role === "viewer" && animal.cullNote && !noteOpen && (
-                        <FileText className="w-3.5 h-3.5 text-orange-400/50 shrink-0" />
-                      )}
-                      <Link href={`/animals/${animal.id}`}>
-                        <ChevronRight className="w-4 h-4 text-orange-400/50 shrink-0 hover:text-orange-400 transition-colors" />
-                      </Link>
+              {cullAnimals.map(animal => (
+                <Link key={animal.id} href={`/animals/${animal.id}`}>
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 bg-card transition-colors hover:bg-muted/20"
+                    style={{ borderColor: "rgba(234,88,12,0.25)", borderLeftColor: "#f97316", borderLeftWidth: 4 }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-foreground leading-tight truncate">
+                        {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
+                        {animal.tagNumber && animal.name ? <span className="font-normal text-muted-foreground ml-1.5">{animal.name}</span> : null}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
+                      </p>
                     </div>
-                    {/* Note area — viewer sees read-only note */}
-                    {role === "viewer" && animal.cullNote && noteOpen && (
-                      <div className="px-4 pb-3 pt-0 border-t border-orange-500/20 text-xs text-foreground/70 leading-relaxed">
-                        {animal.cullNote}
-                      </div>
-                    )}
-                    {/* Note editor — owners/hands */}
-                    {role !== "viewer" && noteOpen && (
-                      <div className="px-3 pb-3 pt-0 border-t border-orange-500/20">
-                        <textarea
-                          autoFocus
-                          className="w-full mt-2.5 rounded-lg border border-orange-500/30 text-xs text-foreground placeholder:text-muted-foreground p-2.5 resize-none focus:outline-none focus:border-orange-500/60 transition-colors"
-                          style={{ background: "rgba(234,88,12,0.06)" }}
-                          rows={3}
-                          placeholder="Reason for cull, sale status, destination…"
-                          value={noteDraft}
-                          onChange={e => setNoteDraft(e.target.value)}
-                        />
-                        <div className="flex gap-2 mt-1.5">
-                          <button
-                            onClick={async () => {
-                              await fetch(`/api/animals/${animal.id}/cull-note`, {
-                                method: "PATCH",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ cullNote: noteDraft.trim() || null }),
-                              });
-                              queryClient.invalidateQueries({ queryKey: ["/api/animals", { cull: true }] });
-                              setOpenNoteId(null);
-                            }}
-                            className="text-xs font-semibold bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 px-3 py-1.5 rounded-lg transition-colors"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setOpenNoteId(null)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    <span className="text-xs text-muted-foreground/50 font-medium shrink-0 whitespace-nowrap">
+                      {animal.cullNote ? "tap to edit note" : "tap to open note"}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-orange-400/50 shrink-0" />
                   </div>
-                );
-              })}
+                </Link>
+              ))}
             </div>
           )}
         </div>
