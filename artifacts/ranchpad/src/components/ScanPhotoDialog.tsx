@@ -158,9 +158,7 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
             {stage === "species" ? "What kind of animal is on this page?" : "Scan Record Book"}
           </DialogTitle>
           <DialogDescription>
-            {stage === "species"
-              ? `Many record sheets don't write out the species — so tell us upfront and we'll fill it in automatically for every animal we find.`
-              : `Taking a photo of ${selectedSpecies?.toLowerCase()} records. Snap a photo of your record book, tag list, or handwritten notes.`}
+            {stage !== "species" && `Taking a photo of ${selectedSpecies?.toLowerCase()} records. Snap a photo of your record book, tag list, or handwritten notes.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -181,9 +179,6 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground text-center pb-1">
-                Not sure? Pick the closest match — you can correct individual animals on the next screen. Choose <span className="font-semibold">Other</span> for species not listed above.
-              </p>
             </div>
           )}
 
