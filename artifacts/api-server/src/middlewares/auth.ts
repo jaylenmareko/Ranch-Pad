@@ -35,13 +35,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       .limit(1);
 
     if (!ranchUser) {
-      if (ranchIdHeader) {
-        res.status(403).json({ error: true, message: "Access denied to this ranch" });
-        return;
-      }
-      // Fallback: use default role
-      req.user = { ...payload, ranchId: effectiveRanchId, role: "owner" };
-      next();
+      res.status(403).json({ error: true, message: "Access denied to this ranch" });
       return;
     }
 

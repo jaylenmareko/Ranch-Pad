@@ -80,7 +80,7 @@ const updateFieldNoteSchema = z.object({
   noteText: z.string().min(1).optional(),
 });
 
-router.patch("/animals/:animalId/notes/:noteId", requireAuth, async (req, res): Promise<void> => {
+router.patch("/animals/:animalId/notes/:noteId", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const animalId = parseId(req.params.animalId);
   const noteId = parseId(req.params.noteId);

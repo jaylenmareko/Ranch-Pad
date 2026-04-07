@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { db, medicationRecordsTable, animalsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, medicationRecordsTable, animalsTable, animalAssignmentsTable } from "@workspace/db";
+import { eq, and, isNull } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 
 const FEMALE_SEXES = new Set(["Heifer", "Cow", "Ewe", "Doe", "Gilt", "Sow", "Filly", "Mare", "Female"]);
@@ -9,6 +9,7 @@ const router: IRouter = Router();
 
 router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
 
@@ -20,15 +21,31 @@ router.get("/upcoming", requireAuth, async (req, res): Promise<void> => {
   in60Days.setDate(in60Days.getDate() + 60);
   const in60DaysStr = in60Days.toISOString().split("T")[0];
 
-  const animals = await db
+  // Fetch all active (non-archived, non-cull) animals for the ranch
+  let animals = await db
     .select()
     .from(animalsTable)
-    .where(eq(animalsTable.ranchId, ranchId));
+    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt), eq(animalsTable.isCull, false)));
 
-  const medications = await db
-    .select()
-    .from(medicationRecordsTable)
-    .where(eq(medicationRecordsTable.ranchId, ranchId));
+  // Viewers only see their assigned animals
+  if (role === "viewer") {
+    const assignments = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId)));
+    const assignedIds = new Set(assignments.map(a => a.animalId));
+    animals = animals.filter(a => assignedIds.has(a.id));
+  }
+
+  const animalIds = animals.map(a => a.id);
+
+  const medications = animalIds.length > 0
+    ? await db
+        .select()
+        .from(medicationRecordsTable)
+        .where(and(eq(medicationRecordsTable.ranchId, ranchId)))
+        .then(rows => rows.filter(m => animalIds.includes(m.animalId)))
+    : [];
 
   const upcomingMeds = medications
     .filter(m => m.nextDueDate && m.nextDueDate <= in14DaysStr)

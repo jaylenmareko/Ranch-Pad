@@ -421,14 +421,16 @@ function AuthDashboard() {
                         <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${med.isOverdue ? "bg-destructive/10 text-destructive" : "bg-yellow-500/10 text-yellow-400"}`}>
                           {med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`}
                         </span>
-                        <button
-                          onClick={() => markMedResolved(med)}
-                          disabled={isResolving}
-                          className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
-                        >
-                          {isResolving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                          {isResolving ? "…" : "Done"}
-                        </button>
+                        {role !== "viewer" && (
+                          <button
+                            onClick={() => markMedResolved(med)}
+                            disabled={isResolving}
+                            className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
+                          >
+                            {isResolving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                            {isResolving ? "…" : "Done"}
+                          </button>
+                        )}
                       </div>
                     );
                   })}
