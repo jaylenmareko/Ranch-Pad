@@ -2,7 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import Stripe from "stripe";
 import { db, ranchesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, requireOwner } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
@@ -164,7 +164,7 @@ router.get("/billing/status", requireAuth, async (req: Request, res: Response): 
 
 // ─── POST /api/billing/checkout ───────────────────────────────────────────────
 
-router.post("/billing/checkout", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/billing/checkout", requireAuth, requireOwner, async (req: Request, res: Response): Promise<void> => {
   const priceId = process.env.STRIPE_PRICE_ID;
   if (!priceId) {
     res.status(503).json({ error: true, message: "Billing is not configured. Please contact support." });
@@ -216,7 +216,7 @@ router.post("/billing/checkout", requireAuth, async (req: Request, res: Response
 
 // ─── POST /api/billing/portal ─────────────────────────────────────────────────
 
-router.post("/billing/portal", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/billing/portal", requireAuth, requireOwner, async (req: Request, res: Response): Promise<void> => {
   if (!process.env.STRIPE_SECRET_KEY) {
     res.status(503).json({ error: true, message: "Billing is not configured. Please contact support." });
     return;

@@ -63,3 +63,8 @@ A full-stack livestock management app for modern ranches. Features include anima
 ## Notes
 - `bcrypt` is listed in `pnpm-workspace.yaml` `onlyBuiltDependencies` to allow its native build
 - The api-client-react package uses `.js` extensions in imports for ESM compatibility
+
+## Future Features (Deferred)
+- **Field Notes tab on Animal Detail** — API fully built (`GET/POST/PATCH/DELETE /api/animals/:id/notes`), just needs a fourth tab on the detail page UI, styled like the Ranch Journal dialog
+- **Cull Note on Animal Detail** — DB column (`cull_note`) and endpoint (`PATCH /api/animals/:id/cull-note`) exist; needs a view/edit field shown only when `isCull=true`
+- **FAMACHA PDF scale fix** — PDF export renders FAMACHA labels inverted (5 appears as healthy, 1 as critical); alert engine and UI use the correct scale (1=healthy, 5=critical). Fix is in the PDF generation utility.
