@@ -21,7 +21,6 @@ const signupSchema = z.object({
   ranchState: z.string().optional(),
   lat: z.number().nullable().optional(),
   lon: z.number().nullable().optional(),
-  joinRanchName: z.string().optional().nullable(),
   inviteToken: z.string().optional().nullable(),
   pastures: z.array(z.string().min(1)).optional(),
 });
@@ -38,7 +37,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     return;
   }
 
-  const { email, password, name, ranchName, ranchCity, ranchState, lat, lon, joinRanchName, inviteToken, pastures } = parsed.data;
+  const { email, password, name, ranchName, ranchCity, ranchState, lat, lon, inviteToken, pastures } = parsed.data;
 
   // Check duplicate email before any writes
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
@@ -60,21 +59,6 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
       return;
     }
     inviteData = { ranchId: invite.ranchId, role: invite.role, inviteId: invite.id };
-  }
-
-  // Validate join-ranch target before any writes — prevents orphaned user rows
-  let joinTarget: typeof ranchesTable.$inferSelect | null = null;
-  if (!inviteData && joinRanchName) {
-    const [found] = await db
-      .select()
-      .from(ranchesTable)
-      .where(eq(ranchesTable.name, joinRanchName))
-      .limit(1);
-    if (!found) {
-      res.status(400).json({ error: true, message: `Ranch "${joinRanchName}" not found` });
-      return;
-    }
-    joinTarget = found;
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -102,13 +86,6 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
         .update(teamInvitesTable)
         .set({ usedBy: newUser.id })
         .where(eq(teamInvitesTable.id, inviteData.inviteId));
-    } else if (joinTarget) {
-      txRanch = joinTarget;
-      await tx.insert(ranchUsersTable).values({
-        ranchId: txRanch.id,
-        userId: newUser.id,
-        role: "member",
-      });
     } else {
       const newRanchName = ranchName || `${name}'s Ranch`;
       const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
@@ -135,7 +112,7 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
   });
 
   // Insert pastures if provided (only meaningful when creating a new ranch)
-  if (pastures && pastures.length > 0 && !joinRanchName && !inviteToken) {
+  if (pastures && pastures.length > 0 && !inviteToken) {
     await db.insert(pastureLocationsTable).values(
       pastures.map((name, i) => ({ ranchId: ranch.id, name, sortOrder: i }))
     );
