@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRanch } from "@/contexts/ranch-context";
 import { formatDate } from "@/lib/utils";
-import { ImportModeDialog } from "@/components/ImportModeDialog";
-import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
 import { SimpleDialog } from "@/components/ui/dialog";
 
-type ImportSummary = { animalsCreated: number; skipped: { row: number; reason: string }[] };
 
 const INVARIANT_PLURAL = new Set(["Cattle", "Sheep", "Bison", "Deer"]);
 function pluralizeSpecies(species: string) {
@@ -201,13 +198,6 @@ function AuthDashboard() {
   const { role } = useAuth();
   const { activeRanch } = useRanch();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importing, setImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [modeDialogOpen, setModeDialogOpen] = useState(false);
-  const [scanOpen, setScanOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useListAlerts();
@@ -285,80 +275,12 @@ function AuthDashboard() {
   const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
   const dueSoonCount = upcoming?.dueSoonCount ?? 0;
 
-  function plainEnglishSkipReason(reason: string): string {
-    if (reason.includes("Missing required field")) return "Missing name or species — both are required for every row.";
-    if (reason.includes("Duplicate tag number") && reason.includes("already exists")) {
-      const match = reason.match(/"([^"]+)"/);
-      return `Tag number${match ? ` "${match[1]}"` : ""} is already in your herd — skipped to avoid duplicates.`;
-    }
-    if (reason.includes("Duplicate tag number") && reason.includes("more than once")) {
-      const match = reason.match(/"([^"]+)"/);
-      return `Tag number${match ? ` "${match[1]}"` : ""} appears more than once in this file — only the first was imported.`;
-    }
-    return reason;
-  }
-
-  async function doImport(file: File, replace: boolean) {
-    setImporting(true);
-    setModeDialogOpen(false);
-    setPendingFile(null);
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const url = replace ? "/api/animals/import-csv?replace=true" : "/api/animals/import-csv";
-      const res = await fetch(url, { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) {
-        setImportError(data.message ?? "Import failed. Please check your file and try again.");
-      } else {
-        setImportSummary(data as ImportSummary);
-        queryClient.refetchQueries({ queryKey: ["/api/animals"] });
-        generateMutation.mutate();
-      }
-    } catch {
-      setImportError("Something went wrong connecting to the server. Please try again.");
-    } finally {
-      setImporting(false);
-    }
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setImportError(null);
-    setImportSummary(null);
-    const isCSV = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv" || file.type === "application/csv";
-    if (!isCSV) { setImportError("Please upload a CSV file."); return; }
-    if (file.size === 0) { setImportError("This file appears to be empty — no animals found to import."); return; }
-    const hasAnimals = animals && (animals as Animal[]).length > 0;
-    if (hasAnimals) {
-      setPendingFile(file);
-      setModeDialogOpen(true);
-    } else {
-      doImport(file, false);
-    }
-  }
-
   const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0;
 
   return (
     <div className="space-y-5 max-w-lg mx-auto pb-20">
-      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
-      <ImportModeDialog
-        open={modeDialogOpen}
-        onOpenChange={setModeDialogOpen}
-        onAdd={() => pendingFile && doImport(pendingFile, false)}
-        onReplace={() => pendingFile && doImport(pendingFile, true)}
-      />
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
-
       {hasNoAnimals ? (
-        <EmptyHerdOverlay
-          onScan={() => setScanOpen(true)}
-          onImportClick={() => fileInputRef.current?.click()}
-          role={role}
-        />
+        <EmptyHerdOverlay role={role ?? undefined} />
       ) : (
       <>
 
@@ -378,21 +300,6 @@ function AuthDashboard() {
           </button>
         )}
       </div>
-
-      {/* Import feedback */}
-      {importError && (
-        <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">{importError}</p>
-      )}
-      {importSummary && (
-        <div className="text-sm bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
-          <p className="font-semibold text-green-400">{importSummary.animalsCreated} animal{importSummary.animalsCreated !== 1 ? "s" : ""} imported</p>
-          {importSummary.skipped.length > 0 && (
-            <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground list-disc list-inside">
-              {importSummary.skipped.map((s, i) => <li key={i}>Row {s.row}: {plainEnglishSkipReason(s.reason)}</li>)}
-            </ul>
-          )}
-        </div>
-      )}
 
       {/* Disease Risk This Week */}
       <div className="rounded-2xl border-2 border-border overflow-hidden">
