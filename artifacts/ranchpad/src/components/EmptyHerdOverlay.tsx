@@ -18,15 +18,15 @@ export function EmptyHerdOverlay({ role }: EmptyHerdOverlayProps) {
           <FileSpreadsheet className="w-8 h-8 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-bold text-foreground">No animals yet</h3>
-        <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed">
-          {role === "viewer"
-            ? "No animals have been added to this ranch yet. Contact the ranch owner to get started."
-            : "Import your herd from a spreadsheet or add animals one at a time."}
-        </p>
+        {role === "viewer" && (
+          <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed">
+            No animals have been added to this ranch yet. Contact the ranch owner to get started.
+          </p>
+        )}
         {role !== "viewer" && (
           <Link
             href="/import-export"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+            className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
           >
             <FileSpreadsheet className="w-4 h-4" />
             Import or Export Data
