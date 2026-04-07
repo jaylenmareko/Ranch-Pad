@@ -737,6 +737,13 @@ export default function AnimalDetail() {
           </div>
         </div>
       </Dialog>
+
+      <ScanRecordsDialog
+        animalId={animalId}
+        animalName={animal.name ?? `#${animal.tagNumber}`}
+        open={scanRecordsOpen}
+        onOpenChange={setScanRecordsOpen}
+      />
     </div>
   );
 }
@@ -1352,13 +1359,6 @@ function FamachaTab({ animalId }: { animalId: number }) {
           <span>If you dismiss an alert and then log another worse score, a new alert will appear automatically.</span>
         </div>
       </div>
-
-      <ScanRecordsDialog
-        animalId={animalId}
-        animalName={animal.name}
-        open={scanRecordsOpen}
-        onOpenChange={setScanRecordsOpen}
-      />
     </div>
   );
 }
