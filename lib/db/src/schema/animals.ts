@@ -24,6 +24,7 @@ export const animalsTable = pgTable("animals", {
   archiveDate: text("archive_date"),
   archiveNotes: text("archive_notes"),
   isCull: boolean("is_cull").notNull().default(false),
+  cullNote: text("cull_note"),
 });
 
 export const insertAnimalSchema = createInsertSchema(animalsTable).omit({ id: true, createdAt: true });

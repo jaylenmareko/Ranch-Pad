@@ -383,6 +383,26 @@ router.post("/animals/:animalId/cull", requireAuth, requireNotViewer, async (req
   res.json(updated);
 });
 
+router.patch("/animals/:animalId/cull-note", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
+  const animalId = parseInt(raw, 10);
+  const { cullNote } = req.body as { cullNote?: string | null };
+
+  const [updated] = await db
+    .update(animalsTable)
+    .set({ cullNote: cullNote ?? null })
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
 router.post("/animals/:animalId/uncull", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
   const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;

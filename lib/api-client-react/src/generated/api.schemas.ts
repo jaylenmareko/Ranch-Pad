@@ -104,6 +104,8 @@ export interface Animal {
   /** @nullable */
   latestHealthSeverity?: string | null;
   isCull?: boolean;
+  /** @nullable */
+  cullNote?: string | null;
 }
 
 export interface AnimalRef {
@@ -143,6 +145,8 @@ export interface AnimalDetail {
   /** @nullable */
   latestHealthSeverity?: string | null;
   isCull?: boolean;
+  /** @nullable */
+  cullNote?: string | null;
 }
 
 export interface CreateAnimalBody {

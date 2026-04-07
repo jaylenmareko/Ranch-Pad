@@ -32,4 +32,5 @@ export interface AnimalDetail {
   /** @nullable */
   latestHealthSeverity?: string | null;
   isCull?: boolean;
+  cullNote?: string | null;
 }
