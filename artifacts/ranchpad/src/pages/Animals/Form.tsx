@@ -407,7 +407,6 @@ export default function AnimalForm() {
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
         </button>
         <h1 className="text-xl font-black text-foreground">{isEditing ? "Edit Animal" : "Add Animal"}</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Fill in what you know — everything except name and species is optional.</p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
