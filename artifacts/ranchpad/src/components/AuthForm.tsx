@@ -282,10 +282,6 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
             Next: Set Up Pastures <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         </form>
-        <p className="text-center text-sm text-muted-foreground mt-5">
-          Already have an account?{" "}
-          <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setView("login")}>Log in</button>
-        </p>
       </>
     );
   }
