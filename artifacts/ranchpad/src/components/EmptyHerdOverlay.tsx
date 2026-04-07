@@ -1,14 +1,13 @@
 import React from "react";
 import { Link } from "wouter";
-import { ScanLine, PlusCircle, FileSpreadsheet, Users } from "lucide-react";
+import { PlusCircle, FileSpreadsheet, Users } from "lucide-react";
 
 interface EmptyHerdOverlayProps {
-  onScan: () => void;
   onImportClick: () => void;
   role?: string;
 }
 
-export function EmptyHerdOverlay({ onScan, onImportClick, role }: EmptyHerdOverlayProps) {
+export function EmptyHerdOverlay({ onImportClick, role }: EmptyHerdOverlayProps) {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[60vh] px-6 py-16 overflow-hidden">
 
@@ -33,21 +32,7 @@ export function EmptyHerdOverlay({ onScan, onImportClick, role }: EmptyHerdOverl
         <>
           <p className="text-muted-foreground text-sm mb-8 relative z-10">Add your first animal to get started</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl relative z-10">
-
-            {/* Scan Paper Records */}
-            <button
-              onClick={onScan}
-              className="flex flex-col items-center text-center p-6 rounded-2xl bg-primary/10 border border-primary/25 hover:bg-primary/15 hover:-translate-y-1 active:scale-[0.98] transition-all group"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-3 group-hover:bg-primary/30 transition-colors">
-                <ScanLine className="w-6 h-6 text-primary" />
-              </div>
-              <p className="font-bold text-sm text-foreground">Snap a Photo</p>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Snap a photo of your records and we'll convert them automatically
-              </p>
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl relative z-10">
 
             {/* Add Animal */}
             <Link

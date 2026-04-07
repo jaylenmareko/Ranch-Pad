@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, ScanLine, Check, Minus, Trash2, CheckSquare, Archive, FileDown } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Check, Minus, Trash2, CheckSquare, Archive, FileDown } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useRanch } from "@/contexts/ranch-context";
@@ -13,7 +13,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { SimpleDialog } from "@/components/ui/dialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
-import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
 import { useToast } from "@/hooks/use-toast";
 
@@ -458,7 +457,6 @@ export default function AnimalList() {
   const [importError, setImportError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
-  const [scanOpen, setScanOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { isAuthenticated, role } = useAuth();
@@ -917,8 +915,6 @@ export default function AnimalList() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
-
       {/* Bulk Delete Confirmation Dialog */}
       <SimpleDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen} title={bulkDeleteTitle}>
         <div className="space-y-5">
@@ -942,7 +938,6 @@ export default function AnimalList() {
 
       {hasNoAnimals ? (
         <EmptyHerdOverlay
-          onScan={() => setScanOpen(true)}
           onImportClick={() => fileInputRef.current?.click()}
           role={role}
         />
@@ -998,15 +993,6 @@ export default function AnimalList() {
             Archived
           </button>
           <div className="ml-auto flex items-center gap-1">
-            {isOwnerOrHand && (
-              <button
-                onClick={() => setScanOpen(true)}
-                className="flex items-center gap-1.5 py-1.5 px-3 text-sm font-semibold rounded-lg text-primary hover:bg-primary/10 transition-colors"
-              >
-                <ScanLine className="w-3.5 h-3.5" />
-                Scan
-              </button>
-            )}
             {isOwnerOrHand && (
               <button
                 onClick={() => setSelectMode(true)}

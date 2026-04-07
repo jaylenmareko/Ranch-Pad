@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
-import { ScanPhotoDialog } from "@/components/ScanPhotoDialog";
 import { ImportModeDialog } from "@/components/ImportModeDialog";
 
 function SeverityFolder({
@@ -127,7 +126,6 @@ export default function AlertsList() {
   const queryClient = useQueryClient();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [scanOpen, setScanOpen] = useState(false);
   const [modeDialogOpen, setModeDialogOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
@@ -333,11 +331,8 @@ export default function AlertsList() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
-      <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
-
       {hasNoAnimals ? (
         <EmptyHerdOverlay
-          onScan={() => setScanOpen(true)}
           onImportClick={() => fileInputRef.current?.click()}
           role={role ?? undefined}
         />
