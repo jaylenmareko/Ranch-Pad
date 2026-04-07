@@ -1,0 +1,136 @@
+You are a senior full-stack SaaS engineer. Do not change any existing functionality. This is a diagnostic audit only — read the codebase thoroughly and report everything you find before touching anything.
+Goal:
+Do a complete pre-launch quality check on RanchPad. Our ideal customer is a rancher in their 30s-50s, phone-first, skeptical of technology, and will abandon the app the moment something is confusing or broken. Every check should be evaluated through that lens.
+Check every single one of these:
+1. Functionality — go through every feature end to end:
+Auth & Account:
+
+Signup, login, password reset, email change, display name change
+Sign out
+
+Ranch Setup:
+
+Ranch name and GPS location entry
+Multi-ranch support — own one ranch, work at another simultaneously
+
+Animal Management:
+
+Add animal manually, via CSV upload, and via AI photo scan
+Animal detail page with full record history
+Lineage tracking (dam/sire linkage)
+Expected due date tracking
+Pasture/location tagging per animal
+
+Health Records:
+
+Health event logging with severity levels (low, medium, high)
+Medication logging with scheduled dates and overdue tracking
+FAMACHA scoring (1–5 scale)
+Field notes visible to Owner and Ranch Hand only
+Photo uploads on health events
+
+Cull List:
+
+Mark and unmark any animal as cull
+Collapsible Cull List section on the Herd page
+Per-animal cull note (reason, sale status, destination)
+Marking an animal as cull auto-dismisses its active alerts
+Alert generation skips cull animals
+
+Dashboard:
+
+Upcoming and overdue medication summary
+Active alert count and quick view
+Live weather widget
+Ranch notes
+Quick-add shortcuts
+
+Herd Page:
+
+Animals grouped by pasture/location in expandable folder view
+Species sub-folders within each location
+Search by name, tag, breed, or species
+Cull List section at the bottom (collapsible, amber-styled)
+Archive tab with Sold, Deceased, Transferred statuses
+
+Alerts & Herd Health Forecast:
+
+AI-powered weather alerts — species-specific, severity-ranked, individual animal callouts
+Record alerts — overdue meds, recent severe health events, high FAMACHA scores
+Date and time stamp on every alert
+Dismiss and Mark Resolved per alert
+
+Archive System:
+
+Archive with Sold, Deceased, or Transferred status
+Archive date and notes preserved
+All health records intact after archiving
+Archived tab on Herd page
+
+Import / Export:
+
+CSV import with fuzzy column mapping
+CSV export (full herd)
+PDF export per individual animal
+Full herd PDF report
+
+Team Management:
+
+Invite team members via shareable link
+Roles: Owner, Ranch Hand, Viewer
+Viewers cannot add, edit, or delete any records
+Bulk delete with owner-only approval flow
+
+Subscription:
+
+14-day free trial on signup
+$12/month subscription via Stripe
+Paywall enforced after trial ends
+Manage Subscription button opens Stripe billing portal
+
+2. Ease of use on mobile
+Walk through the entire app as if you are a non-tech-savvy rancher on a phone:
+
+Is every button large enough to tap easily?
+Is any text too small to read on a phone screen?
+Are there any flows that require too many taps to complete a basic task?
+Does anything look broken or misaligned on mobile viewport?
+Is the empty state onboarding screen clear enough for a first-time user?
+
+3. UI consistency
+
+Is the dark green color scheme consistent across every page?
+Are button styles, card styles, and typography consistent everywhere?
+Are there any pages that look visually different from the rest of the app?
+Are there any placeholder texts, lorem ipsum, or leftover test copy anywhere?
+
+4. Buttons and interactions
+
+Does every button do what it says?
+Are there any buttons that fire but nothing visibly happens?
+Are there any loading states missing — buttons that should show a spinner but don't?
+Are there any success or error messages missing after actions?
+
+5. API endpoints and backend
+
+Check every API endpoint for potential blocking issues, unhandled errors, or missing authentication guards
+Are there any endpoints that could fail silently without the user knowing?
+Are there any routes accessible without authentication that should be protected?
+Are there any database queries that could time out or fail under normal usage?
+Does the weather alert generation handle failures gracefully — missing coordinates, failed API calls, empty herd?
+
+6. Error handling
+
+What happens if a user enters invalid data in any form?
+What happens if the OpenWeatherMap API is down?
+What happens if the Anthropic API is down?
+What happens if Stripe webhooks fail?
+Are error messages user-friendly — no technical jargon, no raw error codes shown to the user?
+
+7. Performance on rural mobile connections
+
+Are there any large unoptimized assets loading on page load?
+Are there any unnecessary API calls firing on every page load?
+Does the app load fast enough on a slow 3G connection?
+
+Report everything you find organized by category. Flag anything Critical, High, Medium, or Low priority. Do not fix anything until you have reported the full audit and I have reviewed it.
