@@ -31,4 +31,5 @@ export interface AnimalDetail {
   createdAt: Date;
   /** @nullable */
   latestHealthSeverity?: string | null;
+  isCull?: boolean;
 }

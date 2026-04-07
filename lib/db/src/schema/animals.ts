@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { ranchesTable } from "./ranches";
@@ -23,6 +23,7 @@ export const animalsTable = pgTable("animals", {
   archiveReason: text("archive_reason"),
   archiveDate: text("archive_date"),
   archiveNotes: text("archive_notes"),
+  isCull: boolean("is_cull").notNull().default(false),
 });
 
 export const insertAnimalSchema = createInsertSchema(animalsTable).omit({ id: true, createdAt: true });

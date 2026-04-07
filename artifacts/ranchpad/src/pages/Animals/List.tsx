@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Check, Minus, Trash2, CheckSquare, Archive, FileDown } from "lucide-react";
+import { Search, Plus, FileText, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Check, Minus, Trash2, CheckSquare, Archive, FileDown, Scissors } from "lucide-react";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useRanch } from "@/contexts/ranch-context";
@@ -481,6 +481,19 @@ export default function AnimalList() {
       return res.json();
     },
     enabled: isAuthenticated && showArchived,
+  });
+
+  // ─── Cull section ───────────────────────────────────────────────────────────
+  const [showCull, setShowCull] = useState(false);
+
+  const { data: cullAnimals } = useQuery<Animal[]>({
+    queryKey: ["/api/animals", { cull: true }],
+    queryFn: async () => {
+      const res = await fetch("/api/animals?cull=true");
+      if (!res.ok) throw new Error("Failed to load cull animals");
+      return res.json();
+    },
+    enabled: isAuthenticated && !showArchived,
   });
 
   // Auto-enter select mode when navigated here with ?select=true
@@ -1186,6 +1199,46 @@ export default function AnimalList() {
           ))}
         </div>
       ))}
+
+      {/* Cull Section */}
+      {!showArchived && !selectMode && cullAnimals && cullAnimals.length > 0 && (
+        <div className="mt-2">
+          <button
+            className="w-full flex items-center gap-2 py-2.5 px-1 text-sm font-bold transition-all"
+            onClick={() => setShowCull(v => !v)}
+          >
+            <Scissors className="w-4 h-4 text-orange-400" />
+            <span className="text-orange-400">Cull List</span>
+            <span className="ml-1 text-xs font-bold bg-orange-500/15 text-orange-400 border border-orange-500/25 rounded-full px-2 py-0.5">
+              {cullAnimals.length}
+            </span>
+            {showCull
+              ? <ChevronDown className="w-4 h-4 text-orange-400/60 ml-auto" />
+              : <ChevronRight className="w-4 h-4 text-orange-400/60 ml-auto" />}
+          </button>
+          {showCull && (
+            <div className="mt-2 space-y-2">
+              {cullAnimals.map(animal => (
+                <Link key={animal.id} href={`/animals/${animal.id}`}>
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 bg-card transition-colors hover:bg-muted/20"
+                    style={{ borderColor: "rgba(234,88,12,0.25)", borderLeftColor: "#f97316", borderLeftWidth: 4 }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-foreground leading-tight truncate">
+                        {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
+                        {animal.tagNumber && animal.name ? <span className="font-normal text-muted-foreground ml-1.5">{animal.name}</span> : null}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 opacity-40 shrink-0" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       </>
       )}

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw, ScanLine } from "lucide-react";
+import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw, ScanLine, Scissors } from "lucide-react";
 import { 
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
@@ -55,6 +55,7 @@ type AnimalDetailWithArchive = AnimalDetail & {
   archiveNotes?: string | null;
   locationId?: number | null;
   locationName?: string | null;
+  isCull?: boolean;
 };
 
 const ARCHIVE_REASON_LABELS: Record<ArchiveReason, string> = {
@@ -303,6 +304,7 @@ export default function AnimalDetail() {
   const [archiveNotes, setArchiveNotes] = useState("");
   const [archiving, setArchiving] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [culling, setCulling] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { role } = useAuth();
@@ -474,6 +476,48 @@ export default function AnimalDetail() {
     }
   };
 
+  const markAsCull = async () => {
+    if (!animal) return;
+    setCulling(true);
+    try {
+      const res = await fetch(`/api/animals/${animalId}/cull`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        toast({ title: "Error", description: data.message, variant: "destructive" });
+        return;
+      }
+      const label = animal.tagNumber ? `#${animal.tagNumber}` : animal.name;
+      toast({ title: `${label} marked for cull`, description: "This animal has been moved to the Cull list." });
+      queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+    } catch {
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setCulling(false);
+    }
+  };
+
+  const removeFromCull = async () => {
+    if (!animal) return;
+    setCulling(true);
+    try {
+      const res = await fetch(`/api/animals/${animalId}/uncull`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        toast({ title: "Error", description: data.message, variant: "destructive" });
+        return;
+      }
+      const label = animal.tagNumber ? `#${animal.tagNumber}` : animal.name;
+      toast({ title: `${label} removed from cull list`, description: "Animal is back in the active herd." });
+      queryClient.invalidateQueries({ queryKey: [`/api/animals/${animalId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/animals"] });
+    } catch {
+      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setCulling(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="p-12 text-center text-muted-foreground animate-pulse font-bold">Loading profile...</div>;
   }
@@ -596,6 +640,7 @@ export default function AnimalDetail() {
       {(() => {
         const a = animal as AnimalDetailWithArchive;
         const isArchived = !!a.archivedAt;
+        const isCullFlag = !!a.isCull;
         return (
           <div className="flex items-center gap-3 flex-wrap">
             <Button
@@ -613,6 +658,30 @@ export default function AnimalDetail() {
               <Link href={`/animals/${animal.id}/edit`}>
                 <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
               </Link>
+            )}
+            {!isArchived && role !== "viewer" && !isCullFlag && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[44px] border-orange-600/40 text-orange-400 hover:bg-orange-600/10"
+                onClick={markAsCull}
+                disabled={culling}
+              >
+                {culling ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Scissors className="w-4 h-4 mr-1.5" />}
+                Mark as Cull
+              </Button>
+            )}
+            {!isArchived && role !== "viewer" && isCullFlag && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[44px] border-orange-600/60 bg-orange-600/10 text-orange-400 hover:bg-orange-600/20"
+                onClick={removeFromCull}
+                disabled={culling}
+              >
+                {culling ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Scissors className="w-4 h-4 mr-1.5" />}
+                Remove from Cull
+              </Button>
             )}
             {!isArchived && role === "owner" && (
               <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={() => setArchiveDialogOpen(true)}>

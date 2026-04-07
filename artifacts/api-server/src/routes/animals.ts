@@ -51,8 +51,18 @@ async function getLatestHealthSeverity(animalId: number, ranchId: number): Promi
 
 router.get("/animals", requireAuth, async (req, res): Promise<void> => {
   const ranchId = req.user!.ranchId;
-  const { species, sex, breed, search, archived } = req.query as Record<string, string>;
+  const { species, sex, breed, search, archived, cull } = req.query as Record<string, string>;
   const showArchived = archived === "true";
+  const showCull = cull === "true";
+
+  let whereCondition;
+  if (showArchived) {
+    whereCondition = and(eq(animalsTable.ranchId, ranchId), isNotNull(animalsTable.archivedAt));
+  } else if (showCull) {
+    whereCondition = and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt), eq(animalsTable.isCull, true));
+  } else {
+    whereCondition = and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt), eq(animalsTable.isCull, false));
+  }
 
   let animals = await db
     .select({
@@ -61,10 +71,7 @@ router.get("/animals", requireAuth, async (req, res): Promise<void> => {
     })
     .from(animalsTable)
     .leftJoin(pastureLocationsTable, eq(animalsTable.locationId, pastureLocationsTable.id))
-    .where(and(
-      eq(animalsTable.ranchId, ranchId),
-      showArchived ? isNotNull(animalsTable.archivedAt) : isNull(animalsTable.archivedAt),
-    ))
+    .where(whereCondition)
     .orderBy(animalsTable.createdAt);
 
   // Filter in-memory for flexibility
@@ -341,6 +348,44 @@ router.post("/animals/:animalId/restore", requireAuth, requireOwner, async (req,
       archiveDate: null,
       archiveNotes: null,
     })
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
+router.post("/animals/:animalId/cull", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
+  const animalId = parseInt(raw, 10);
+
+  const [updated] = await db
+    .update(animalsTable)
+    .set({ isCull: true })
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
+router.post("/animals/:animalId/uncull", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const raw = Array.isArray(req.params.animalId) ? req.params.animalId[0] : req.params.animalId;
+  const animalId = parseInt(raw, 10);
+
+  const [updated] = await db
+    .update(animalsTable)
+    .set({ isCull: false })
     .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
     .returning();
 
