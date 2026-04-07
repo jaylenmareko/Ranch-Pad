@@ -299,8 +299,9 @@ export default function AlertsList() {
             </p>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="text-xs text-muted-foreground/50 whitespace-nowrap">
-              {format(new Date(alert.generatedAt), "MMM d")}
+            <span className="text-xs text-muted-foreground/50 whitespace-nowrap text-right">
+              <span className="block">{format(new Date(alert.generatedAt), "MMM d, yyyy")}</span>
+              <span className="block">{format(new Date(alert.generatedAt), "h:mm a")}</span>
             </span>
             {hasMoreContent && (
               <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-150 ${expanded ? "rotate-180" : ""}`} />

@@ -375,6 +375,11 @@ router.post("/animals/:animalId/cull", requireAuth, requireNotViewer, async (req
     return;
   }
 
+  await db
+    .update(alertsTable)
+    .set({ isDismissed: true })
+    .where(and(eq(alertsTable.animalId, animalId), eq(alertsTable.isDismissed, false)));
+
   res.json(updated);
 });
 

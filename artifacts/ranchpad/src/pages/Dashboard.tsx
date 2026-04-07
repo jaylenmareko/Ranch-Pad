@@ -10,7 +10,7 @@ import { format, differenceInDays, parseISO, addDays } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRanch } from "@/contexts/ranch-context";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
 import { SimpleDialog } from "@/components/ui/dialog";
 
@@ -173,7 +173,7 @@ function WeatherAlertRow({ alert, onDismiss }: {
                 {alert.alertType.replace(/_/g, ' ')}
               </span>
               <span className="text-[10px] text-muted-foreground/50">•</span>
-              <span className="text-[10px] text-muted-foreground">{formatDate(alert.generatedAt)}</span>
+              <span className="text-[10px] text-muted-foreground">{formatDateTime(alert.generatedAt)}</span>
               <button
                 onClick={() => onDismiss(alert.id)}
                 className="ml-auto text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"

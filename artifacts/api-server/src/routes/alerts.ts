@@ -97,7 +97,7 @@ async function generateRecordAlerts(ranchId: number): Promise<number> {
   const animals = await db
     .select()
     .from(animalsTable)
-    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)));
+    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt), eq(animalsTable.isCull, false)));
 
   // 1. Recent high-severity health events (last 14 days)
   const fourteenDaysAgo = new Date(today);
@@ -260,7 +260,7 @@ async function generateWeatherAlerts(ranchId: number): Promise<number> {
   const animals = await db
     .select()
     .from(animalsTable)
-    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt)));
+    .where(and(eq(animalsTable.ranchId, ranchId), isNull(animalsTable.archivedAt), eq(animalsTable.isCull, false)));
 
   console.log(`[weather-alerts] Ranch ${ranchId}: ${animals.length} active animals`);
 
