@@ -937,10 +937,7 @@ export default function AnimalList() {
       </SimpleDialog>
 
       {hasNoAnimals ? (
-        <EmptyHerdOverlay
-          onImportClick={() => fileInputRef.current?.click()}
-          role={role}
-        />
+        <EmptyHerdOverlay role={role} />
       ) : (
       <>
 

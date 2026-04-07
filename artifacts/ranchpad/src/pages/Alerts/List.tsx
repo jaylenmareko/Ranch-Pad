@@ -332,10 +332,7 @@ export default function AlertsList() {
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
       {hasNoAnimals ? (
-        <EmptyHerdOverlay
-          onImportClick={() => fileInputRef.current?.click()}
-          role={role ?? undefined}
-        />
+        <EmptyHerdOverlay role={role ?? undefined} />
       ) : (
         <>
           <h1 className="text-2xl font-black font-display text-foreground">Alerts</h1>

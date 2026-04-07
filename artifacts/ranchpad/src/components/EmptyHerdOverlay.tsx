@@ -3,11 +3,10 @@ import { Link } from "wouter";
 import { PlusCircle, FileSpreadsheet, Users } from "lucide-react";
 
 interface EmptyHerdOverlayProps {
-  onImportClick: () => void;
   role?: string;
 }
 
-export function EmptyHerdOverlay({ onImportClick, role }: EmptyHerdOverlayProps) {
+export function EmptyHerdOverlay({ role }: EmptyHerdOverlayProps) {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[60vh] px-6 py-16 overflow-hidden">
 
@@ -48,19 +47,19 @@ export function EmptyHerdOverlay({ onImportClick, role }: EmptyHerdOverlayProps)
               </p>
             </Link>
 
-            {/* Import from Spreadsheet */}
-            <button
-              onClick={onImportClick}
+            {/* Import / Export */}
+            <Link
+              href="/import-export"
               className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border hover:bg-accent hover:-translate-y-1 transition-all group"
             >
               <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3 group-hover:bg-border transition-colors">
                 <FileSpreadsheet className="w-6 h-6 text-muted-foreground" />
               </div>
-              <p className="font-bold text-sm text-foreground">Import from Spreadsheet</p>
+              <p className="font-bold text-sm text-foreground">Import or Export Data</p>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Already tracking in Excel or Google Sheets? Upload your file directly
+                Upload a spreadsheet or export your existing herd data
               </p>
-            </button>
+            </Link>
 
           </div>
         </>
