@@ -641,6 +641,13 @@ router.post("/animals/scan-photo", requireAuth, requireNotViewer, photoUpload.si
 
   const base64 = req.file.buffer.toString("base64");
   const mimeType = req.file.mimetype as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  const speciesHint = typeof req.body?.species === "string" && req.body.species ? req.body.species : null;
+  const validSpeciesSet = new Set(["Cattle", "Sheep", "Goat", "Pig", "Horse", "Other"]);
+  const defaultSpecies = speciesHint && validSpeciesSet.has(speciesHint) ? speciesHint : "Cattle";
+
+  const speciesHintLine = speciesHint
+    ? `IMPORTANT: The user has told you these records are for ${speciesHint}. Use "${speciesHint}" as the species for any animal where the species is not explicitly written on the page.`
+    : `Default to "Cattle" if species cannot be determined from context.`;
 
   try {
     const anthropic = new Anthropic({ apiKey, ...(baseURL ? { baseURL } : {}) });
@@ -663,7 +670,7 @@ router.post("/animals/scan-photo", requireAuth, requireNotViewer, photoUpload.si
 Extract every individual animal record you can find in this image.
 
 For each animal return a JSON object with these fields:
-- "name": animal name, or use the tag number as name if no name is given (e.g. "A-101")
+- "name": animal name if present, otherwise null
 - "tagNumber": ear tag number, ID number, or registration number if visible (string or null)
 - "species": must be exactly one of: Cattle, Sheep, Goat, Pig, Horse, Other
 - "breed": breed name if mentioned, otherwise null
@@ -672,9 +679,8 @@ For each animal return a JSON object with these fields:
 - "notes": any health notes, vaccination records, or other comments for this animal (string or null)
 
 Rules:
-- Default to "Cattle" if species cannot be determined from context.
-- If sex is unclear, use "Heifer" for cattle, "Ewe" for sheep, "Doe" for goats.
-- If only a tag number is visible with no separate name, use the tag number as the name.
+- ${speciesHintLine}
+- If sex is unclear, use the most common female term for the species (Heifer for cattle, Ewe for sheep, Doe for goats).
 - Return a JSON array only. No explanation, no markdown, no code blocks — just the raw JSON array.
 - If no animals are found, return: []`,
             },
@@ -699,19 +705,18 @@ Rules:
       return;
     }
 
-    const validSpecies = new Set(["Cattle", "Sheep", "Goat", "Pig", "Horse", "Other"]);
     const animals = (extracted as Record<string, unknown>[])
       .filter(a => a && typeof a === "object")
       .map(a => ({
-        name: String(a.name ?? "").trim().slice(0, 100) || null,
+        name: a.name ? String(a.name).trim().slice(0, 100) : null,
         tagNumber: a.tagNumber ? String(a.tagNumber).trim().slice(0, 50) : null,
-        species: validSpecies.has(String(a.species)) ? String(a.species) : "Cattle",
+        species: validSpeciesSet.has(String(a.species)) ? String(a.species) : defaultSpecies,
         breed: a.breed ? String(a.breed).trim().slice(0, 100) : null,
         sex: a.sex ? String(a.sex).trim().slice(0, 50) : null,
         dateOfBirth: a.dateOfBirth ? String(a.dateOfBirth) : null,
         notes: a.notes ? String(a.notes).trim().slice(0, 500) : null,
       }))
-      .filter(a => a.name);
+      .filter(a => a.name || a.tagNumber);
 
     res.json({ animals });
   } catch (err) {

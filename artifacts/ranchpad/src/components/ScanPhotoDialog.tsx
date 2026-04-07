@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, Loader2, CheckCircle, XCircle, Check } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle, XCircle, Check, ChevronLeft } from "lucide-react";
 import { useCreateAnimal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -21,9 +21,16 @@ interface ExtractedAnimal {
   notes: string | null;
 }
 
-type Stage = "idle" | "scanning" | "review" | "adding" | "done";
+type Stage = "species" | "idle" | "scanning" | "review" | "adding" | "done";
 
-const SPECIES_OPTIONS = ["Cattle", "Sheep", "Goat", "Pig", "Horse", "Other"];
+const SPECIES_OPTIONS = [
+  { label: "Cattle", emoji: "🐄" },
+  { label: "Sheep",  emoji: "🐑" },
+  { label: "Goat",   emoji: "🐐" },
+  { label: "Pig",    emoji: "🐖" },
+  { label: "Horse",  emoji: "🐴" },
+  { label: "Other",  emoji: "🐾" },
+];
 
 interface ScanPhotoDialogProps {
   open: boolean;
@@ -31,7 +38,8 @@ interface ScanPhotoDialogProps {
 }
 
 export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
-  const [stage, setStage] = useState<Stage>("idle");
+  const [stage, setStage] = useState<Stage>("species");
+  const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
   const [animals, setAnimals] = useState<(ExtractedAnimal & { selected: boolean })[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [addedCount, setAddedCount] = useState(0);
@@ -40,7 +48,8 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
   const createMutation = useCreateAnimal();
 
   function reset() {
-    setStage("idle");
+    setStage("species");
+    setSelectedSpecies(null);
     setAnimals([]);
     setError(null);
     setAddedCount(0);
@@ -49,6 +58,11 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
   function handleClose(val: boolean) {
     if (!val) reset();
     onOpenChange(val);
+  }
+
+  function pickSpecies(species: string) {
+    setSelectedSpecies(species);
+    setStage("idle");
   }
 
   async function handleFile(file: File) {
@@ -65,6 +79,7 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
 
     const formData = new FormData();
     formData.append("photo", file);
+    if (selectedSpecies) formData.append("species", selectedSpecies);
 
     try {
       const res = await fetch("/api/animals/scan-photo", { method: "POST", body: formData });
@@ -130,18 +145,48 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col gap-0">
         <DialogHeader className="pb-4">
-          <DialogTitle>Scan Record Book</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {stage === "idle" && (
+              <button
+                onClick={() => setStage("species")}
+                className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+                aria-label="Back to species selection"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            Scan Record Book
+          </DialogTitle>
           <DialogDescription>
-            Take a photo of your record book, tag list, or handwritten notes. Claude will read the page and add your animals automatically.
+            {stage === "species"
+              ? "First, what kind of animal are these records for? This helps when the sheet doesn't list the animal type."
+              : `Scanning for ${selectedSpecies} records. Take or upload a photo of your record book, tag list, or handwritten notes.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
 
-          {/* ── Idle: pick photo ── */}
+          {/* ── Step 1: Pick species ── */}
+          {stage === "species" && (
+            <div className="py-1">
+              <div className="grid grid-cols-3 gap-3">
+                {SPECIES_OPTIONS.map(({ label, emoji }) => (
+                  <button
+                    key={label}
+                    onClick={() => pickSpecies(label)}
+                    className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border p-5 hover:border-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <span className="text-3xl">{emoji}</span>
+                    <span className="font-semibold text-sm">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 2: Pick photo ── */}
           {stage === "idle" && (
             <div className="space-y-4 py-1">
-              {/* Hidden camera input */}
               <input
                 ref={cameraInputRef}
                 type="file"
@@ -207,7 +252,7 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
               <div className="text-center">
                 <p className="font-semibold">Reading your records…</p>
-                <p className="text-sm text-muted-foreground mt-1">Claude is scanning the photo for animal records.</p>
+                <p className="text-sm text-muted-foreground mt-1">Claude is scanning the photo for {selectedSpecies?.toLowerCase()} records.</p>
               </div>
             </div>
           )}
@@ -229,7 +274,6 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Checkbox */}
                     <button
                       onClick={() => toggleAnimal(i)}
                       className={`mt-0.5 w-5 h-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-colors ${
@@ -240,11 +284,10 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                       {animal.selected && <Check className="w-3 h-3 text-primary-foreground" />}
                     </button>
 
-                    {/* Fields grid */}
                     <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
                       {[
-                        { label: "Name", field: "name" as const, type: "text", required: true },
                         { label: "Tag #", field: "tagNumber" as const, type: "text", placeholder: "—" },
+                        { label: "Name", field: "name" as const, type: "text", placeholder: "—" },
                         { label: "Breed", field: "breed" as const, type: "text", placeholder: "—" },
                         { label: "Sex", field: "sex" as const, type: "text", placeholder: "—" },
                         { label: "Date of Birth", field: "dateOfBirth" as const, type: "date" },
@@ -262,7 +305,6 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                         </div>
                       ))}
 
-                      {/* Species dropdown */}
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Species</p>
                         <select
@@ -271,8 +313,8 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                           disabled={!animal.selected}
                           onChange={e => updateAnimal(i, "species", e.target.value)}
                         >
-                          {SPECIES_OPTIONS.map(s => (
-                            <option key={s} value={s}>{s}</option>
+                          {SPECIES_OPTIONS.map(({ label }) => (
+                            <option key={label} value={label}>{label}</option>
                           ))}
                         </select>
                       </div>
@@ -319,7 +361,7 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
               {selectedCount} of {animals.length} selected
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={reset}>Try another photo</Button>
+              <Button variant="outline" onClick={() => setStage("idle")}>Try another photo</Button>
               <Button onClick={handleAddSelected} disabled={selectedCount === 0}>
                 Add {selectedCount} animal{selectedCount !== 1 ? "s" : ""} to herd
               </Button>
