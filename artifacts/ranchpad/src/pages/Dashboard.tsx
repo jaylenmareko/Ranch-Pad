@@ -221,6 +221,17 @@ function AuthDashboard() {
     }
   });
 
+  const ALERT_COOLDOWN_MS = 5 * 60 * 1000;
+  const ALERT_COOLDOWN_KEY = "ranchpad_last_alert_gen";
+
+  useEffect(() => {
+    const last = Number(sessionStorage.getItem(ALERT_COOLDOWN_KEY) ?? 0);
+    if (Date.now() - last > ALERT_COOLDOWN_MS) {
+      sessionStorage.setItem(ALERT_COOLDOWN_KEY, String(Date.now()));
+      generateMutation.mutate();
+    }
+  }, []);
+
   const dismissMutation = useDismissAlert({
     mutation: {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/alerts"] })
