@@ -40,10 +40,10 @@ export default function Landing() {
         {/* Tagline */}
         <div className="mb-6">
           <p className="text-base font-semibold text-white tracking-wide uppercase whitespace-nowrap" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
-            Know before your animals get sick.
+            All herd records in one place and accessible in seconds.
           </p>
           <p className="text-xs font-medium text-white/75 tracking-wide uppercase mt-1.5" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
-            Every record. Right in your pocket.
+            Every document easily accessible for customers, vets, or anyone.
           </p>
         </div>
 
