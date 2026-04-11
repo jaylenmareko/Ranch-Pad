@@ -40,7 +40,7 @@ export default function Landing() {
         {/* Tagline */}
         <div className="mb-6">
           <p className="text-base font-semibold text-white tracking-wide uppercase" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
-            All herd records in one place and accessible in seconds.
+            All herd records in one place.
           </p>
           <p className="text-xs font-medium text-white/75 tracking-wide uppercase mt-1.5" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}>
             Every document easily accessible for customers, vets, or anyone.
