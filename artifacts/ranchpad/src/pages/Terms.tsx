@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { HoofIcon } from "@/components/HoofIcon";
 import { ArrowLeft } from "lucide-react";
 
 export default function Terms() {
@@ -15,9 +14,6 @@ export default function Terms() {
         </div>
 
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
-            <HoofIcon className="w-5 h-5 text-primary" />
-          </div>
           <span className="font-display font-bold text-xl text-primary tracking-tight">RanchPad</span>
         </div>
 

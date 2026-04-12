@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { HoofIcon } from "@/components/HoofIcon";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 
@@ -59,9 +58,6 @@ export default function ResetPassword() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
-            <HoofIcon className="w-5 h-5 text-primary" />
-          </div>
           <span className="font-display font-bold text-xl text-primary tracking-tight">RanchPad</span>
         </div>
 
