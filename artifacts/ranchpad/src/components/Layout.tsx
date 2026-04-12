@@ -643,9 +643,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         style={{ background: "hsl(var(--sidebar))" }}
       >
         <Link href="/" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-            <Warehouse className="w-4 h-4" />
-          </div>
           <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
         </Link>
 
@@ -665,9 +662,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         >
           <SheetTitle className="sr-only">Navigation menu</SheetTitle>
           <div className="px-5 py-5 border-b border-border flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-              <Warehouse className="w-4 h-4" />
-            </div>
             <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
           </div>
 
@@ -704,7 +698,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
 
           <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
-            <Warehouse className="w-5 h-5 text-primary" />
             <span className="font-display font-bold text-base text-foreground">RanchPad</span>
           </Link>
         </header>
