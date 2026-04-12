@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, ArrowDown } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO, addDays } from "date-fns";
@@ -255,7 +255,7 @@ function AuthDashboard() {
             <div className="border-t border-dashed border-border/50 mx-4" />
             <div className="mx-4 mb-3 mt-3 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/60 flex items-center gap-2">
               <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">Example Alert</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <ArrowDown className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
               {[
