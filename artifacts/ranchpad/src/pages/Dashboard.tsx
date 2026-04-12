@@ -255,6 +255,7 @@ function AuthDashboard() {
             <div className="border-t border-dashed border-border/50 mx-4" />
             <div className="mx-4 mb-3 mt-3 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/60 flex items-center gap-2">
               <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">Example Alert</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
               {[
