@@ -254,7 +254,7 @@ function AuthDashboard() {
             </div>
             <div className="border-t border-dashed border-border/50 mx-4" />
             <div className="mx-4 mb-3 mt-3 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/60 flex items-center gap-2">
-              <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Example Alert</span>
+              <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">Example Alert</span>
             </div>
             <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
               {[
