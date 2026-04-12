@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, BookOpen } from "lucide-react";
+import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO, addDays } from "date-fns";
@@ -12,7 +12,7 @@ import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRanch } from "@/contexts/ranch-context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
-import { SimpleDialog } from "@/components/ui/dialog";
+
 
 
 const INVARIANT_PLURAL = new Set(["Cattle", "Sheep", "Bison", "Deer"]);
@@ -22,101 +22,7 @@ function pluralizeSpecies(species: string) {
 
 // ─── Guest Dashboard ──────────────────────────────────────────────────────────
 
-// ─── Ranch Notes Dialog ───────────────────────────────────────────────────────
 
-type RanchNote = { id: number; noteDate: string; noteText: string; createdAt: string };
-
-function RanchNotesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
-  const [noteText, setNoteText] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [notes, setNotes] = useState<RanchNote[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchNotes = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/ranch-notes");
-      if (res.ok) setNotes(await res.json());
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { if (open) fetchNotes(); }, [open, fetchNotes]);
-
-  const handleSave = async () => {
-    if (!noteText.trim()) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/ranch-notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteDate: format(new Date(), "yyyy-MM-dd"), noteText: noteText.trim() }),
-      });
-      if (res.ok) {
-        setNoteText("");
-        await fetchNotes();
-      }
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const formatNoteTimestamp = (createdAt: string) => {
-    try {
-      return format(new Date(createdAt), "MMM d · h:mm a");
-    } catch {
-      return createdAt;
-    }
-  };
-
-  return (
-    <SimpleDialog open={open} onOpenChange={onOpenChange} title="Ranch Notes">
-      <div className="flex flex-col gap-4">
-        {/* Input area */}
-        <div className="flex flex-col gap-3">
-          <textarea
-            value={noteText}
-            onChange={e => setNoteText(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave(); }}
-            placeholder="What happened on the ranch today?"
-            rows={3}
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-muted/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
-          />
-          <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saving || !noteText.trim()}
-              className="inline-flex items-center gap-2 h-9 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : "Save Note"}
-            </button>
-          </div>
-        </div>
-
-        {/* Notes list */}
-        {loading ? (
-          <div className="space-y-3">{[1, 2].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
-        ) : notes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <BookOpen className="w-8 h-8 text-muted-foreground/30 mb-2" />
-            <p className="text-sm text-muted-foreground font-medium">No notes yet</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">Log daily observations above</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border/40 -mx-6">
-            {notes.map(note => (
-              <div key={note.id} className="px-6 py-3.5">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{formatNoteTimestamp(note.createdAt)}</p>
-                <p className="text-sm text-foreground leading-relaxed">{note.noteText}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </SimpleDialog>
-  );
-}
 // ─── Weather Alert Row ────────────────────────────────────────────────────────
 
 function WeatherAlertRow({ alert, onDismiss }: {
@@ -198,7 +104,6 @@ function AuthDashboard() {
   const { role } = useAuth();
   const { activeRanch } = useRanch();
   const queryClient = useQueryClient();
-  const [notesOpen, setNotesOpen] = useState(false);
   const { data: animals, isLoading: animalsLoading } = useListAnimals();
   const { data: cullAnimals } = useQuery<Animal[]>({
     queryKey: ["/api/animals", { cull: true }],
@@ -298,15 +203,6 @@ function AuthDashboard() {
           <h1 className="text-xl font-black text-foreground">{activeRanch?.name ?? "Dashboard"}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(), "EEEE, MMMM d")}</p>
         </div>
-        {(role === "owner" || role === "ranch_hand") && (
-          <button
-            onClick={() => setNotesOpen(true)}
-            className="shrink-0 flex items-center gap-1.5 h-9 px-4 rounded-xl text-sm font-semibold transition-colors border bg-primary border-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            Ranch Notes
-          </button>
-        )}
       </div>
 
       {/* Disease Risk This Week */}
@@ -357,12 +253,12 @@ function AuthDashboard() {
               <p className="text-xs text-muted-foreground">No active weather alerts for your herd.</p>
             </div>
             <div className="border-t border-dashed border-border/50 mx-4" />
-            <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-4 pt-3 pb-1">Example alerts</p>
-            <div className="divide-y divide-border/40 opacity-30 pointer-events-none select-none">
+            <div className="mx-4 mb-3 mt-3 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/60 flex items-center gap-2">
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Example Alert — Not Real Data</span>
+            </div>
+            <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
               {[
-                { color: "bg-red-600", text: "Rosie (#114) — FAMACHA score has declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1\" of rain this week." },
-                { color: "bg-red-600", text: "Buck (#07, Goat) — 4 high-severity health events in 30 days including respiratory infection and bottle jaw. Immediate vet evaluation recommended." },
-                { color: "bg-red-600", text: "High barber pole worm risk — 3.4\" of rain forecast through Friday with temps staying above 68°F. Mae (#T-105) was treated 3 weeks ago and is due for a FAMACHA recheck before larvae counts spike." },
+                { color: "bg-red-600", text: "#114 — FAMACHA score declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1\" of rain this week." },
               ].map((ex, i) => (
                 <div key={i} className="p-4 flex gap-3">
                   <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${ex.color}`} /></div>
@@ -466,8 +362,6 @@ function AuthDashboard() {
         )}
       </div>
 
-      {/* Ranch Notes dialog */}
-      <RanchNotesDialog open={notesOpen} onOpenChange={setNotesOpen} />
 
       </>
       )}
