@@ -1,5 +1,4 @@
 import { CheckCircle2 } from "lucide-react";
-import { HoofIcon } from "@/components/HoofIcon";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 
 const BULLETS = [
@@ -29,9 +28,6 @@ export default function Landing() {
       <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
-            <HoofIcon className="w-6 h-6 text-white" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8))" }} />
-          </div>
           <span className="font-display font-bold text-4xl text-white tracking-tight" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}>
             RanchPad
           </span>
