@@ -1,0 +1,43 @@
+You are a senior frontend engineer doing a precise UI polish pass on the RanchPad dashboard. The reference design is in ranchpad-mockup.html. Do not change any functionality, data, routing, API calls, or logic of any kind. Only fix the visual styling. Here is exactly what needs to be corrected based on the current rendered output:
+Top navigation bar:
+
+Keep the hamburger menu icon exactly where it is — do not remove or move it
+Add the RanchPad wordmark in Fraunces font, weight 700, white next to the hamburger — where "Pad" uses #F0A845 (amber)
+Background must be #1A3628 (deep green), not a lighter shade
+Height should be tight — no excess padding
+
+Header card (date, ranch name, weather):
+
+Date line: DM Sans, 12px, rgba(255,255,255,0.55), no bold
+Ranch name: Fraunces, 22px, weight 700, pure white — should feel large and grounded
+Notification bell: right-aligned, inside a 32×32px circle at rgba(255,255,255,0.1), amber dot indicator at top-right of the circle using #F0A845
+Weather strip: background rgba(255,255,255,0.10), border-radius 10px, padding 10px 12px, flex row — left side shows icon + temp in Fraunces 22px white + description in 10px muted white; right side shows HUMIDITY and WIND as two separate labeled columns in small caps, values in white 13px bold
+
+Stats row (Animals / Alerts / Overdue):
+
+Three equal cards, white #FAFAF8, border 1px solid #EAF0EC, border-radius 10px
+Number: Fraunces, 28px, weight 700, #1A3628 — except Alerts number which must be #C0392B red
+Label: DM Sans, 9px, weight 600, all-caps, letter-spacing 0.06em, color #8FA393
+No shadows, clean and flat
+
+Remove these sections entirely from the dashboard — delete their JSX/HTML and any imports or state variables used exclusively by them:
+
+The alert banner (the red "18 Active Alerts / Tap to review action items" row) — remove it completely
+The "Your Herd" section including its header, animal list, and "See all" link — remove it completely
+Do not leave any empty containers, divs, or whitespace where these sections were
+
+Disease Risk section and all other remaining section cards:
+
+Section header row: icon + label left in DM Sans 11px weight 600 all-caps #8FA393, action button right (e.g. "Refresh") in DM Sans 12px #4A8C6A
+Card body: white #FAFAF8, border 1px solid #EAF0EC, border-radius 12px, padding 14px
+"All clear" state: checkmark icon in #4A8C6A, title in Fraunces 16px #1A3628, subtitle in DM Sans 13px #5A6B5E
+Example alert row: left dot in #C0392B, text in DM Sans 12px #5A6B5E, line-height 1.55
+
+Upcoming section and any other remaining sections:
+
+Match the same card and header styling as the Disease Risk section above
+Keep all content and logic exactly as-is
+
+Page background: #F5F1EA warm cream — must apply to the entire scrollable page body behind all cards
+Typography global rule: Every heading, stat number, and section title uses Fraunces. Every label, body copy, badge, button, and nav item uses DM Sans. No other fonts.
+Do not move, hide, add, or reorder any sections other than the two explicitly removed above. Do not touch any onClick, fetch, state, or prop. If something is not listed above, leave it completely unchanged and just apply the closest matching styles from the design system.

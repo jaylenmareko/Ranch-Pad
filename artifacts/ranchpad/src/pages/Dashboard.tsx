@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "wouter";
-import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, ArrowDown } from "lucide-react";
+import { CloudLightning, X, Pill, Baby, Stethoscope, CheckCircle2, Loader2, RefreshCw, ChevronDown, ArrowDown } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+// Animal type used for cull query typing
 import { format, differenceInDays, parseISO, addDays } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
@@ -14,19 +15,6 @@ import "./Dashboard.css";
 const INVARIANT_PLURAL = new Set(["Cattle", "Sheep", "Bison", "Deer"]);
 function pluralizeSpecies(species: string) {
   return INVARIANT_PLURAL.has(species) ? species : `${species}s`;
-}
-
-function speciesEmoji(species: string, sex?: string): string {
-  const s = (species ?? "").toLowerCase();
-  if (s.includes("cattle") || s.includes("cow") || s.includes("angus") || s.includes("bovine")) {
-    return sex === "Male" ? "🐂" : "🐄";
-  }
-  if (s.includes("horse")) return "🐴";
-  if (s.includes("sheep") || s.includes("lamb")) return "🐑";
-  if (s.includes("goat")) return "🐐";
-  if (s.includes("pig") || s.includes("swine") || s.includes("hog")) return "🐷";
-  if (s.includes("chicken") || s.includes("poultry")) return "🐔";
-  return "🐾";
 }
 
 // ─── Weather Alert Row ────────────────────────────────────────────────────────
@@ -159,15 +147,6 @@ function AuthDashboard() {
 
   const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0 && Array.isArray(cullAnimals) && cullAnimals.length === 0;
 
-  // Build set of animal IDs with active alerts for herd status badges
-  const alertAnimalIds = React.useMemo(() => {
-    const ids = new Set<number>();
-    activeAlerts.forEach(a => { if (a.animalId) ids.add(a.animalId); });
-    return ids;
-  }, [activeAlerts]);
-
-  const previewAnimals = React.useMemo(() => (animals ?? []).slice(0, 4), [animals]);
-
   return (
     <div className="dash-page">
       {hasNoAnimals ? (
@@ -233,20 +212,6 @@ function AuthDashboard() {
             </div>
           </div>
 
-          {/* ── Alert banner ── */}
-          {activeAlertCount > 0 && (
-            <Link href="/alerts/action" className="dash-alert-banner">
-              <div className="dash-alert-icon-wrap">⚠️</div>
-              <div className="dash-alert-text">
-                <div className="dash-alert-title">
-                  {activeAlertCount} Active Alert{activeAlertCount !== 1 ? "s" : ""}
-                </div>
-                <div className="dash-alert-sub">Tap to review action items</div>
-              </div>
-              <span className="dash-alert-chevron">›</span>
-            </Link>
-          )}
-
           {/* ── Disease Risk / Weather Alerts ── */}
           <div className="dash-section">
             <div className="dash-section-header">
@@ -311,40 +276,6 @@ function AuthDashboard() {
               )}
             </div>
           </div>
-
-          {/* ── Your Herd ── */}
-          {!animalsLoading && previewAnimals.length > 0 && (
-            <div className="dash-section">
-              <div className="dash-section-header">
-                <div className="dash-section-title">
-                  <Users style={{ width: 14, height: 14 }} />
-                  Your Herd
-                </div>
-                <Link href="/animals" className="dash-section-link">See all →</Link>
-              </div>
-              <div className="dash-section-body">
-                {previewAnimals.map(animal => {
-                  const hasAlert = alertAnimalIds.has(animal.id);
-                  const badgeClass = hasAlert ? "alert" : "healthy";
-                  const badgeText = hasAlert ? "Alert" : "Healthy";
-                  return (
-                    <Link key={animal.id} href={`/animals/${animal.id}`} className="dash-herd-row">
-                      <div className="dash-animal-avatar">
-                        {speciesEmoji(animal.species, animal.sex ?? undefined)}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="dash-animal-name">{animal.name}</div>
-                        <div className="dash-animal-meta">
-                          {animal.tag ? `#${animal.tag} · ` : ""}{animal.species}{animal.sex ? ` · ${animal.sex}` : ""}
-                        </div>
-                      </div>
-                      <span className={`dash-animal-badge ${badgeClass}`}>{badgeText}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* ── Upcoming ── */}
           <div className="dash-section">

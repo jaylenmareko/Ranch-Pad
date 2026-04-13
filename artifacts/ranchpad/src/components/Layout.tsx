@@ -688,17 +688,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Main Content ──────────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className={cn("flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20", isLanding ? "hidden" : "md:hidden")} style={{ background: "hsl(var(--sidebar))" }}>
+        <header className={cn("flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20", isLanding ? "hidden" : "md:hidden")} style={{ background: "#1A3628" }}>
           <button
             onClick={() => setMenuOpen(true)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors shrink-0"
             aria-label="Open menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5" style={{ color: "rgba(255,255,255,0.8)" }} />
           </button>
 
-          <Link href="/" className="flex items-center gap-2 hover:opacity-75 transition-opacity">
-            <span className="font-display font-bold text-base text-foreground">RanchPad</span>
+          <Link href="/" className="flex items-center gap-0 hover:opacity-80 transition-opacity">
+            <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 17, color: "#fff", letterSpacing: "-0.3px" }}>Ranch</span>
+            <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 17, color: "#F0A845", letterSpacing: "-0.3px" }}>Pad</span>
           </Link>
         </header>
 
