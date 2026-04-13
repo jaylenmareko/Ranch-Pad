@@ -9,6 +9,9 @@
 .dash-header {
   background: #1A3628;
   padding: 16px 16px 0;
+  margin: 0 16px;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .dash-header-top {

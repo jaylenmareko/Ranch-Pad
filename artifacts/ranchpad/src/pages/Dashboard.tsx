@@ -140,10 +140,7 @@ function AuthDashboard() {
     return (weights[b.severity] ?? 0) - (weights[a.severity] ?? 0);
   });
 
-  const totalAnimals = animals?.length ?? 0;
   const activeAlertCount = activeAlerts.filter(a => a.alertType !== "weather_forecast").length;
-  const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
-  const dueSoonCount = upcoming?.dueSoonCount ?? 0;
 
   const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0 && Array.isArray(cullAnimals) && cullAnimals.length === 0;
 
@@ -194,22 +191,6 @@ function AuthDashboard() {
             )}
             {/* Spacer so header blends into cream bg */}
             <div style={{ height: 14 }} />
-          </div>
-
-          {/* ── Stats row ── */}
-          <div className="dash-stats">
-            <div className="dash-stat-card">
-              <div className="dash-stat-num">{totalAnimals}</div>
-              <div className="dash-stat-label">Animals</div>
-            </div>
-            <div className="dash-stat-card">
-              <div className={`dash-stat-num ${activeAlertCount > 0 ? "red" : ""}`}>{activeAlertCount}</div>
-              <div className="dash-stat-label">Alerts</div>
-            </div>
-            <div className="dash-stat-card">
-              <div className={`dash-stat-num ${overdueMedsCount > 0 ? "yellow" : ""}`}>{overdueMedsCount}</div>
-              <div className="dash-stat-label">Overdue</div>
-            </div>
           </div>
 
           {/* ── Disease Risk / Weather Alerts ── */}
