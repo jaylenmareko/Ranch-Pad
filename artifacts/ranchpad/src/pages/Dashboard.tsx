@@ -159,12 +159,6 @@ function AuthDashboard() {
                 <div className="dash-greeting">{format(new Date(), "EEEE, MMMM d")}</div>
                 <div className="dash-ranch-name">{activeRanch?.name ?? "Dashboard"}</div>
               </div>
-              <Link href="/alerts/action">
-                <button className="dash-bell-btn" aria-label="Alerts">
-                  🔔
-                  {activeAlertCount > 0 && <span className="dash-bell-dot" />}
-                </button>
-              </Link>
             </div>
 
             {/* Weather strip */}
