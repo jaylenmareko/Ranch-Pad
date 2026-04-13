@@ -251,3 +251,196 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* ── Error input variant ─────────────────────────────────────────────────── */
+
+.invite-input--error { border-color: #E07060; }
+.invite-input--error:focus { border-color: #B03A2E; }
+
+/* ── Location section ────────────────────────────────────────────────────── */
+
+.invite-location-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #D8E8DF;
+}
+
+.invite-location-label-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Address suggestions dropdown ────────────────────────────────────────── */
+
+.invite-suggestions {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+}
+
+.invite-suggestion-item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #333;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #EEF5F0;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.invite-suggestion-item:last-child { border-bottom: none; }
+.invite-suggestion-item:hover { background: #F5F1EA; }
+
+/* ── Geocoded confirmed address ──────────────────────────────────────────── */
+
+.invite-geocoded {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #EEF5F0;
+  border: 1.5px solid #B6D9C6;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.invite-geocoded-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #5A7A6A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.invite-geocoded-coords {
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 11px;
+  color: #1A3628;
+  font-weight: 600;
+}
+
+.invite-geocoded-clear {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 6px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.invite-geocoded-clear:hover { background: #D8E8DF; }
+
+/* ── Pastures step ───────────────────────────────────────────────────────── */
+
+.invite-pastures-heading {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 900;
+  color: #1A3628;
+}
+
+.invite-pastures-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #5A7A6A;
+  line-height: 1.5;
+  margin-top: -4px;
+}
+
+.invite-pasture-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.invite-pasture-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #D8E8DF;
+  background: #FFFFFF;
+}
+.invite-pasture-item:last-child { border-bottom: none; }
+
+.invite-pasture-name {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+}
+
+.invite-pasture-remove {
+  background: none;
+  border: none;
+  padding: 3px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #8FA393;
+  display: flex;
+  align-items: center;
+}
+.invite-pasture-remove:hover { color: #B03A2E; background: #FDF0EE; }
+
+.invite-pasture-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.invite-pasture-add-row .invite-input { flex: 1; }
+
+.invite-pasture-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: #1A3628;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.invite-pasture-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.invite-pasture-add-btn:hover:not(:disabled) { background: #15302A; }
+
+/* ── Skip button ─────────────────────────────────────────────────────────── */
+
+.invite-skip-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8FA393;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: center;
+}
+.invite-skip-btn:hover:not(:disabled) { color: #333; }
+.invite-skip-btn:disabled { opacity: 0.5; cursor: not-allowed; }
