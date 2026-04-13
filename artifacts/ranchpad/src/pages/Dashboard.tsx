@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PlusCircle, AlertTriangle, CloudLightning, X, Pill, Baby, Calendar, Stethoscope, Users, CheckCircle2, Upload, Loader2, XCircle, CheckCircle, Lock, Droplets, Wind, RefreshCw, ScanLine, ChevronDown, ArrowDown } from "lucide-react";
 import { useListAnimals, useListAlerts, useGetWeather, useDismissAlert, useGenerateAlerts, getGetWeatherQueryKey, useGetUpcoming, getGetUpcomingQueryKey, type Animal } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,16 +9,25 @@ import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRanch } from "@/contexts/ranch-context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { EmptyHerdOverlay } from "@/components/EmptyHerdOverlay";
-
-
+import "./Dashboard.css";
 
 const INVARIANT_PLURAL = new Set(["Cattle", "Sheep", "Bison", "Deer"]);
 function pluralizeSpecies(species: string) {
   return INVARIANT_PLURAL.has(species) ? species : `${species}s`;
 }
 
-// ─── Guest Dashboard ──────────────────────────────────────────────────────────
-
+function speciesEmoji(species: string, sex?: string): string {
+  const s = (species ?? "").toLowerCase();
+  if (s.includes("cattle") || s.includes("cow") || s.includes("angus") || s.includes("bovine")) {
+    return sex === "Male" ? "🐂" : "🐄";
+  }
+  if (s.includes("horse")) return "🐴";
+  if (s.includes("sheep") || s.includes("lamb")) return "🐑";
+  if (s.includes("goat")) return "🐐";
+  if (s.includes("pig") || s.includes("swine") || s.includes("hog")) return "🐷";
+  if (s.includes("chicken") || s.includes("poultry")) return "🐔";
+  return "🐾";
+}
 
 // ─── Weather Alert Row ────────────────────────────────────────────────────────
 
@@ -30,71 +36,58 @@ function WeatherAlertRow({ alert, onDismiss }: {
   onDismiss: (id: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const dotColor = alert.severity === 'critical'
-    ? 'bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.6)]'
-    : alert.severity === 'high'
-      ? 'bg-destructive shadow-[0_0_10px_rgba(255,0,0,0.5)]'
-      : alert.severity === 'moderate' || alert.severity === 'medium'
-        ? 'bg-yellow-500'
-        : 'bg-green-500';
+  const dotClass = alert.severity === "critical" ? "critical"
+    : alert.severity === "high" ? "high"
+    : alert.severity === "moderate" || alert.severity === "medium" ? "moderate"
+    : "low";
   const getFirstSentence = (msg: string) => msg.match(/^(.+?[.!?])(?:\s|$)/)?.[1] ?? msg;
   const collapsedText = alert.summary ?? getFirstSentence(alert.message);
   const hasDetail = !!(alert.summary || alert.message.length > collapsedText.length);
 
   return (
-    <div className="border-b border-border/50 last:border-b-0">
-      <div
-        className="p-4 md:p-5 flex gap-4 hover:bg-muted/30 transition-colors group cursor-pointer"
-        onClick={() => hasDetail && setExpanded(v => !v)}
-      >
-        <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} /></div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground leading-snug">{collapsedText}</p>
-          {!expanded && hasDetail && (
-            <span className="text-xs font-semibold text-primary/70 mt-1 inline-flex items-center gap-0.5">
-              See details <ChevronDown className="w-3 h-3" />
-            </span>
-          )}
-        </div>
-        <div className="shrink-0 flex items-center gap-1">
-          <button
-            onClick={e => { e.stopPropagation(); onDismiss(alert.id); }}
-            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2.5 min-w-[44px] min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground rounded-full transition-all flex items-center justify-center"
-            aria-label="Dismiss alert"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div
-        className="overflow-hidden transition-all duration-300 ease-in-out"
-        style={{ maxHeight: expanded ? '400px' : '0px', opacity: expanded ? 1 : 0 }}
-      >
-        <div className="px-4 md:px-5 pb-4 pt-0 border-t border-border/40 ml-6 md:ml-7">
-          <div className="pt-3 space-y-2">
-            <p className="text-sm leading-relaxed text-foreground/85 whitespace-pre-line">{alert.message}</p>
-            <div className="flex items-center gap-2 pt-1 flex-wrap">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                {alert.alertType.replace(/_/g, ' ')}
+    <div className="dash-alert-row" onClick={() => hasDetail && setExpanded(v => !v)}>
+      <div className={`dash-alert-dot ${dotClass}`} />
+      <div className="dash-alert-row-text">
+        <div className="dash-alert-row-msg">{collapsedText}</div>
+        {!expanded && hasDetail && (
+          <span className="dash-alert-row-expand">
+            See details <ChevronDown style={{ width: 11, height: 11 }} />
+          </span>
+        )}
+        <div
+          className="dash-alert-row-detail"
+          style={{ maxHeight: expanded ? "400px" : "0px", opacity: expanded ? 1 : 0 }}
+        >
+          <div className="dash-alert-row-detail-inner">
+            <p style={{ marginBottom: 8, whiteSpace: "pre-line" }}>{alert.message}</p>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "#8A9A93", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                {alert.alertType.replace(/_/g, " ")}
               </span>
-              <span className="text-[10px] text-muted-foreground/50">•</span>
-              <span className="text-[10px] text-muted-foreground">{formatDateTime(alert.generatedAt)}</span>
+              <span style={{ fontSize: 9, color: "#8A9A93" }}>·</span>
+              <span style={{ fontSize: 10, color: "#8A9A93" }}>{formatDateTime(alert.generatedAt)}</span>
               <button
-                onClick={() => onDismiss(alert.id)}
-                className="ml-auto text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                onClick={e => { e.stopPropagation(); onDismiss(alert.id); }}
+                style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#8A9A93", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
               >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Dismiss
+                <CheckCircle2 style={{ width: 13, height: 13 }} /> Dismiss
               </button>
             </div>
           </div>
         </div>
       </div>
+      <button
+        className="dash-dismiss-btn"
+        onClick={e => { e.stopPropagation(); onDismiss(alert.id); }}
+        aria-label="Dismiss alert"
+      >
+        <X style={{ width: 14, height: 14 }} />
+      </button>
     </div>
   );
 }
 
-// ─── Auth Dashboard ───────────────────────────────────────────────────────────
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   return <AuthDashboard />;
@@ -114,7 +107,7 @@ function AuthDashboard() {
     },
   });
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useListAlerts();
-  const { data: weather, isLoading: weatherLoading, refetch: refetchWeather, isFetching: weatherFetching } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
+  const { data: weather, isLoading: weatherLoading } = useGetWeather({ query: { queryKey: getGetWeatherQueryKey(), retry: false } });
   const { data: upcoming, isLoading: upcomingLoading } = useGetUpcoming();
 
   const generateMutation = useGenerateAlerts({
@@ -152,221 +145,299 @@ function AuthDashboard() {
     }
   };
 
-  const speciesCounts = React.useMemo(() => {
-    if (!animals) return {};
-    return animals.reduce((acc, animal) => {
-      acc[animal.species] = (acc[animal.species] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [animals]);
-
-  const avgAgeMonths = React.useMemo(() => {
-    if (!animals || animals.length === 0) return null;
-    const now = new Date();
-    const totalMonths = animals.reduce((sum, a) => {
-      if (!a.dateOfBirth) return sum;
-      const dob = new Date(a.dateOfBirth);
-      return sum + (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
-    }, 0);
-    const counted = animals.filter(a => a.dateOfBirth).length;
-    return counted > 0 ? Math.round(totalMonths / counted) : null;
-  }, [animals]);
-
-  const femaleCount = React.useMemo(() => animals?.filter(a => a.sex === "Female").length ?? 0, [animals]);
-  const maleCount = React.useMemo(() => animals?.filter(a => a.sex === "Male").length ?? 0, [animals]);
-
   const activeAlerts = alerts?.filter(a => !a.isDismissed) || [];
-  const weatherAlerts = activeAlerts.filter(a => a.alertType === 'weather_forecast');
+  const weatherAlerts = activeAlerts.filter(a => a.alertType === "weather_forecast");
   const sortedWeatherAlerts = [...weatherAlerts].sort((a, b) => {
     const weights: Record<string, number> = { critical: 4, high: 3, moderate: 2, medium: 2, low: 1 };
     return (weights[b.severity] ?? 0) - (weights[a.severity] ?? 0);
   });
 
   const totalAnimals = animals?.length ?? 0;
-  // Stat tile links to Action Center which only shows non-weather alerts — count must match
-  const activeAlertCount = activeAlerts.filter(a => a.alertType !== 'weather_forecast').length;
+  const activeAlertCount = activeAlerts.filter(a => a.alertType !== "weather_forecast").length;
   const overdueMedsCount = upcoming?.overdueMedsCount ?? 0;
   const dueSoonCount = upcoming?.dueSoonCount ?? 0;
 
   const hasNoAnimals = !animalsLoading && animals !== undefined && animals.length === 0 && Array.isArray(cullAnimals) && cullAnimals.length === 0;
 
+  // Build set of animal IDs with active alerts for herd status badges
+  const alertAnimalIds = React.useMemo(() => {
+    const ids = new Set<number>();
+    activeAlerts.forEach(a => { if (a.animalId) ids.add(a.animalId); });
+    return ids;
+  }, [activeAlerts]);
+
+  const previewAnimals = React.useMemo(() => (animals ?? []).slice(0, 4), [animals]);
+
   return (
-    <div className="space-y-5 max-w-lg mx-auto pb-20">
+    <div className="dash-page">
       {hasNoAnimals ? (
-        <EmptyHerdOverlay role={role ?? undefined} />
+        <div style={{ padding: 16 }}>
+          <EmptyHerdOverlay role={role ?? undefined} />
+        </div>
       ) : (
-      <>
-
-      {/* Greeting */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-black text-foreground">{activeRanch?.name ?? "Dashboard"}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{format(new Date(), "EEEE, MMMM d")}</p>
-        </div>
-      </div>
-
-      {/* Disease Risk This Week */}
-      <div className="rounded-2xl border-2 border-border overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <CloudLightning className="w-4 h-4 text-primary shrink-0" />
-            <h3 className="font-bold text-sm text-foreground">
-              Disease Risk &middot; {format(new Date(), "MMM d")}–{
-                weather?.forecast?.length
-                  ? format(parseISO(weather.forecast[weather.forecast.length - 1].date), "MMM d")
-                  : format(addDays(new Date(), 4), "MMM d")
-              }
-            </h3>
-            {weatherAlerts.length > 0 && (
-              <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">{weatherAlerts.length}</span>
-            )}
-          </div>
-          <button
-            onClick={() => generateMutation.mutate()}
-            disabled={generateMutation.isPending}
-            className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50 shrink-0"
-          >
-            <RefreshCw className={`w-3 h-3 ${generateMutation.isPending ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
-        </div>
-
-        {/* Weather strip */}
-        {!weatherLoading && weather && (
-          <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
-            <img src={`https://openweathermap.org/img/wn/${weather.current.icon}.png`} alt="" className="w-5 h-5 opacity-70" />
-            <span className="font-bold text-foreground">{Math.round(weather.current.temp)}°F</span>
-            <span className="capitalize">{weather.current.description}</span>
-            <span className="opacity-40">·</span>
-            <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.current.humidity}%</span>
-            <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{Math.round(weather.current.windSpeed)} mph</span>
-          </div>
-        )}
-
-        {alertsLoading ? (
-          <div className="p-4 space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-muted animate-pulse rounded-xl" />)}</div>
-        ) : sortedWeatherAlerts.length === 0 ? (
-          <div className="flex flex-col">
-            <div className="flex flex-col items-center justify-center py-5 text-center px-4 gap-1">
-              <CheckCircle2 className="w-7 h-7 text-green-500/50 mb-0.5" />
-              <p className="font-bold text-sm text-foreground">All clear</p>
-              <p className="text-xs text-muted-foreground">No active weather alerts for your herd.</p>
+        <>
+          {/* ── Header ── */}
+          <div className="dash-header">
+            <div className="dash-header-top">
+              <div>
+                <div className="dash-greeting">{format(new Date(), "EEEE, MMMM d")}</div>
+                <div className="dash-ranch-name">{activeRanch?.name ?? "Dashboard"}</div>
+              </div>
+              <Link href="/alerts/action">
+                <button className="dash-bell-btn" aria-label="Alerts">
+                  🔔
+                  {activeAlertCount > 0 && <span className="dash-bell-dot" />}
+                </button>
+              </Link>
             </div>
-            <div className="border-t border-dashed border-border/50 mx-4" />
-            <div className="mx-4 mb-3 mt-3 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/60 flex items-center gap-2">
-              <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">Example Alert</span>
-              <ArrowDown className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <div className="divide-y divide-border/40 opacity-40 pointer-events-none select-none">
-              {[
-                { color: "bg-red-600", text: "#114 — FAMACHA score declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1\" of rain this week." },
-              ].map((ex, i) => (
-                <div key={i} className="p-4 flex gap-3">
-                  <div className="mt-1.5 shrink-0"><div className={`w-2.5 h-2.5 rounded-full ${ex.color}`} /></div>
-                  <p className="text-sm text-foreground leading-snug">{ex.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div>
-            {sortedWeatherAlerts.map(alert => (
-              <WeatherAlertRow
-                key={alert.id}
-                alert={alert}
-                onDismiss={(id) => dismissMutation.mutate({ alertId: id })}
-              />
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Upcoming */}
-      <div className="rounded-2xl border-2 border-border overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-          <Stethoscope className="w-4 h-4 text-primary shrink-0" />
-          <h3 className="font-bold text-sm text-foreground">Upcoming</h3>
-        </div>
-
-        {upcomingLoading ? (
-          <div className="p-4 space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 bg-muted animate-pulse rounded-xl" />)}</div>
-        ) : (!upcoming || (upcoming.medications.length === 0 && upcoming.pregnancies.length === 0)) ? (
-          <div className="flex flex-col items-center justify-center p-7 text-center gap-1">
-            <CheckCircle2 className="w-7 h-7 text-green-500/50 mb-0.5" />
-            <p className="font-bold text-sm text-foreground">All clear</p>
-            <p className="text-xs text-muted-foreground">No medications or births due soon.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border/40">
-            {upcoming.medications.length > 0 && (
-              <div className="p-4">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <Pill className="w-3.5 h-3.5" /> Medications
-                </p>
-                <div className="space-y-2.5">
-                  {upcoming.medications.map(med => {
-                    const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
-                    const isResolving = resolvingMedIds.has(med.id);
-                    return (
-                      <div key={med.id} className="flex items-center gap-2">
-                        <Link href={`/animals/${med.animalId}`} className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">
-                            {med.animalName}{med.animalSubLabel ? <span className="font-normal text-muted-foreground ml-1">{med.animalSubLabel}</span> : null}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">{med.medicationName}</p>
-                        </Link>
-                        <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${med.isOverdue ? "bg-destructive/10 text-destructive" : "bg-yellow-500/10 text-yellow-400"}`}>
-                          {med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`}
-                        </span>
-                        {role !== "viewer" && (
-                          <button
-                            onClick={() => markMedResolved(med)}
-                            disabled={isResolving}
-                            className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-semibold bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
-                          >
-                            {isResolving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                            {isResolving ? "…" : "Done"}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+            {/* Weather strip */}
+            {!weatherLoading && weather && (
+              <div className="dash-weather-strip">
+                <img
+                  src={`https://openweathermap.org/img/wn/${weather.current.icon}.png`}
+                  alt=""
+                  style={{ width: 32, height: 32 }}
+                />
+                <span className="dash-weather-temp">{Math.round(weather.current.temp)}°F</span>
+                <span className="dash-weather-desc">{weather.current.description}</span>
+                <div className="dash-weather-details">
+                  <div className="dash-weather-detail">
+                    <span className="dash-weather-detail-label">Humidity</span>
+                    <span className="dash-weather-detail-val">{weather.current.humidity}%</span>
+                  </div>
+                  <div className="dash-weather-detail">
+                    <span className="dash-weather-detail-label">Wind</span>
+                    <span className="dash-weather-detail-val">{Math.round(weather.current.windSpeed)} mph</span>
+                  </div>
                 </div>
               </div>
             )}
-            {upcoming.pregnancies.length > 0 && (
-              <div className="p-4">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <Baby className="w-3.5 h-3.5" /> Expected Births
-                </p>
-                <div className="space-y-2">
-                  {upcoming.pregnancies.map(preg => {
-                    const daysUntil = differenceInDays(parseISO(preg.expectedDueDate), new Date());
-                    return (
-                      <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="flex items-center justify-between gap-2 hover:bg-muted/40 rounded-lg px-2 py-1 -mx-2 transition-colors">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">
-                            {preg.animalName}{preg.animalSubLabel ? <span className="font-normal text-muted-foreground ml-1">{preg.animalSubLabel}</span> : null}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{preg.species}</p>
+            {/* Spacer so header blends into cream bg */}
+            <div style={{ height: 14 }} />
+          </div>
+
+          {/* ── Stats row ── */}
+          <div className="dash-stats">
+            <div className="dash-stat-card">
+              <div className="dash-stat-num">{totalAnimals}</div>
+              <div className="dash-stat-label">Animals</div>
+            </div>
+            <div className="dash-stat-card">
+              <div className={`dash-stat-num ${activeAlertCount > 0 ? "red" : ""}`}>{activeAlertCount}</div>
+              <div className="dash-stat-label">Alerts</div>
+            </div>
+            <div className="dash-stat-card">
+              <div className={`dash-stat-num ${overdueMedsCount > 0 ? "yellow" : ""}`}>{overdueMedsCount}</div>
+              <div className="dash-stat-label">Overdue</div>
+            </div>
+          </div>
+
+          {/* ── Alert banner ── */}
+          {activeAlertCount > 0 && (
+            <Link href="/alerts/action" className="dash-alert-banner">
+              <div className="dash-alert-icon-wrap">⚠️</div>
+              <div className="dash-alert-text">
+                <div className="dash-alert-title">
+                  {activeAlertCount} Active Alert{activeAlertCount !== 1 ? "s" : ""}
+                </div>
+                <div className="dash-alert-sub">Tap to review action items</div>
+              </div>
+              <span className="dash-alert-chevron">›</span>
+            </Link>
+          )}
+
+          {/* ── Disease Risk / Weather Alerts ── */}
+          <div className="dash-section">
+            <div className="dash-section-header">
+              <div className="dash-section-title">
+                <CloudLightning style={{ width: 14, height: 14 }} />
+                Disease Risk · {format(new Date(), "MMM d")}–{
+                  weather?.forecast?.length
+                    ? format(parseISO(weather.forecast[weather.forecast.length - 1].date), "MMM d")
+                    : format(addDays(new Date(), 4), "MMM d")
+                }
+                {weatherAlerts.length > 0 && (
+                  <span className="dash-section-count">{weatherAlerts.length}</span>
+                )}
+              </div>
+              <button
+                className="dash-refresh-btn"
+                onClick={() => generateMutation.mutate()}
+                disabled={generateMutation.isPending}
+              >
+                <RefreshCw style={{ width: 11, height: 11, ...(generateMutation.isPending ? { animation: "spin 1s linear infinite" } : {}) }} />
+                Refresh
+              </button>
+            </div>
+
+            <div className="dash-section-body">
+              {alertsLoading ? (
+                <>
+                  <div className="dash-skeleton" />
+                  <div className="dash-skeleton" />
+                </>
+              ) : sortedWeatherAlerts.length === 0 ? (
+                <>
+                  <div className="dash-empty">
+                    <div className="dash-empty-icon">✅</div>
+                    <div className="dash-empty-title">All clear</div>
+                    <div className="dash-empty-sub">No active weather alerts for your herd.</div>
+                  </div>
+                  <div style={{ borderTop: "1px dashed #D5E2D8", margin: "0 14px" }} />
+                  <div className="dash-example-label">
+                    <ArrowDown style={{ width: 12, height: 12 }} />
+                    Example Alert
+                  </div>
+                  <div style={{ opacity: 0.4, pointerEvents: "none" }}>
+                    <div className="dash-alert-row">
+                      <div className="dash-alert-dot critical" />
+                      <div className="dash-alert-row-text">
+                        <div className="dash-alert-row-msg">
+                          #114 — FAMACHA score declined 3→4→5 over 6 weeks. Barber pole worm burden likely critical with 2.1" of rain this week.
                         </div>
-                        <span className={`text-xs font-bold shrink-0 px-2 py-0.5 rounded-full ${daysUntil < 0 ? "bg-destructive/10 text-destructive" : daysUntil <= 7 ? "bg-yellow-500/10 text-yellow-400" : "bg-blue-500/10 text-blue-400"}`}>
-                          {daysUntil < 0 ? "Overdue" : daysUntil === 0 ? "Today" : `${daysUntil}d`}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                sortedWeatherAlerts.map(alert => (
+                  <WeatherAlertRow
+                    key={alert.id}
+                    alert={alert}
+                    onDismiss={(id) => dismissMutation.mutate({ alertId: id })}
+                  />
+                ))
+              )}
+            </div>
           </div>
-        )}
-      </div>
 
+          {/* ── Your Herd ── */}
+          {!animalsLoading && previewAnimals.length > 0 && (
+            <div className="dash-section">
+              <div className="dash-section-header">
+                <div className="dash-section-title">
+                  <Users style={{ width: 14, height: 14 }} />
+                  Your Herd
+                </div>
+                <Link href="/animals" className="dash-section-link">See all →</Link>
+              </div>
+              <div className="dash-section-body">
+                {previewAnimals.map(animal => {
+                  const hasAlert = alertAnimalIds.has(animal.id);
+                  const badgeClass = hasAlert ? "alert" : "healthy";
+                  const badgeText = hasAlert ? "Alert" : "Healthy";
+                  return (
+                    <Link key={animal.id} href={`/animals/${animal.id}`} className="dash-herd-row">
+                      <div className="dash-animal-avatar">
+                        {speciesEmoji(animal.species, animal.sex ?? undefined)}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="dash-animal-name">{animal.name}</div>
+                        <div className="dash-animal-meta">
+                          {animal.tag ? `#${animal.tag} · ` : ""}{animal.species}{animal.sex ? ` · ${animal.sex}` : ""}
+                        </div>
+                      </div>
+                      <span className={`dash-animal-badge ${badgeClass}`}>{badgeText}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-      </>
+          {/* ── Upcoming ── */}
+          <div className="dash-section">
+            <div className="dash-section-header">
+              <div className="dash-section-title">
+                <Stethoscope style={{ width: 14, height: 14 }} />
+                Upcoming
+              </div>
+            </div>
+            <div className="dash-section-body">
+              {upcomingLoading ? (
+                <>
+                  <div className="dash-skeleton" />
+                  <div className="dash-skeleton" />
+                </>
+              ) : (!upcoming || (upcoming.medications.length === 0 && upcoming.pregnancies.length === 0)) ? (
+                <div className="dash-empty">
+                  <div className="dash-empty-icon">✅</div>
+                  <div className="dash-empty-title">All clear</div>
+                  <div className="dash-empty-sub">No medications or births due soon.</div>
+                </div>
+              ) : (
+                <>
+                  {upcoming.medications.length > 0 && (
+                    <>
+                      <div className="dash-sub-section-label">
+                        <Pill style={{ width: 12, height: 12 }} />
+                        Medications
+                      </div>
+                      {upcoming.medications.map(med => {
+                        const daysUntil = differenceInDays(parseISO(med.nextDueDate), new Date());
+                        const isResolving = resolvingMedIds.has(med.id);
+                        const badgeClass = med.isOverdue ? "overdue" : daysUntil === 0 ? "today" : "soon";
+                        const badgeText = med.isOverdue ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "Today" : `${daysUntil}d`;
+                        return (
+                          <div key={med.id} className="dash-up-row">
+                            <Link href={`/animals/${med.animalId}`} style={{ flex: 1, minWidth: 0, textDecoration: "none" }}>
+                              <div className="dash-up-name">
+                                {med.animalName}
+                                {med.animalSubLabel && <span className="dash-up-sub"> {med.animalSubLabel}</span>}
+                              </div>
+                              <div className="dash-animal-meta">{med.medicationName}</div>
+                            </Link>
+                            <span className={`dash-up-badge ${badgeClass}`}>{badgeText}</span>
+                            {role !== "viewer" && (
+                              <button
+                                className="dash-done-btn"
+                                onClick={() => markMedResolved(med)}
+                                disabled={isResolving}
+                              >
+                                {isResolving
+                                  ? <Loader2 style={{ width: 11, height: 11, animation: "spin 1s linear infinite" }} />
+                                  : <CheckCircle2 style={{ width: 11, height: 11 }} />
+                                }
+                                {isResolving ? "…" : "Done"}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                  {upcoming.pregnancies.length > 0 && (
+                    <>
+                      <div className="dash-sub-section-label" style={{ borderTop: upcoming.medications.length > 0 ? "1px solid #EAF0EC" : undefined, paddingTop: 10 }}>
+                        <Baby style={{ width: 12, height: 12 }} />
+                        Expected Births
+                      </div>
+                      {upcoming.pregnancies.map(preg => {
+                        const daysUntil = differenceInDays(parseISO(preg.expectedDueDate), new Date());
+                        const badgeClass = daysUntil < 0 ? "overdue" : daysUntil === 0 ? "today" : daysUntil <= 7 ? "soon" : "future";
+                        const badgeText = daysUntil < 0 ? "Overdue" : daysUntil === 0 ? "Today" : `${daysUntil}d`;
+                        return (
+                          <Link key={preg.animalId} href={`/animals/${preg.animalId}`} className="dash-up-row">
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div className="dash-up-name">
+                                {preg.animalName}
+                                {preg.animalSubLabel && <span className="dash-up-sub"> {preg.animalSubLabel}</span>}
+                              </div>
+                              <div className="dash-animal-meta">{preg.species}</div>
+                            </div>
+                            <span className={`dash-up-badge ${badgeClass}`}>{badgeText}</span>
+                          </Link>
+                        );
+                      })}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
 }
-
