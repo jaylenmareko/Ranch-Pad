@@ -40,7 +40,14 @@ export default function Landing() {
 
           {/* Phone 1 — Dashboard */}
           <div className="lp-phone-frame elevated">
-            <div className="lp-phone-notch" />
+            <div className="lp-iphone-left-btn lp-iphone-action" />
+            <div className="lp-iphone-left-btn lp-iphone-vol-top" />
+            <div className="lp-iphone-left-btn lp-iphone-vol-bot" />
+            <div className="lp-dynamic-island" />
+            <div className="lp-iphone-statusbar">
+              <span className="lp-status-time">9:41</span>
+              <span className="lp-status-icons">●●● WiFi 🔋</span>
+            </div>
             <div className="lp-phone-screen">
               <div className="lp-mini-dash">
                 <div className="lp-mini-top-bar">
@@ -89,11 +96,19 @@ export default function Landing() {
                 </div>
               </div>
             </div>
+            <div className="lp-home-indicator" />
           </div>
 
           {/* Phone 2 — Alerts list */}
           <div className="lp-phone-frame">
-            <div className="lp-phone-notch" />
+            <div className="lp-iphone-left-btn lp-iphone-action" />
+            <div className="lp-iphone-left-btn lp-iphone-vol-top" />
+            <div className="lp-iphone-left-btn lp-iphone-vol-bot" />
+            <div className="lp-dynamic-island" />
+            <div className="lp-iphone-statusbar">
+              <span className="lp-status-time">9:41</span>
+              <span className="lp-status-icons">●●● WiFi 🔋</span>
+            </div>
             <div className="lp-phone-screen">
               <div style={{ background: "#1A3628", padding: 12 }}>
                 <div style={{
@@ -172,6 +187,7 @@ export default function Landing() {
                 </div>
               </div>
             </div>
+            <div className="lp-home-indicator" />
           </div>
         </div>
 

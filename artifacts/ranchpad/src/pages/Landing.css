@@ -145,12 +145,13 @@
 
 .lp-headline {
   font-family: 'Fraunces', serif;
-  font-size: clamp(40px, 7vw, 72px);
+  font-size: clamp(30px, 5.5vw, 62px);
   font-weight: 700;
   line-height: 1.05;
   color: #fff;
-  max-width: 780px;
-  margin-bottom: 20px;
+  width: fit-content;
+  margin: 0 auto 20px;
+  text-align: center;
   position: relative;
   letter-spacing: -1px;
 }
@@ -217,38 +218,107 @@
   color: #fff;
 }
 
-/* ── Phone mockups ─────────────────────────────────────────────────────────── */
+/* ── Phone mockups (iPhone 17 frame) ───────────────────────────────────────── */
 .lp-phone-wrap {
   position: relative;
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 28px;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .lp-phone-frame {
-  width: 220px;
-  background: #0d1a10;
-  border-radius: 32px;
-  padding: 10px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.1);
+  width: 200px;
+  aspect-ratio: 71.5 / 149.6;
+  background: #1C1C1E;
+  border-radius: 52px;
+  padding: 11px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.55), inset 0 0 0 1.5px rgba(255,255,255,0.09);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
 }
 
-.lp-phone-frame.elevated { transform: translateY(-16px); }
+/* Power button — right edge */
+.lp-phone-frame::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 42%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 33px;
+  background: #2C2C2E;
+  border-radius: 2px;
+}
 
-.lp-phone-notch {
+.lp-phone-frame.elevated { transform: translateY(-24px); }
+
+/* Left edge buttons (action + 2 volume) */
+.lp-iphone-left-btn {
+  position: absolute;
+  left: -3px;
+  width: 3px;
+  background: #2C2C2E;
+  border-radius: 2px;
+}
+
+.lp-iphone-action { height: 9px;  top: 26%; }
+.lp-iphone-vol-top { height: 16px; top: 32%; }
+.lp-iphone-vol-bot { height: 16px; top: calc(32% + 20px); }
+
+/* Dynamic Island */
+.lp-dynamic-island {
   width: 60px;
-  height: 10px;
-  background: #0d1a10;
-  border-radius: 0 0 8px 8px;
-  margin: 0 auto 6px;
+  height: 17px;
+  background: #000;
+  border-radius: 9px;
+  margin: 0 auto 4px;
+  flex-shrink: 0;
+}
+
+/* Status bar */
+.lp-iphone-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.lp-iphone-statusbar .lp-status-time {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.lp-iphone-statusbar .lp-status-icons {
+  font-size: 7px;
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .lp-phone-screen {
-  border-radius: 24px;
+  border-radius: 0 0 40px 40px;
   overflow: hidden;
   background: var(--lp-cream);
+  flex: 1;
+}
+
+/* Home indicator */
+.lp-home-indicator {
+  width: 67px;
+  height: 3px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 3px;
+  margin: 6px auto 0;
+  flex-shrink: 0;
 }
 
 .lp-mini-dash {
