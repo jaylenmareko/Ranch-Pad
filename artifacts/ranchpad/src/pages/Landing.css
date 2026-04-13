@@ -31,6 +31,66 @@
   color: var(--lp-text);
 }
 
+/* ── Nav ───────────────────────────────────────────────────────────────────── */
+.lp-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: var(--lp-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 52px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.lp-nav-logo {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.lp-nav-logo span { color: var(--lp-amber-light); }
+
+.lp-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lp-nav-login {
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 7px 16px;
+  border-radius: var(--lp-radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.lp-nav-login:hover { color: #fff; }
+
+.lp-nav-signup {
+  background: var(--lp-amber);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 7px 18px;
+  border-radius: var(--lp-radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lp-nav-signup:hover { background: var(--lp-amber-light); }
+
 /* ── Hero ──────────────────────────────────────────────────────────────────── */
 .lp-hero {
   background: var(--lp-green-deep);
@@ -40,7 +100,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 24px 0;
+  padding: 132px 24px 0;
   position: relative;
   overflow: hidden;
 }

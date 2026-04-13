@@ -3,10 +3,19 @@ import { useAuthModal } from "@/contexts/auth-modal-context";
 import "./Landing.css";
 
 export default function Landing() {
-  const { openSignup } = useAuthModal();
+  const { openSignup, openLogin } = useAuthModal();
 
   return (
     <div className="landing-page">
+
+      {/* ── NAV ──────────────────────────────────────────────────────────── */}
+      <nav className="lp-nav">
+        <div className="lp-nav-logo">Ranch<span>Pad</span></div>
+        <div className="lp-nav-actions">
+          <button className="lp-nav-login" onClick={openLogin}>Log In</button>
+          <button className="lp-nav-signup" onClick={openSignup}>Get Started</button>
+        </div>
+      </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="lp-hero">
@@ -164,6 +173,13 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Trust bar */}
+        <div className="lp-trust-bar">
+          <div className="lp-trust-item"><strong>14-day</strong> free trial</div>
+          <div className="lp-trust-item"><strong>$12/mo</strong> after trial</div>
+          <div className="lp-trust-item"><strong>Cancel</strong> anytime</div>
         </div>
       </section>
 
