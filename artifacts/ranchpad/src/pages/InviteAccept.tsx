@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Warehouse, Shield, Eye } from "lucide-react";
+import "./InviteAccept.css";
 
 function roleLabel(role: string): string {
   if (role === "ranch_hand") return "Ranch Hand";
@@ -12,15 +13,15 @@ function roleLabel(role: string): string {
 function RoleDescription({ role }: { role: string }) {
   if (role === "ranch_hand") {
     return (
-      <div className="flex items-start gap-2 text-sm text-muted-foreground">
-        <Shield className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+      <div className="invite-role-desc">
+        <Shield size={14} color="#2D6A4F" style={{ flexShrink: 0, marginTop: 2 }} />
         <span>You'll be able to add and edit animal records — but deletions require owner approval.</span>
       </div>
     );
   }
   return (
-    <div className="flex items-start gap-2 text-sm text-muted-foreground">
-      <Eye className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+    <div className="invite-role-desc">
+      <Eye size={14} color="#8FA393" style={{ flexShrink: 0, marginTop: 2 }} />
       <span>You'll have read-only access to animals assigned to you by the owner.</span>
     </div>
   );
@@ -118,97 +119,151 @@ export default function InviteAccept() {
     }
   };
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground/50";
-  const labelCls = "block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5";
-  const btnCls = "w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed";
-
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
-      <div className="flex items-center gap-2.5 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/30">
-          <Warehouse className="w-5 h-5" />
+    <div className="invite-page">
+
+      {/* ── Logo ──────────────────────────────────────────────────────────── */}
+      <div className="invite-logo">
+        <div className="invite-logo-icon">
+          <Warehouse size={20} color="#FFFFFF" />
         </div>
-        <span className="font-display font-bold text-xl tracking-tight text-foreground">RanchPad</span>
+        <span className="invite-logo-name">RanchPad</span>
       </div>
 
-      <div className="w-full max-w-md">
-        {loading ? (
-          <div className="text-center text-muted-foreground animate-pulse">Loading invite…</div>
-        ) : loadError ? (
-          <div className="p-6 rounded-2xl border border-border bg-card text-center space-y-3">
-            <p className="text-xl font-bold text-destructive">Invite Unavailable</p>
-            <p className="text-sm text-muted-foreground">{loadError}</p>
-            <button onClick={() => setLocation("/")} className="text-sm text-primary underline underline-offset-2 font-medium">
+      <div className="invite-wrap">
+
+        {/* ── Loading ───────────────────────────────────────────────────── */}
+        {loading && (
+          <div className="invite-loading">Loading invite…</div>
+        )}
+
+        {/* ── Error ─────────────────────────────────────────────────────── */}
+        {!loading && loadError && (
+          <div className="invite-error-card">
+            <p className="invite-error-heading">Invite Unavailable</p>
+            <p className="invite-error-sub">{loadError}</p>
+            <button onClick={() => setLocation("/")} className="invite-back-link">
               Back to RanchPad
             </button>
           </div>
-        ) : inviteInfo ? (
-          <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card space-y-6 shadow-xl shadow-black/10">
-            {/* Invite header — always visible */}
-            <div>
-              <p className="text-sm font-semibold text-primary mb-1">You've been invited to join</p>
-              <h1 className="text-2xl font-black font-display text-foreground">{inviteInfo.ranchName}</h1>
-              <div className="mt-3 space-y-1.5">
-                <p className="text-sm font-medium text-foreground">
-                  Role: <span className="font-bold">{roleLabel(inviteInfo.role)}</span>
-                </p>
-                <RoleDescription role={inviteInfo.role} />
-              </div>
+        )}
+
+        {/* ── Main invite card ──────────────────────────────────────────── */}
+        {!loading && inviteInfo && (
+          <div className="invite-card">
+
+            {/* Header — always visible */}
+            <div className="invite-card-header">
+              <p className="invite-tag">You've been invited to join</p>
+              <h1 className="invite-ranch-name">{inviteInfo.ranchName}</h1>
+              <p className="invite-role-row">
+                Role: <span className="invite-role-bold">{roleLabel(inviteInfo.role)}</span>
+              </p>
+              <RoleDescription role={inviteInfo.role} />
             </div>
 
-            {mode === "signup" ? (
-              <>
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Your Name</label>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jane Smith" required className={inputCls} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Email</label>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jane@example.com" required className={inputCls} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Password</label>
-                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 6 characters" required minLength={6} className={inputCls} />
-                  </div>
-                  {submitError && <p className="text-sm text-destructive font-medium">{submitError}</p>}
-                  <button type="submit" disabled={submitting} className={btnCls}>
-                    {submitting ? "Creating account…" : "Create Account & Join Ranch"}
-                  </button>
-                </form>
-                <p className="text-center text-xs text-muted-foreground">
-                  Already have an account?{" "}
-                  <button onClick={() => { setMode("login"); setSubmitError(null); }} className="text-primary underline underline-offset-2 font-medium">
-                    Sign in instead
-                  </button>
-                </p>
-              </>
-            ) : (
-              <>
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <label className={labelCls}>Email</label>
-                    <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="you@example.com" required className={inputCls} autoFocus />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Password</label>
-                    <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="Your password" required className={inputCls} />
-                  </div>
-                  {loginError && <p className="text-sm text-destructive font-medium">{loginError}</p>}
-                  <button type="submit" disabled={loginSubmitting} className={btnCls}>
-                    {loginSubmitting ? "Signing in…" : "Sign In & Join Ranch"}
-                  </button>
-                </form>
-                <p className="text-center text-xs text-muted-foreground">
-                  Don't have an account?{" "}
-                  <button onClick={() => { setMode("signup"); setLoginError(null); }} className="text-primary underline underline-offset-2 font-medium">
-                    Create one instead
-                  </button>
-                </p>
-              </>
-            )}
+            {/* Form area */}
+            <div className="invite-card-body">
+
+              {mode === "signup" ? (
+                <>
+                  <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div className="invite-field">
+                      <label className="invite-label">Your Name</label>
+                      <input
+                        className="invite-input"
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Jane Smith"
+                        required
+                      />
+                    </div>
+                    <div className="invite-field">
+                      <label className="invite-label">Email</label>
+                      <input
+                        className="invite-input"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="jane@example.com"
+                        required
+                      />
+                    </div>
+                    <div className="invite-field">
+                      <label className="invite-label">Password</label>
+                      <input
+                        className="invite-input"
+                        type="password"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="At least 6 characters"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    {submitError && <p className="invite-form-error">{submitError}</p>}
+                    <button type="submit" disabled={submitting} className="invite-submit-btn">
+                      {submitting ? "Creating account…" : "Create Account & Join Ranch"}
+                    </button>
+                  </form>
+                  <p className="invite-toggle">
+                    Already have an account?{" "}
+                    <button
+                      className="invite-toggle-btn"
+                      onClick={() => { setMode("login"); setSubmitError(null); }}
+                    >
+                      Sign in instead
+                    </button>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div className="invite-field">
+                      <label className="invite-label">Email</label>
+                      <input
+                        className="invite-input"
+                        type="email"
+                        value={loginEmail}
+                        onChange={e => setLoginEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                    <div className="invite-field">
+                      <label className="invite-label">Password</label>
+                      <input
+                        className="invite-input"
+                        type="password"
+                        value={loginPassword}
+                        onChange={e => setLoginPassword(e.target.value)}
+                        placeholder="Your password"
+                        required
+                      />
+                    </div>
+                    {loginError && <p className="invite-form-error">{loginError}</p>}
+                    <button type="submit" disabled={loginSubmitting} className="invite-submit-btn">
+                      {loginSubmitting ? "Signing in…" : "Sign In & Join Ranch"}
+                    </button>
+                  </form>
+                  <p className="invite-toggle">
+                    Don't have an account?{" "}
+                    <button
+                      className="invite-toggle-btn"
+                      onClick={() => { setMode("signup"); setLoginError(null); }}
+                    >
+                      Create one instead
+                    </button>
+                  </p>
+                </>
+              )}
+
+            </div>
           </div>
-        ) : null}
+        )}
+
       </div>
     </div>
   );
