@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
 import { Save, User, KeyRound, CreditCard, Loader2, UserCog, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useQuery } from "@tanstack/react-query";
 import type { BillingStatus } from "@/hooks/use-billing";
+import "./AccountSettings.css";
 
 interface UserProfile {
   id: number;
@@ -75,23 +73,21 @@ export default function AccountSettings() {
 
   if (!isAuthenticated) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Personal Account Settings</h1>
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
-            <UserCog className="w-10 h-10 text-primary/50" />
+      <div className="acct-unauth">
+        <div className="acct-header">
+          <div className="acct-header-title">Personal Account Settings</div>
+        </div>
+        <div className="acct-unauth-body">
+          <div className="acct-unauth-icon">
+            <UserCog size={32} color="#2D6A4F" />
           </div>
-          <h2 className="font-bold text-xl text-foreground mb-2">Manage your account</h2>
-          <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
+          <div className="acct-unauth-heading">Manage your account</div>
+          <p className="acct-unauth-sub">
             Create a free account to manage your display name, email, password, and subscription.
           </p>
-          <div className="flex gap-3">
-            <button onClick={openSignup} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-              Create Free Account
-            </button>
-            <button onClick={openLogin} className="inline-flex items-center justify-center h-9 px-5 rounded-lg font-medium border border-border text-foreground hover:bg-muted transition-colors">
-              Log In
-            </button>
+          <div className="acct-unauth-buttons">
+            <button onClick={openSignup} className="acct-unauth-signup">Create Free Account</button>
+            <button onClick={openLogin} className="acct-unauth-login">Log In</button>
           </div>
         </div>
       </div>
@@ -212,233 +208,253 @@ export default function AccountSettings() {
   }
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto">
-      <div>
-        <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Personal Account Settings</h1>
+    <div className="acct-page">
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="acct-header">
+        <div className="acct-header-title">Personal Account Settings</div>
       </div>
 
-      {/* Your Account */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <User className="w-5 h-5 text-primary" />
-            Your Account
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="acct-body">
+
+        {/* ── Your Account ──────────────────────────────────────────────── */}
+        <div className="acct-card">
+          <div className="acct-card-header">
+            <User size={15} color="#2D6A4F" style={{ flexShrink: 0 }} />
+            <span className="acct-card-title">Your Account</span>
+          </div>
+
           {isLoadingProfile ? (
-            <p className="text-sm text-muted-foreground animate-pulse font-medium">Loading account info...</p>
+            <div className="acct-section">
+              <div className="acct-loading-text">
+                <Loader2 size={14} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                Loading account info…
+              </div>
+            </div>
           ) : (
             <>
-              <form onSubmit={handleSaveName} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Display Name</Label>
-                  <div className="flex gap-2">
-                    <Input
+              {/* Display Name */}
+              <form onSubmit={handleSaveName}>
+                <div className="acct-section">
+                  <div className="acct-section-label">Display Name</div>
+                  <div className="acct-name-row">
+                    <input
+                      className="acct-input"
                       value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
+                      onChange={e => setDisplayName(e.target.value)}
                       placeholder="Your name"
                       required
-                      className="flex-1"
                     />
-                    <Button
+                    <button
                       type="submit"
-                      variant="secondary"
-                      isLoading={isSavingName}
+                      className="acct-save-btn"
                       disabled={isSavingName || displayName.trim() === (userProfile?.name ?? "")}
-                      className="shrink-0"
                     >
-                      <Save className="w-4 h-4 mr-2" />
+                      {isSavingName
+                        ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
+                        : <Save size={13} />}
                       Save
-                    </Button>
+                    </button>
                   </div>
                 </div>
-                <div className="space-y-1 pt-2 border-t border-border">
-                  <Label>Current Email</Label>
-                  <p className="text-sm font-medium text-foreground">{userProfile?.email ?? "—"}</p>
+
+                {/* Current Email (read-only) */}
+                <div className="acct-section">
+                  <div className="acct-section-label">Current Email</div>
+                  <div className="acct-email-display">{userProfile?.email ?? "—"}</div>
                 </div>
               </form>
 
-              <form onSubmit={handleChangeEmail} className="space-y-3 pt-5 border-t border-border mt-5">
-                <p className="text-sm font-semibold text-foreground">Change Email</p>
-                <div className="space-y-2">
-                  <Label>New Email Address</Label>
-                  <Input
-                    type="email"
-                    value={newEmail}
-                    onChange={e => { setNewEmail(e.target.value); setEmailError(null); }}
-                    placeholder="new@example.com"
-                    required
-                    autoComplete="email"
-                  />
+              {/* Change Email */}
+              <form onSubmit={handleChangeEmail}>
+                <div className="acct-section">
+                  <div className="acct-subsection-label">Change Email</div>
+                  <div className="acct-field" style={{ marginBottom: 10 }}>
+                    <div className="acct-section-label">New Email Address</div>
+                    <input
+                      className="acct-input"
+                      type="email"
+                      value={newEmail}
+                      onChange={e => { setNewEmail(e.target.value); setEmailError(null); }}
+                      placeholder="new@example.com"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="acct-field" style={{ marginBottom: 10 }}>
+                    <div className="acct-section-label">Confirm with Current Password</div>
+                    <input
+                      className="acct-input"
+                      type="password"
+                      value={emailPassword}
+                      onChange={e => { setEmailPassword(e.target.value); setEmailError(null); }}
+                      placeholder="Enter your current password"
+                      required
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  {emailError && <p className="acct-error">{emailError}</p>}
+                  <button
+                    type="submit"
+                    className="acct-submit-btn"
+                    disabled={isChangingEmail || !newEmail.trim() || !emailPassword}
+                  >
+                    {isChangingEmail
+                      ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                      : <Save size={14} />}
+                    Update Email
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Confirm with Current Password</Label>
-                  <Input
-                    type="password"
-                    value={emailPassword}
-                    onChange={e => { setEmailPassword(e.target.value); setEmailError(null); }}
-                    placeholder="Enter your current password"
-                    required
-                    autoComplete="current-password"
-                  />
-                </div>
-                {emailError && (
-                  <p className="text-xs text-destructive font-medium">{emailError}</p>
-                )}
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  isLoading={isChangingEmail}
-                  disabled={isChangingEmail || !newEmail.trim() || !emailPassword}
-                  className="w-full gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Update Email
-                </Button>
               </form>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Change Password */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
-            <KeyRound className="w-5 h-5 text-primary" />
-            Change Password
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Current Password</Label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={e => setCurrentPassword(e.target.value)}
-                placeholder="Enter your current password"
-                required
-                autoComplete="current-password"
-              />
+        {/* ── Change Password ────────────────────────────────────────────── */}
+        <div className="acct-card">
+          <div className="acct-card-header">
+            <KeyRound size={15} color="#2D6A4F" style={{ flexShrink: 0 }} />
+            <span className="acct-card-title">Change Password</span>
+          </div>
+          <form onSubmit={handleChangePassword}>
+            <div className="acct-section">
+              <div className="acct-field" style={{ marginBottom: 10 }}>
+                <div className="acct-section-label">Current Password</div>
+                <input
+                  className="acct-input"
+                  type="password"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="Enter your current password"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+              <div className="acct-field" style={{ marginBottom: 10 }}>
+                <div className="acct-section-label">New Password</div>
+                <input
+                  className="acct-input"
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                />
+              </div>
+              <div className="acct-field" style={{ marginBottom: 10 }}>
+                <div className="acct-section-label">Confirm New Password</div>
+                <input
+                  className="acct-input"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  required
+                  autoComplete="new-password"
+                />
+                {confirmPassword && newPassword !== confirmPassword && (
+                  <p className="acct-mismatch">Passwords do not match.</p>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="acct-submit-btn"
+                disabled={
+                  isChangingPassword ||
+                  !currentPassword ||
+                  newPassword.length < 6 ||
+                  newPassword !== confirmPassword
+                }
+              >
+                {isChangingPassword
+                  ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                  : <KeyRound size={14} />}
+                Update Password
+              </button>
             </div>
-            <div className="space-y-2">
-              <Label>New Password</Label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                placeholder="At least 6 characters"
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
+          </form>
+        </div>
+
+        {/* ── Subscription — owners only ─────────────────────────────────── */}
+        {isOwner && (
+          <div className="acct-card">
+            <div className="acct-card-header">
+              <CreditCard size={15} color="#2D6A4F" style={{ flexShrink: 0 }} />
+              <span className="acct-card-title">Subscription</span>
             </div>
-            <div className="space-y-2">
-              <Label>Confirm New Password</Label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                placeholder="Repeat new password"
-                required
-                autoComplete="new-password"
-              />
-              {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-destructive font-medium">Passwords do not match.</p>
+            <div className="acct-section">
+              {isBillingLoading ? (
+                <div className="acct-loading-text">
+                  <Loader2 size={14} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                  Loading subscription info…
+                </div>
+              ) : !billing ? (
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#8FA393" }}>
+                  Billing information unavailable.
+                </p>
+              ) : (
+                <>
+                  <div className="acct-billing-badges">
+                    {billing.status === "active" && !billing.cancelAtPeriodEnd && (
+                      <span className="acct-status-badge acct-status-badge--active">
+                        <CheckCircle2 size={12} /> Active
+                      </span>
+                    )}
+                    {billing.status === "active" && billing.cancelAtPeriodEnd && (
+                      <span className="acct-status-badge acct-status-badge--cancels">
+                        Cancels {billing.currentPeriodEnd ? new Date(billing.currentPeriodEnd).toLocaleDateString() : "soon"}
+                      </span>
+                    )}
+                    {billing.status === "trialing" && (
+                      <span className="acct-status-badge acct-status-badge--trialing">
+                        {billing.trialDaysLeft != null
+                          ? `Trial — ${billing.trialDaysLeft} ${billing.trialDaysLeft === 1 ? "day" : "days"} left`
+                          : "Trial"}
+                      </span>
+                    )}
+                    {(billing.status === "canceled" || billing.status === "past_due" || billing.status === "none") && (
+                      <span className="acct-status-badge acct-status-badge--muted">
+                        {billing.status === "past_due" ? "Past Due" : billing.status === "canceled" ? "Canceled" : "No Plan"}
+                      </span>
+                    )}
+                  </div>
+
+                  {billing.status === "active" && (
+                    <button
+                      type="button"
+                      className="acct-billing-btn"
+                      disabled={isBillingRedirecting}
+                      onClick={handleManageBilling}
+                    >
+                      {isBillingRedirecting
+                        ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                        : <CreditCard size={14} />}
+                      Manage Subscription
+                    </button>
+                  )}
+
+                  {(billing.status === "trialing" || billing.status === "canceled" || billing.status === "none" || billing.status === "past_due") && (
+                    <button
+                      type="button"
+                      className="acct-billing-btn acct-billing-btn--primary"
+                      disabled={isBillingRedirecting}
+                      onClick={handleSubscribe}
+                    >
+                      {isBillingRedirecting
+                        ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                        : <CreditCard size={14} />}
+                      {billing.status === "past_due" ? "Reactivate Subscription" : "Subscribe Now"}
+                    </button>
+                  )}
+                </>
               )}
             </div>
-            <Button
-              type="submit"
-              variant="secondary"
-              isLoading={isChangingPassword}
-              disabled={
-                isChangingPassword ||
-                !currentPassword ||
-                newPassword.length < 6 ||
-                newPassword !== confirmPassword
-              }
-              className="w-full gap-2"
-            >
-              <KeyRound className="w-4 h-4" />
-              Update Password
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+        )}
 
-      {/* Subscription — owners only */}
-      {isOwner && (
-        <Card className="shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold">
-              <CreditCard className="w-5 h-5 text-primary" />
-              Subscription
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isBillingLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading subscription info...
-              </div>
-            ) : !billing ? (
-              <p className="text-sm text-muted-foreground font-medium">Billing information unavailable.</p>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  {billing.status === "active" && !billing.cancelAtPeriodEnd && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Active
-                    </span>
-                  )}
-                  {billing.status === "active" && billing.cancelAtPeriodEnd && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                      Cancels {billing.currentPeriodEnd ? new Date(billing.currentPeriodEnd).toLocaleDateString() : "soon"}
-                    </span>
-                  )}
-                  {billing.status === "trialing" && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                      {billing.trialDaysLeft != null
-                        ? `Trial — ${billing.trialDaysLeft} ${billing.trialDaysLeft === 1 ? "day" : "days"} left`
-                        : "Trial"}
-                    </span>
-                  )}
-                  {(billing.status === "canceled" || billing.status === "past_due" || billing.status === "none") && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground">
-                      {billing.status === "past_due" ? "Past Due" : billing.status === "canceled" ? "Canceled" : "No Plan"}
-                    </span>
-                  )}
-                </div>
-
-                {billing.status === "active" && (
-                  <Button
-                    variant="secondary"
-                    className="gap-2"
-                    isLoading={isBillingRedirecting}
-                    onClick={handleManageBilling}
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    Manage Subscription
-                  </Button>
-                )}
-
-                {(billing.status === "trialing" || billing.status === "canceled" || billing.status === "none" || billing.status === "past_due") && (
-                  <Button
-                    className="gap-2"
-                    isLoading={isBillingRedirecting}
-                    onClick={handleSubscribe}
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    {billing.status === "past_due" ? "Reactivate Subscription" : "Subscribe Now"}
-                  </Button>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      </div>
     </div>
   );
 }
