@@ -1,22 +1,23 @@
 import { AuthForm } from "@/components/AuthForm";
 import { RanchPadLogo } from "@/components/RanchPadLogo";
+import "./Login.css";
 
 export default function Login() {
   const initialView = new URLSearchParams(window.location.search).get("signup") === "1" ? "signup" : "login";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
-      <div style={{ marginBottom: 28 }}>
-        <RanchPadLogo size="md" />
+    <div className="login-page">
+      <div className="login-logo">
+        <RanchPadLogo size="md" variant="light" />
       </div>
 
-      <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-sm p-7">
+      <div className="login-card">
         <AuthForm initialView={initialView} onDone={() => {}} />
       </div>
 
-      <footer className="mt-8 flex items-center gap-6">
-        <a href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</a>
-        <a href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
+      <footer className="login-footer">
+        <a href="/terms" className="login-footer-link">Terms</a>
+        <a href="/privacy" className="login-footer-link">Privacy</a>
       </footer>
     </div>
   );

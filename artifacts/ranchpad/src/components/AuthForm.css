@@ -1,0 +1,365 @@
+/* ── AuthForm — Cream design system ──────────────────────────────────── */
+
+.af-heading {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A3628;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.af-sub {
+  font-size: 13px;
+  color: #6B7C75;
+  margin: 0 0 22px;
+}
+
+/* ── Field groups ──────────────────────────────────────────────────────── */
+
+.af-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.af-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.af-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.af-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #2D6A4F;
+}
+
+.af-input {
+  width: 100%;
+  background: #F9F6EF;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.af-input:focus {
+  border-color: #2D6A4F;
+}
+
+.af-input--error {
+  border-color: #B03A2E;
+}
+
+.af-input-wrap {
+  position: relative;
+}
+
+.af-input-spinner {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #8A9A93;
+}
+
+/* ── Divider ───────────────────────────────────────────────────────────── */
+
+.af-divider {
+  border: none;
+  border-top: 1px solid #D8E8DF;
+  margin: 6px 0 2px;
+}
+
+.af-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #2D6A4F;
+  padding: 6px 0 2px;
+}
+
+/* ── Geocode suggestion dropdown ───────────────────────────────────────── */
+
+.af-suggestions {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.af-suggestion-item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #333;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #EEF5F0;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.1s;
+}
+
+.af-suggestion-item:last-child { border-bottom: none; }
+.af-suggestion-item:hover { background: #F5F1EA; }
+
+/* ── Geocode confirmed box ─────────────────────────────────────────────── */
+
+.af-geocode-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #EEF5F0;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 4px;
+}
+
+.af-geocode-label {
+  font-size: 11px;
+  color: #6B7C75;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.af-geocode-coords {
+  font-size: 11px;
+  font-family: monospace;
+  color: #1A3628;
+}
+
+.af-geocode-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8A9A93;
+  padding: 0;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+}
+
+.af-geocode-clear:hover { color: #B03A2E; }
+
+/* ── Error text ────────────────────────────────────────────────────────── */
+
+.af-error-text {
+  font-size: 11px;
+  color: #B03A2E;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+
+.af-btn-primary {
+  width: 100%;
+  background: #1A3628;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+  margin-top: 8px;
+}
+
+.af-btn-primary:hover { opacity: 0.9; }
+.af-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.af-btn-ghost {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #6B7C75;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.af-btn-ghost:hover { color: #1A3628; }
+
+/* ── Footer link row ───────────────────────────────────────────────────── */
+
+.af-footer {
+  text-align: center;
+  font-size: 13px;
+  color: #6B7C75;
+  margin-top: 18px;
+}
+
+.af-footer-link {
+  font-weight: 700;
+  color: #2D6A4F;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 0;
+}
+
+.af-footer-link:hover { color: #1A3628; }
+
+/* ── Pasture list ──────────────────────────────────────────────────────── */
+
+.af-pasture-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.af-pasture-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #1A3628;
+  font-weight: 500;
+  border-bottom: 1px solid #EEF5F0;
+  background: #fff;
+}
+
+.af-pasture-item:last-child { border-bottom: none; }
+
+.af-pasture-remove {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8A9A93;
+  padding: 0;
+  display: flex;
+}
+
+.af-pasture-remove:hover { color: #B03A2E; }
+
+.af-pasture-add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.af-pasture-add-btn {
+  flex-shrink: 0;
+  background: #1A3628;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s;
+}
+
+.af-pasture-add-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.af-pasture-add-btn:hover:not(:disabled) { opacity: 0.9; }
+
+.af-skip-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8A9A93;
+  text-align: center;
+  padding: 6px;
+  transition: color 0.15s;
+}
+
+.af-skip-btn:hover { color: #1A3628; }
+.af-skip-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Forgot-sent success state ────────────────────────────────────────── */
+
+.af-success-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #EEF5F0;
+  border: 1.5px solid #C8DAD2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.af-success-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.af-success-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A3628;
+}
+
+.af-success-desc {
+  font-size: 13px;
+  color: #6B7C75;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+/* ── Spinner animation ────────────────────────────────────────────────── */
+
+@keyframes af-spin { to { transform: translateY(-50%) rotate(360deg); } }
+.af-spinner { animation: af-spin 0.8s linear infinite; }

@@ -1,11 +1,9 @@
 import React, { useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, XCircle, Tractor, MapPin, FolderOpen, Plus, X, Loader2 } from "lucide-react";
-import { Input, Label } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useLogin, useSignup } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import "./AuthForm.css";
 
 type AuthView = "login" | "signup" | "forgot" | "pastures";
 
@@ -179,29 +177,32 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
   if (view === "login") {
     return (
       <>
-        <h1 className="text-lg font-semibold text-foreground mb-1">Welcome back</h1>
-        <p className="text-sm text-muted-foreground mb-6">Sign in to your RanchPad account.</p>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="af-login-email">Email</Label>
-            <Input id="af-login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
+        <h1 className="af-heading">Welcome back</h1>
+        <p className="af-sub">Sign in to your RanchPad account.</p>
+        <form onSubmit={handleLogin} className="af-fields">
+          <div className="af-field">
+            <label className="af-label" htmlFor="af-login-email">Email</label>
+            <input id="af-login-email" className="af-input" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
           </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="af-login-password">Password</Label>
-              <button type="button" className="text-xs text-muted-foreground hover:text-primary transition-colors" onClick={() => setView("forgot")}>
+          <div className="af-field">
+            <div className="af-field-row">
+              <label className="af-label" htmlFor="af-login-password">Password</label>
+              <button type="button" className="af-btn-ghost" onClick={() => setView("forgot")}>
                 Forgot password?
               </button>
             </div>
-            <Input id="af-login-password" type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
+            <input id="af-login-password" className="af-input" type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
           </div>
-          <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
-            Sign In {!loginMutation.isPending && <ArrowRight className="w-4 h-4 ml-1.5" />}
-          </Button>
+          <button type="submit" className="af-btn-primary" disabled={loginMutation.isPending}>
+            {loginMutation.isPending
+              ? <Loader2 size={16} className="af-spinner" />
+              : <><span>Sign In</span><ArrowRight size={15} /></>
+            }
+          </button>
         </form>
-        <p className="text-center text-sm text-muted-foreground mt-5">
+        <p className="af-footer">
           Don't have an account?{" "}
-          <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setView("signup")}>
+          <button type="button" className="af-footer-link" onClick={() => setView("signup")}>
             Sign up free
           </button>
         </p>
@@ -212,75 +213,77 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
   if (view === "signup") {
     return (
       <>
-        <h1 className="text-lg font-semibold text-foreground mb-1">Create your ranch</h1>
-        <p className="text-sm text-muted-foreground mb-6">Free 14-day trial. No credit card required.</p>
-        <form onSubmit={handleAdvanceToPastures} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="af-name">Full Name</Label>
-            <Input id="af-name" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
+        <h1 className="af-heading">Create your ranch</h1>
+        <p className="af-sub">Free 14-day trial. No credit card required.</p>
+        <form onSubmit={handleAdvanceToPastures} className="af-fields">
+          <div className="af-field">
+            <label className="af-label" htmlFor="af-name">Full Name</label>
+            <input id="af-name" className="af-input" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="af-email">Email</Label>
-            <Input id="af-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
+          <div className="af-field">
+            <label className="af-label" htmlFor="af-email">Email</label>
+            <input id="af-email" className="af-input" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="af-password">Password</Label>
-            <Input id="af-password" type="password" value={signupPassword} onChange={e => { setSignupPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }} required />
+          <div className="af-field">
+            <label className="af-label" htmlFor="af-password">Password</label>
+            <input id="af-password" className="af-input" type="password" value={signupPassword} onChange={e => { setSignupPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }} required />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="af-confirm">Confirm Password</Label>
-            <Input id="af-confirm" type="password" value={confirmPassword} onChange={e => { setConfirmPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }} required className={cn(passwordMismatch && "border-destructive focus-visible:ring-destructive")} />
-            {passwordMismatch && <p className="text-xs text-destructive font-medium">Passwords don't match.</p>}
+          <div className="af-field">
+            <label className="af-label" htmlFor="af-confirm">Confirm Password</label>
+            <input id="af-confirm" className={`af-input${passwordMismatch ? " af-input--error" : ""}`} type="password" value={confirmPassword} onChange={e => { setConfirmPassword(e.target.value); if (passwordMismatch) setPasswordMismatch(false); }} required />
+            {passwordMismatch && <p className="af-error-text">Passwords don't match.</p>}
           </div>
-          <div className="space-y-1.5 pt-2 border-t border-border">
-            <div className="flex items-center gap-1.5 pt-2 mb-1">
-              <Tractor className="w-4 h-4 text-primary" />
-              <Label className="text-primary font-semibold text-xs uppercase tracking-wide">Ranch Location</Label>
+
+          <hr className="af-divider" />
+
+          <div className="af-field">
+            <div className="af-section-label">
+              <Tractor size={13} />
+              Ranch Location
             </div>
-            <div className="relative">
-              <Input
+            <div className="af-input-wrap">
+              <input
+                className="af-input"
                 placeholder="Start typing your address…"
                 value={address}
                 onChange={e => handleAddressChange(e.target.value)}
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 autoComplete="off"
-                className="pr-8"
               />
               {addressLoading && (
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <div className="af-input-spinner">
+                  <Loader2 size={15} className="af-spinner" />
                 </div>
               )}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-50 top-full mt-1 left-0 right-0 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                <div className="af-suggestions">
                   {suggestions.map((s, i) => (
-                    <button key={i} type="button" className="w-full text-left flex items-start gap-2.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors border-b border-border/40 last:border-b-0" onMouseDown={() => selectSuggestion(s)}>
-                      <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                      <span className="text-foreground/85 leading-snug line-clamp-2">{s.display_name}</span>
+                    <button key={i} type="button" className="af-suggestion-item" onMouseDown={() => selectSuggestion(s)}>
+                      <MapPin size={13} style={{ flexShrink: 0, marginTop: 1, color: "#8A9A93" }} />
+                      <span style={{ lineHeight: 1.4 }}>{s.display_name}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
             {geocodedLat !== null && geocodedLon !== null && (
-              <div className="rounded-lg border bg-green-50/60 border-green-200 p-2.5">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {geocodeLabel && <p className="text-xs text-muted-foreground truncate mb-0.5">{geocodeLabel}</p>}
-                    <p className="text-xs font-mono text-foreground">{geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}</p>
-                  </div>
-                  <button type="button" onClick={clearLocation} className="p-0.5 rounded hover:bg-muted text-muted-foreground shrink-0">
-                    <XCircle className="w-3.5 h-3.5" />
-                  </button>
+              <div className="af-geocode-confirm">
+                <CheckCircle2 size={14} style={{ color: "#2D6A4F", flexShrink: 0, marginTop: 1 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {geocodeLabel && <p className="af-geocode-label">{geocodeLabel}</p>}
+                  <p className="af-geocode-coords">{geocodedLat.toFixed(6)}, {geocodedLon.toFixed(6)}</p>
                 </div>
+                <button type="button" onClick={clearLocation} className="af-geocode-clear">
+                  <XCircle size={14} />
+                </button>
               </div>
             )}
           </div>
-          <Button type="submit" className="w-full">
-            Next: Set Up Pastures <ArrowRight className="w-4 h-4 ml-1.5" />
-          </Button>
+
+          <button type="submit" className="af-btn-primary">
+            <span>Next: Set Up Pastures</span><ArrowRight size={15} />
+          </button>
         </form>
       </>
     );
@@ -289,32 +292,34 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
   if (view === "pastures") {
     return (
       <>
-        <h1 className="text-lg font-semibold text-foreground mb-1">Set up your pastures</h1>
-        <p className="text-sm text-muted-foreground mb-5">
+        <h1 className="af-heading">Set up your pastures</h1>
+        <p className="af-sub">
           Add the pastures, pens, or areas on your ranch. You can always manage these later in Settings.
         </p>
 
         {setupLocs.length > 0 && (
-          <ul className="rounded-xl border border-border divide-y divide-border overflow-hidden mb-3">
+          <ul className="af-pasture-list">
             {setupLocs.map((loc, idx) => (
-              <li key={idx} className="flex items-center gap-2.5 px-3 py-2.5">
-                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="flex-1 text-sm font-medium text-foreground">{loc}</span>
+              <li key={idx} className="af-pasture-item">
+                <MapPin size={13} style={{ color: "#2D6A4F", flexShrink: 0 }} />
+                <span style={{ flex: 1 }}>{loc}</span>
                 <button
                   type="button"
                   onClick={() => setSetupLocs(prev => prev.filter((_, i) => i !== idx))}
-                  className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+                  className="af-pasture-remove"
                   aria-label="Remove"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X size={14} />
                 </button>
               </li>
             ))}
           </ul>
         )}
 
-        <div className="flex gap-2 mb-5">
-          <Input
+        <div className="af-pasture-add-row">
+          <input
+            className="af-input"
+            style={{ flex: 1 }}
             placeholder="e.g. South Pasture, Barn, Lot A"
             value={setupNewLocName}
             onChange={e => setSetupNewLocName(e.target.value)}
@@ -325,32 +330,33 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
                 if (trimmed) { setSetupLocs(prev => [...prev, trimmed]); setSetupNewLocName(""); }
               }
             }}
-            className="flex-1"
             autoFocus
           />
-          <Button
+          <button
             type="button"
+            className="af-pasture-add-btn"
             onClick={() => {
               const trimmed = setupNewLocName.trim();
               if (trimmed) { setSetupLocs(prev => [...prev, trimmed]); setSetupNewLocName(""); }
             }}
             disabled={!setupNewLocName.trim()}
-            className="shrink-0 gap-1"
           >
-            <Plus className="w-4 h-4" />
+            <Plus size={14} />
             Add
-          </Button>
+          </button>
         </div>
 
-        <Button className="w-full mb-3" onClick={() => handleFinishSetup(setupLocs)} isLoading={signupMutation.isPending}>
-          <FolderOpen className="w-4 h-4 mr-1.5" />
-          Enter RanchPad
-        </Button>
+        <button className="af-btn-primary" onClick={() => handleFinishSetup(setupLocs)} disabled={signupMutation.isPending}>
+          {signupMutation.isPending
+            ? <Loader2 size={16} className="af-spinner" />
+            : <><FolderOpen size={15} /><span>Enter RanchPad</span></>
+          }
+        </button>
         <button
           type="button"
           onClick={() => handleFinishSetup([])}
           disabled={signupMutation.isPending}
-          className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors text-center block disabled:opacity-50"
+          className="af-skip-btn"
         >
           Skip for now
         </button>
@@ -361,39 +367,40 @@ export function AuthForm({ initialView = "login", onDone }: AuthFormProps) {
   // view === "forgot"
   if (forgotSent) {
     return (
-      <div className="flex flex-col items-center text-center gap-4 py-2">
-        <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center">
-          <CheckCircle2 className="w-5 h-5 text-green-600" />
+      <div className="af-success-block">
+        <div className="af-success-icon">
+          <CheckCircle2 size={20} style={{ color: "#2D6A4F" }} />
         </div>
-        <div>
-          <p className="font-semibold text-foreground mb-1">Check your email</p>
-          <p className="text-sm text-muted-foreground">
-            If an account exists for <span className="font-medium text-foreground">{forgotEmail}</span>, we sent a reset link. It expires in 1 hour.
-          </p>
-        </div>
-        <Button className="w-full mt-2" onClick={() => { setView("login"); setForgotSent(false); setForgotEmail(""); }}>
+        <p className="af-success-title">Check your email</p>
+        <p className="af-success-desc">
+          If an account exists for <strong style={{ color: "#1A3628" }}>{forgotEmail}</strong>, we sent a reset link. It expires in 1 hour.
+        </p>
+        <button className="af-btn-primary" onClick={() => { setView("login"); setForgotSent(false); setForgotEmail(""); }}>
           Back to Log In
-        </Button>
+        </button>
       </div>
     );
   }
 
   return (
     <>
-      <h1 className="text-lg font-semibold text-foreground mb-1">Reset password</h1>
-      <p className="text-sm text-muted-foreground mb-6">Enter your email and we'll send a reset link.</p>
-      <form onSubmit={handleForgotPassword} className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="af-forgot-email">Email</Label>
-          <Input id="af-forgot-email" type="email" placeholder="you@example.com" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required />
+      <h1 className="af-heading">Reset password</h1>
+      <p className="af-sub">Enter your email and we'll send a reset link.</p>
+      <form onSubmit={handleForgotPassword} className="af-fields">
+        <div className="af-field">
+          <label className="af-label" htmlFor="af-forgot-email">Email</label>
+          <input id="af-forgot-email" className="af-input" type="email" placeholder="you@example.com" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required />
         </div>
-        <Button type="submit" className="w-full" isLoading={forgotLoading}>
-          Send Reset Link {!forgotLoading && <ArrowRight className="w-4 h-4 ml-1.5" />}
-        </Button>
+        <button type="submit" className="af-btn-primary" disabled={forgotLoading}>
+          {forgotLoading
+            ? <Loader2 size={16} className="af-spinner" />
+            : <><span>Send Reset Link</span><ArrowRight size={15} /></>
+          }
+        </button>
       </form>
-      <p className="text-center text-sm text-muted-foreground mt-5">
+      <p className="af-footer">
         Remember it?{" "}
-        <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setView("login")}>Log in</button>
+        <button type="button" className="af-footer-link" onClick={() => setView("login")}>Log in</button>
       </p>
     </>
   );
