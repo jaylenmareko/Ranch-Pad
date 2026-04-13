@@ -1,6 +1,8 @@
 import { Link } from "wouter";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { RanchPadLogo } from "@/components/RanchPadLogo";
+import phoneDashboard from "../assets/phone-dashboard.png";
+import phoneAnimal from "../assets/phone-animal.png";
 import "./Landing.css";
 
 export default function Landing() {
@@ -40,157 +42,8 @@ export default function Landing() {
         {/* Phone mockups */}
         <div className="lp-phone-wrap">
 
-          {/* Phone 1 — Dashboard */}
-          <div className="lp-phone-frame elevated">
-            <div className="lp-iphone-left-btn lp-iphone-action" />
-            <div className="lp-iphone-left-btn lp-iphone-vol-top" />
-            <div className="lp-iphone-left-btn lp-iphone-vol-bot" />
-            <div className="lp-dynamic-island" />
-            <div className="lp-iphone-statusbar">
-              <span className="lp-status-time">9:41</span>
-              <span className="lp-status-icons">●●● WiFi 🔋</span>
-            </div>
-            <div className="lp-phone-screen">
-              <div className="lp-mini-dash">
-                <div className="lp-mini-top-bar">
-                  <div className="lp-mini-ranch-name">Lathom Ranch 🌤️</div>
-                  <div className="lp-mini-bell">🔔</div>
-                </div>
-                <div className="lp-mini-weather">
-                  <div>
-                    <div style={{ fontSize: 9, opacity: 0.7 }}>Lathom, KS</div>
-                    <div className="lp-mini-weather-temp">63°F</div>
-                    <div style={{ fontSize: 8, opacity: 0.55 }}>Partly cloudy · Humidity 79%</div>
-                  </div>
-                  <div style={{ fontSize: 22 }}>🌤️</div>
-                </div>
-                <div className="lp-mini-alert-card">
-                  <div className="lp-mini-alert-top">
-                    <div className="lp-mini-alert-tag">Tag #101 · Calf</div>
-                    <div className="lp-mini-severity">HIGH</div>
-                  </div>
-                  <div className="lp-mini-alert-text">
-                    High humidity + prior scours history — pneumonia risk elevated
-                  </div>
-                </div>
-                <div className="lp-mini-alert-card warn">
-                  <div className="lp-mini-alert-top">
-                    <div className="lp-mini-alert-tag">Tag #103 · Cow</div>
-                    <div className="lp-mini-severity">MED</div>
-                  </div>
-                  <div className="lp-mini-alert-text">
-                    Recent pinkeye treatment — dusty winds today increase risk
-                  </div>
-                </div>
-                <div className="lp-mini-stat-row">
-                  <div className="lp-mini-stat">
-                    <div className="lp-mini-stat-num">7</div>
-                    <div className="lp-mini-stat-label">Animals</div>
-                  </div>
-                  <div className="lp-mini-stat">
-                    <div className="lp-mini-stat-num" style={{ color: "#c0392b" }}>2</div>
-                    <div className="lp-mini-stat-label">Alerts</div>
-                  </div>
-                  <div className="lp-mini-stat">
-                    <div className="lp-mini-stat-num">5</div>
-                    <div className="lp-mini-stat-label">Healthy</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="lp-home-indicator" />
-          </div>
-
-          {/* Phone 2 — Alerts list */}
-          <div className="lp-phone-frame">
-            <div className="lp-iphone-left-btn lp-iphone-action" />
-            <div className="lp-iphone-left-btn lp-iphone-vol-top" />
-            <div className="lp-iphone-left-btn lp-iphone-vol-bot" />
-            <div className="lp-dynamic-island" />
-            <div className="lp-iphone-statusbar">
-              <span className="lp-status-time">9:41</span>
-              <span className="lp-status-icons">●●● WiFi 🔋</span>
-            </div>
-            <div className="lp-phone-screen">
-              <div style={{ background: "#1A3628", padding: 12 }}>
-                <div style={{
-                  fontFamily: "'Fraunces', serif",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#fff",
-                  marginBottom: 10,
-                }}>
-                  Herd Alerts{" "}
-                  <span style={{
-                    background: "#C97D20", color: "#fff",
-                    fontSize: 8, padding: "2px 6px",
-                    borderRadius: 10, marginLeft: 4,
-                  }}>3</span>
-                </div>
-
-                <div style={{
-                  background: "rgba(255,255,255,0.08)", borderRadius: 7,
-                  padding: "7px 9px", marginBottom: 7,
-                  fontSize: 8, color: "rgba(255,255,255,0.55)",
-                  display: "flex", alignItems: "center", gap: 6,
-                }}>
-                  <span style={{
-                    width: 6, height: 6,
-                    background: "#F0A845", borderRadius: "50%",
-                    flexShrink: 0, display: "inline-block",
-                  }} />
-                  AI analyzing 7 animals against live weather data
-                </div>
-
-                <div style={{
-                  background: "rgba(192,57,43,0.2)",
-                  border: "1px solid rgba(192,57,43,0.3)",
-                  borderRadius: 7, padding: "8px 9px", marginBottom: 6,
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: "#ff7e72" }}>
-                      #101 · Angus Calf
-                    </span>
-                    <span style={{
-                      fontSize: 8, background: "#c0392b",
-                      color: "#fff", padding: "1px 5px", borderRadius: 3,
-                    }}>HIGH</span>
-                  </div>
-                  <div style={{
-                    fontFamily: "'Fraunces', serif",
-                    fontSize: 10, color: "#fff", marginBottom: 3,
-                  }}>Pneumonia Risk</div>
-                  <div style={{ fontSize: 8, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>
-                    79% humidity + prior scours history flagged
-                  </div>
-                </div>
-
-                <div style={{
-                  background: "rgba(212,172,13,0.15)",
-                  border: "1px solid rgba(212,172,13,0.25)",
-                  borderRadius: 7, padding: "8px 9px",
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: "#D4AC0D" }}>
-                      #103 · Angus Cow
-                    </span>
-                    <span style={{
-                      fontSize: 8, background: "#D4AC0D",
-                      color: "#0F1C15", padding: "1px 5px", borderRadius: 3,
-                    }}>MED</span>
-                  </div>
-                  <div style={{
-                    fontFamily: "'Fraunces', serif",
-                    fontSize: 10, color: "#fff", marginBottom: 3,
-                  }}>Pinkeye Watch</div>
-                  <div style={{ fontSize: 8, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>
-                    High winds today + recent eye treatment on file
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="lp-home-indicator" />
-          </div>
+          <img src={phoneDashboard} alt="RanchPad dashboard showing disease risk alerts" className="lp-phone-screenshot elevated" />
+          <img src={phoneAnimal} alt="RanchPad animal profile for Bessie" className="lp-phone-screenshot" />
         </div>
 
       </section>

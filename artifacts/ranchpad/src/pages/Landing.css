@@ -224,206 +224,25 @@
   color: #fff;
 }
 
-/* ── Phone mockups (iPhone 17 frame) ───────────────────────────────────────── */
+/* ── Phone screenshots ─────────────────────────────────────────────────────── */
 .lp-phone-wrap {
   position: relative;
   display: flex;
   justify-content: center;
-  gap: 28px;
-  flex-wrap: wrap;
+  gap: 20px;
   align-items: flex-end;
 }
 
-.lp-phone-frame {
-  width: 200px;
-  aspect-ratio: 71.5 / 149.6;
-  background: #1C1C1E;
-  border-radius: 52px;
-  padding: 11px;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.55), inset 0 0 0 1.5px rgba(255,255,255,0.09);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: visible;
+.lp-phone-screenshot {
+  width: 220px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 32px 64px rgba(0,0,0,0.5));
 }
 
-/* Power button — right edge */
-.lp-phone-frame::after {
-  content: '';
-  position: absolute;
-  right: -3px;
-  top: 42%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 33px;
-  background: #2C2C2E;
-  border-radius: 2px;
+.lp-phone-screenshot.elevated {
+  transform: translateY(-28px);
 }
-
-.lp-phone-frame.elevated { transform: translateY(-24px); }
-
-/* Left edge buttons (action + 2 volume) */
-.lp-iphone-left-btn {
-  position: absolute;
-  left: -3px;
-  width: 3px;
-  background: #2C2C2E;
-  border-radius: 2px;
-}
-
-.lp-iphone-action { height: 9px;  top: 26%; }
-.lp-iphone-vol-top { height: 16px; top: 32%; }
-.lp-iphone-vol-bot { height: 16px; top: calc(32% + 20px); }
-
-/* Dynamic Island */
-.lp-dynamic-island {
-  width: 60px;
-  height: 17px;
-  background: #000;
-  border-radius: 9px;
-  margin: 0 auto 4px;
-  flex-shrink: 0;
-}
-
-/* Status bar */
-.lp-iphone-statusbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 6px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.lp-iphone-statusbar .lp-status-time {
-  font-size: 7.5px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  font-family: 'DM Sans', sans-serif;
-}
-
-.lp-iphone-statusbar .lp-status-icons {
-  font-size: 7px;
-  color: rgba(255,255,255,0.8);
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.lp-phone-screen {
-  border-radius: 0 0 40px 40px;
-  overflow: hidden;
-  background: var(--lp-cream);
-  flex: 1;
-}
-
-/* Home indicator */
-.lp-home-indicator {
-  width: 67px;
-  height: 3px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 3px;
-  margin: 6px auto 0;
-  flex-shrink: 0;
-}
-
-.lp-mini-dash {
-  background: var(--lp-cream);
-  padding: 12px;
-}
-
-.lp-mini-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.lp-mini-ranch-name {
-  font-family: 'Fraunces', serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--lp-green-deep);
-}
-
-.lp-mini-bell {
-  width: 22px; height: 22px;
-  background: var(--lp-red-bg);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px;
-}
-
-.lp-mini-weather {
-  background: var(--lp-green-deep);
-  border-radius: 8px;
-  padding: 8px 10px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.lp-mini-weather-temp {
-  font-family: 'Fraunces', serif;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.lp-mini-alert-card {
-  background: var(--lp-red-bg);
-  border: 1px solid rgba(192,57,43,0.2);
-  border-radius: 6px;
-  padding: 7px 9px;
-  margin-bottom: 6px;
-}
-
-.lp-mini-alert-card.warn {
-  background: var(--lp-yellow-bg);
-  border-color: rgba(212,172,13,0.25);
-}
-
-.lp-mini-alert-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 3px;
-}
-
-.lp-mini-alert-tag { font-size: 9px; font-weight: 600; color: var(--lp-red); }
-.lp-mini-alert-card.warn .lp-mini-alert-tag { color: var(--lp-yellow); }
-
-.lp-mini-severity {
-  font-size: 7px; font-weight: 600;
-  background: var(--lp-red); color: #fff;
-  padding: 1px 5px; border-radius: 3px;
-}
-
-.lp-mini-alert-card.warn .lp-mini-severity {
-  background: var(--lp-yellow);
-  color: var(--lp-dark);
-}
-
-.lp-mini-alert-text { font-size: 7.5px; color: var(--lp-text-muted); line-height: 1.4; }
-
-.lp-mini-stat-row { display: flex; gap: 5px; margin-top: 8px; }
-
-.lp-mini-stat {
-  flex: 1;
-  background: #fff;
-  border-radius: 6px;
-  padding: 6px;
-  text-align: center;
-}
-
-.lp-mini-stat-num {
-  font-family: 'Fraunces', serif;
-  font-size: 14px; font-weight: 700;
-  color: var(--lp-green-deep);
-}
-
-.lp-mini-stat-label { font-size: 7px; color: var(--lp-text-faint); margin-top: 1px; }
 
 
 /* ── Features section ──────────────────────────────────────────────────────── */
@@ -749,5 +568,5 @@
   .lp-steps-row { flex-direction: column; align-items: center; }
   .lp-step + .lp-step::before { display: none; }
   .lp-pricing-card { padding: 48px 24px; }
-  .lp-phone-wrap .lp-phone-frame:nth-child(2) { display: none; }
+  .lp-phone-wrap .lp-phone-screenshot:nth-child(2) { display: none; }
 }
