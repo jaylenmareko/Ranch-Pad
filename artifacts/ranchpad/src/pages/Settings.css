@@ -540,6 +540,105 @@
   line-height: 1.5;
 }
 
+/* ── Ranch switcher rows ──────────────────────────────────────────────── */
+
+.settings-ranch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.settings-ranch-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #EEF5F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.settings-ranch-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-ranch-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-ranch-sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.settings-ranch-role {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+.settings-ranch-role--owner     { background: #EEF5F0; color: #2D6A4F; }
+.settings-ranch-role--ranch_hand { background: #FEF3E2; color: #C97D20; }
+.settings-ranch-role--viewer    { background: #F0F0F0; color: #666; }
+
+.settings-ranch-owner-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8FA393;
+}
+
+.settings-ranch-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2D6A4F;
+  background: #EEF5F0;
+  border: 1px solid #C8DAD2;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.settings-ranch-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1A3628;
+  background: #F5F1EA;
+  border: 1.5px solid #C8DAD2;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.settings-ranch-switch-btn:hover:not(:disabled) { background: #EEF5F0; border-color: #2D6A4F; }
+.settings-ranch-switch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Nav link row ─────────────────────────────────────────────────────── */
 
 .settings-nav-link {

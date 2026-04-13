@@ -1,20 +1,30 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Save, XCircle, Cog, Loader2, Plus } from "lucide-react";
+import { MapPin, Save, XCircle, Cog, Loader2, Plus, CheckCircle2 } from "lucide-react";
 import "./Settings.css";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
+import { useRanch } from "@/contexts/ranch-context";
 
 interface PastureLocation { id: number; name: string; }
 interface HerdAnimal { id: number; name: string; tagNumber?: string | null; species: string; locationId?: number | null; }
+
+function roleLabel(r: string) {
+  if (r === "owner") return "Owner";
+  if (r === "ranch_hand") return "Ranch Hand";
+  if (r === "viewer") return "Viewer";
+  return r;
+}
 
 export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { isAuthenticated, role } = useAuth();
   const [, setLocation] = useLocation();
+  const { ranches, activeRanchId, setActiveRanch, isLoadingRanches } = useRanch();
+  const [switchingId, setSwitchingId] = useState<number | null>(null);
   const { data: ranch, isLoading } = useGetRanch({ query: { enabled: isAuthenticated } });
 
   const [name, setName] = useState("");
@@ -158,12 +168,14 @@ export default function Settings() {
     }
   }, [ranch]);
 
-  // Redirect non-owners to account settings
-  useEffect(() => {
-    if (isAuthenticated && role && role !== "owner") {
-      setLocation("/account");
-    }
-  }, [isAuthenticated, role, setLocation]);
+  function handleSwitchRanch(id: number) {
+    setSwitchingId(id);
+    setActiveRanch(id);
+    setTimeout(() => {
+      setSwitchingId(null);
+      setLocation("/");
+    }, 400);
+  }
 
   const updateMutation = useUpdateRanch({
     mutation: {
@@ -253,203 +265,257 @@ export default function Settings() {
 
       <div className="settings-body">
 
-        {/* ── Ranch Info + Location ── */}
-        <form onSubmit={handleSubmit}>
-          <div className="settings-card">
+        {/* ── Owner-only sections ── */}
+        {role === "owner" && (
+          <>
+            {/* Ranch Info + Location */}
+            <form onSubmit={handleSubmit}>
+              <div className="settings-card">
 
-            {/* Ranch Name */}
-            <div className="settings-card-section">
-              <div className="settings-section-label">Ranch Name</div>
-              <input
-                className="settings-input"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Double Bar Ranch"
-                required
-              />
-            </div>
-
-            {/* Location */}
-            <div className="settings-card-section">
-              <div className="settings-section-label">Location</div>
-
-              {lat !== null && lon !== null && (
-                <div className="settings-location-confirmed">
-                  <MapPin size={15} color="#2D6A4F" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <p className="settings-location-text">
-                    {geocodeLabel ?? `${lat.toFixed(6)}, ${lon.toFixed(6)}`}
-                  </p>
-                  <button
-                    type="button"
-                    className="settings-location-clear"
-                    onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
-                  >
-                    <XCircle size={16} />
-                  </button>
+                {/* Ranch Name */}
+                <div className="settings-card-section">
+                  <div className="settings-section-label">Ranch Name</div>
+                  <input
+                    className="settings-input"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="e.g. Double Bar Ranch"
+                    required
+                  />
                 </div>
-              )}
 
-              <div className="settings-address-wrap">
-                <input
-                  className="settings-input"
-                  value={address}
-                  onChange={e => handleAddressChange(e.target.value)}
-                  placeholder={lat !== null ? "Enter new address…" : "Search for your ranch address…"}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  autoComplete="off"
-                />
-                {showSuggestions && suggestions.length > 0 && (
-                  <ul className="settings-suggestions">
-                    {suggestions.map((s, i) => (
-                      <li key={i} className="settings-suggestion-item" onMouseDown={() => selectSuggestion(s)}>
-                        {s.display_name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                {/* Location */}
+                <div className="settings-card-section">
+                  <div className="settings-section-label">Location</div>
 
-              {lat === null && lon === null && (
-                <p className="settings-location-hint">Used for weather data and AI-powered herd alerts.</p>
-              )}
-            </div>
-
-            {/* Save */}
-            <div className="settings-card-section">
-              <button
-                type="submit"
-                className="settings-save-btn"
-                disabled={updateMutation.isPending}
-              >
-                {updateMutation.isPending
-                  ? <><Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />Saving…</>
-                  : <><Save size={15} />Save Changes</>
-                }
-              </button>
-            </div>
-          </div>
-        </form>
-
-        {/* ── Pastures & Locations ── */}
-        <div className="settings-card">
-          <div className="settings-pastures-header">
-            <div className="settings-pastures-title">Pastures &amp; Locations</div>
-            <span className="settings-pastures-sub">Tag animals to specific areas. They'll be grouped by location in the Herd page.</span>
-          </div>
-
-          {locations.length > 0 && (
-            <ul className="settings-loc-list">
-              {locations.map(loc => (
-                <li key={loc.id} className="settings-loc-item">
-
-                  {editingLocId === loc.id ? (
-                    <div className="settings-loc-edit-row">
-                      <input
-                        className="settings-input-sm"
-                        value={editLocName}
-                        onChange={e => setEditLocName(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
-                        autoFocus
-                      />
+                  {lat !== null && lon !== null && (
+                    <div className="settings-location-confirmed">
+                      <MapPin size={15} color="#2D6A4F" style={{ flexShrink: 0, marginTop: 1 }} />
+                      <p className="settings-location-text">
+                        {geocodeLabel ?? `${lat.toFixed(6)}, ${lon.toFixed(6)}`}
+                      </p>
                       <button
                         type="button"
-                        className="settings-loc-edit-save"
-                        onClick={() => saveLocEdit(loc.id)}
-                        disabled={savingLoc}
+                        className="settings-location-clear"
+                        onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
                       >
-                        {savingLoc ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : null}
-                        Save
+                        <XCircle size={16} />
                       </button>
-                      <button type="button" className="settings-loc-edit-cancel" onClick={() => setEditingLocId(null)}>Cancel</button>
-                    </div>
-                  ) : assigningLocId === loc.id ? (
-                    <div className="settings-assign-panel">
-                      <div className="settings-assign-header">
-                        <span className="settings-assign-name">{loc.name}</span>
-                        <span className="settings-assign-count">{selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected</span>
-                      </div>
-
-                      {allAnimals === null ? (
-                        <div className="settings-assign-loading">
-                          <Loader2 size={14} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
-                          Loading animals…
-                        </div>
-                      ) : allAnimals.length === 0 ? (
-                        <p className="settings-assign-empty">No animals in your herd yet.</p>
-                      ) : (
-                        <div className="settings-assign-list">
-                          {allAnimals.map(a => (
-                            <label key={a.id} className="settings-assign-item">
-                              <input
-                                type="checkbox"
-                                checked={selectedAnimalIds.has(a.id)}
-                                onChange={e => {
-                                  setSelectedAnimalIds(prev => {
-                                    const next = new Set(prev);
-                                    if (e.target.checked) next.add(a.id); else next.delete(a.id);
-                                    return next;
-                                  });
-                                }}
-                                style={{ width: 16, height: 16, flexShrink: 0, accentColor: "#1A3628" }}
-                              />
-                              <span className="settings-assign-animal-name">{a.name}</span>
-                              {a.tagNumber && <span className="settings-assign-tag">#{a.tagNumber}</span>}
-                              <span className="settings-assign-species">{a.species}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="settings-assign-actions">
-                        <button
-                          type="button"
-                          className="settings-assign-save"
-                          onClick={saveAssignments}
-                          disabled={savingAssign || allAnimals === null}
-                        >
-                          {savingAssign && <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />}
-                          Save Assignments
-                        </button>
-                        <button type="button" className="settings-assign-cancel" onClick={() => setAssigningLocId(null)}>Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="settings-loc-row">
-                      <span className="settings-loc-name">{loc.name}</span>
-                      <button type="button" className="settings-loc-btn" onClick={() => openAssignPanel(loc.id)}>Assign Animals</button>
-                      <button type="button" className="settings-loc-btn" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }}>Edit Name</button>
-                      <button type="button" className="settings-loc-btn-danger" onClick={() => deleteLocation(loc.id)}>Delete</button>
                     </div>
                   )}
-                </li>
-              ))}
-            </ul>
-          )}
 
-          <div className="settings-add-loc-row">
-            <input
-              className="settings-input-sm"
-              value={newLocName}
-              onChange={e => setNewLocName(e.target.value)}
-              placeholder="e.g. South Pasture, Barn, Lot A"
-              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
-              style={{ height: 44, borderRadius: 10 }}
-            />
-            <button
-              type="button"
-              className="settings-add-loc-btn"
-              onClick={addLocation}
-              disabled={addingLoc || !newLocName.trim()}
-            >
-              {addingLoc
-                ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
-                : <Plus size={15} />
-              }
-              Add
-            </button>
+                  <div className="settings-address-wrap">
+                    <input
+                      className="settings-input"
+                      value={address}
+                      onChange={e => handleAddressChange(e.target.value)}
+                      placeholder={lat !== null ? "Enter new address…" : "Search for your ranch address…"}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                      autoComplete="off"
+                    />
+                    {showSuggestions && suggestions.length > 0 && (
+                      <ul className="settings-suggestions">
+                        {suggestions.map((s, i) => (
+                          <li key={i} className="settings-suggestion-item" onMouseDown={() => selectSuggestion(s)}>
+                            {s.display_name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  {lat === null && lon === null && (
+                    <p className="settings-location-hint">Used for weather data and AI-powered herd alerts.</p>
+                  )}
+                </div>
+
+                {/* Save */}
+                <div className="settings-card-section">
+                  <button
+                    type="submit"
+                    className="settings-save-btn"
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending
+                      ? <><Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />Saving…</>
+                      : <><Save size={15} />Save Changes</>
+                    }
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            {/* Pastures & Locations */}
+            <div className="settings-card">
+              <div className="settings-pastures-header">
+                <div className="settings-pastures-title">Pastures &amp; Locations</div>
+                <span className="settings-pastures-sub">Tag animals to specific areas. They'll be grouped by location in the Herd page.</span>
+              </div>
+
+              {locations.length > 0 && (
+                <ul className="settings-loc-list">
+                  {locations.map(loc => (
+                    <li key={loc.id} className="settings-loc-item">
+
+                      {editingLocId === loc.id ? (
+                        <div className="settings-loc-edit-row">
+                          <input
+                            className="settings-input-sm"
+                            value={editLocName}
+                            onChange={e => setEditLocName(e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            className="settings-loc-edit-save"
+                            onClick={() => saveLocEdit(loc.id)}
+                            disabled={savingLoc}
+                          >
+                            {savingLoc ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : null}
+                            Save
+                          </button>
+                          <button type="button" className="settings-loc-edit-cancel" onClick={() => setEditingLocId(null)}>Cancel</button>
+                        </div>
+                      ) : assigningLocId === loc.id ? (
+                        <div className="settings-assign-panel">
+                          <div className="settings-assign-header">
+                            <span className="settings-assign-name">{loc.name}</span>
+                            <span className="settings-assign-count">{selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected</span>
+                          </div>
+
+                          {allAnimals === null ? (
+                            <div className="settings-assign-loading">
+                              <Loader2 size={14} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                              Loading animals…
+                            </div>
+                          ) : allAnimals.length === 0 ? (
+                            <p className="settings-assign-empty">No animals in your herd yet.</p>
+                          ) : (
+                            <div className="settings-assign-list">
+                              {allAnimals.map(a => (
+                                <label key={a.id} className="settings-assign-item">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedAnimalIds.has(a.id)}
+                                    onChange={e => {
+                                      setSelectedAnimalIds(prev => {
+                                        const next = new Set(prev);
+                                        if (e.target.checked) next.add(a.id); else next.delete(a.id);
+                                        return next;
+                                      });
+                                    }}
+                                    style={{ width: 16, height: 16, flexShrink: 0, accentColor: "#1A3628" }}
+                                  />
+                                  <span className="settings-assign-animal-name">{a.name}</span>
+                                  {a.tagNumber && <span className="settings-assign-tag">#{a.tagNumber}</span>}
+                                  <span className="settings-assign-species">{a.species}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="settings-assign-actions">
+                            <button
+                              type="button"
+                              className="settings-assign-save"
+                              onClick={saveAssignments}
+                              disabled={savingAssign || allAnimals === null}
+                            >
+                              {savingAssign && <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />}
+                              Save Assignments
+                            </button>
+                            <button type="button" className="settings-assign-cancel" onClick={() => setAssigningLocId(null)}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="settings-loc-row">
+                          <span className="settings-loc-name">{loc.name}</span>
+                          <button type="button" className="settings-loc-btn" onClick={() => openAssignPanel(loc.id)}>Assign Animals</button>
+                          <button type="button" className="settings-loc-btn" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }}>Edit Name</button>
+                          <button type="button" className="settings-loc-btn-danger" onClick={() => deleteLocation(loc.id)}>Delete</button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="settings-add-loc-row">
+                <input
+                  className="settings-input-sm"
+                  value={newLocName}
+                  onChange={e => setNewLocName(e.target.value)}
+                  placeholder="e.g. South Pasture, Barn, Lot A"
+                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
+                  style={{ height: 44, borderRadius: 10 }}
+                />
+                <button
+                  type="button"
+                  className="settings-add-loc-btn"
+                  onClick={addLocation}
+                  disabled={addingLoc || !newLocName.trim()}
+                >
+                  {addingLoc
+                    ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                    : <Plus size={15} />
+                  }
+                  Add
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── My Ranches (switcher) ── */}
+        {ranches.length > 0 && (
+          <div className="settings-card">
+            <div className="settings-pastures-header">
+              <div className="settings-pastures-title">My Ranches</div>
+              <span className="settings-pastures-sub">Switch between ranches you belong to.</span>
+            </div>
+            <ul className="settings-loc-list">
+              {ranches.map(r => {
+                const isActive = r.id === activeRanchId;
+                const isSwitching = switchingId === r.id;
+                return (
+                  <li key={r.id} className="settings-loc-item">
+                    <div className="settings-ranch-row">
+                      <div className="settings-ranch-icon">🏡</div>
+                      <div className="settings-ranch-body">
+                        <div className="settings-ranch-name">{r.name}</div>
+                        <div className="settings-ranch-sub">
+                          <span className={`settings-ranch-role settings-ranch-role--${r.role}`}>{roleLabel(r.role)}</span>
+                          {r.ownerName && r.role !== "owner" && (
+                            <span className="settings-ranch-owner-name">· {r.ownerName}'s ranch</span>
+                          )}
+                        </div>
+                      </div>
+                      {isActive ? (
+                        <span className="settings-ranch-active">
+                          <CheckCircle2 size={14} style={{ flexShrink: 0 }} /> Active
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="settings-ranch-switch-btn"
+                          onClick={() => handleSwitchRanch(r.id)}
+                          disabled={isSwitching || switchingId !== null}
+                        >
+                          {isSwitching
+                            ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />
+                            : null}
+                          Switch
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        </div>
+        )}
 
         {/* ── Account Settings link ── */}
         <div className="settings-card">
