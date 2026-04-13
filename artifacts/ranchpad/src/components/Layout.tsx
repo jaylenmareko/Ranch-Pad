@@ -253,7 +253,7 @@ const TABS = [
   { href: "/",              emoji: "🏠", label: "Home"     },
   { href: "/animals",       emoji: "🐄", label: "Herd"     },
   { href: "/alerts",        emoji: "🔔", label: "Alerts"   },
-  { href: "/import-export", emoji: "↕",  label: "Data"     },
+  { href: "/import-export", emoji: "➕",  label: "Add"      },
   { href: "/settings",      emoji: "⚙️", label: "Settings" },
 ];
 

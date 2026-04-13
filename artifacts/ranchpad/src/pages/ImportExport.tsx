@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Link } from "wouter";
-import { ScanLine, Plus, Upload, Download, FileDown, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { ScanLine, Plus, Upload, FileDown, Loader2, CheckCircle, XCircle } from "lucide-react";
+import "./ImportExport.css";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useRanch } from "@/contexts/ranch-context";
@@ -332,8 +333,8 @@ export function ImportExport() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto w-full">
-      <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+    <div className="add-page">
+      <input ref={fileInputRef} type="file" accept=".csv,text/csv" style={{ display: "none" }} onChange={handleFileChange} />
 
       <ScanPhotoDialog open={scanOpen} onOpenChange={setScanOpen} />
       <ImportModeDialog
@@ -342,89 +343,91 @@ export function ImportExport() {
         onConfirm={(replace) => pendingFile && doImport(pendingFile, replace)}
       />
 
-      {/* Card */}
-      <div className="bg-card border border-border rounded-xl px-6 py-4 flex flex-col gap-4">
-        <h1 className="text-xl font-black text-foreground tracking-tight">Import or Export Data</h1>
-
-        <div className="flex flex-col gap-3 w-full">
-          {!isViewer && (
-            <button
-              onClick={() => setScanOpen(true)}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30 w-full"
-            >
-              <ScanLine className="w-4 h-4 shrink-0" />
-              Add from Photo
-            </button>
-          )}
-
-          {!isViewer && (
-            <Link href="/animals/new" className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full">
-              <Plus className="w-4 h-4 shrink-0" />
-              Add Animal
-            </Link>
-          )}
-
-          {!isViewer && (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full disabled:opacity-60"
-            >
-              {importing ? (
-                <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Importing…</>
-              ) : (
-                <><Upload className="w-4 h-4 shrink-0" />Upload CSV Spreadsheet</>
-              )}
-            </button>
-          )}
-
-          <button
-            onClick={generateHerdReport}
-            disabled={isExportingPDF || !animals || (animals as Animal[]).length === 0}
-            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full disabled:opacity-60"
-          >
-            {isExportingPDF ? (
-              <><Loader2 className="w-4 h-4 shrink-0 animate-spin" />Generating…</>
-            ) : (
-              <><FileDown className="w-4 h-4 shrink-0" />Export Herd Report PDF</>
-            )}
-          </button>
-
-        </div>
+      <div className="add-header">
+        <span className="add-header-title">Add</span>
+        <span className="add-header-sub">Animals, imports &amp; reports</span>
       </div>
 
-      {/* Import error */}
-      {importError && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30">
-          <XCircle className="w-5 h-5 shrink-0 text-destructive mt-0.5" />
-          <p className="flex-1 text-sm font-semibold text-foreground">{importError}</p>
-          <button onClick={() => setImportError(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
-            <XCircle className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <div className="add-body">
 
-      {/* Import success */}
-      {importSummary && (
-        <div className="p-4 rounded-xl bg-primary/10 border border-primary/30 space-y-2">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 shrink-0 text-primary" />
-            <p className="text-sm font-semibold text-foreground">
-              Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
-              {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
-            </p>
+        {/* Add Animals section */}
+        {!isViewer && (
+          <div className="add-section">
+            <div className="add-section-label">Add Animals</div>
+            <div className="add-section-body">
+              <button className="add-btn-primary" onClick={() => setScanOpen(true)}>
+                <ScanLine size={17} />
+                Add from Photo
+              </button>
+              <Link href="/animals/new" className="add-btn-secondary">
+                <Plus size={16} />
+                Add Animal Manually
+              </Link>
+              <button
+                className="add-btn-secondary"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+              >
+                {importing ? (
+                  <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />Importing…</>
+                ) : (
+                  <><Upload size={16} />Upload CSV Spreadsheet</>
+                )}
+              </button>
+            </div>
           </div>
-          {importSummary.skipped.length > 0 && (
-            <ul className="space-y-1 pl-7">
-              {importSummary.skipped.map((s, i) => (
-                <li key={i} className="text-xs text-muted-foreground">
-                  Row {s.row}: {plainEnglishSkipReason(s.reason)}
-                </li>
-              ))}
-            </ul>
-          )}
+        )}
+
+        {/* Export section */}
+        <div className="add-section">
+          <div className="add-section-label">Export</div>
+          <div className="add-section-body">
+            <button
+              className="add-btn-muted"
+              onClick={generateHerdReport}
+              disabled={isExportingPDF || !animals || (animals as Animal[]).length === 0}
+            >
+              {isExportingPDF ? (
+                <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />Generating…</>
+              ) : (
+                <><FileDown size={16} />Export Herd Report PDF</>
+              )}
+            </button>
+          </div>
         </div>
-      )}
+
+        {/* Import error */}
+        {importError && (
+          <div className="add-banner add-banner-error">
+            <XCircle size={18} className="add-banner-icon" color="#DC2626" />
+            <p className="add-banner-text">{importError}</p>
+            <button className="add-banner-close" onClick={() => setImportError(null)}>
+              <XCircle size={15} />
+            </button>
+          </div>
+        )}
+
+        {/* Import success */}
+        {importSummary && (
+          <div className="add-banner add-banner-success">
+            <CheckCircle size={18} className="add-banner-icon" color="#16A34A" />
+            <div style={{ flex: 1 }}>
+              <p className="add-banner-text">
+                Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
+                {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
+              </p>
+              {importSummary.skipped.length > 0 && (
+                <ul className="add-skip-list">
+                  {importSummary.skipped.map((s, i) => (
+                    <li key={i} className="add-skip-item">Row {s.row}: {plainEnglishSkipReason(s.reason)}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
