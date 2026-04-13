@@ -1,0 +1,556 @@
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #F5F1EA;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.settings-header {
+  background: #1A3628;
+  padding: 20px 20px 18px;
+}
+
+.settings-header-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  display: block;
+}
+
+/* ── Body ─────────────────────────────────────────────────────────────── */
+
+.settings-body {
+  flex: 1;
+  padding: 16px 16px 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Section cards ────────────────────────────────────────────────────── */
+
+.settings-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #C8DAD2;
+  overflow: hidden;
+}
+
+.settings-card-section {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-card-section + .settings-card-section {
+  border-top: 1px solid #EEF5F0;
+}
+
+.settings-section-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5A7A6A;
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────────── */
+
+.settings-input {
+  height: 44px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1.5px solid #C8DAD2;
+  background: #F5F1EA;
+  padding: 0 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+.settings-input:focus {
+  border-color: #2D6A4F;
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+  background: #fff;
+}
+.settings-input::placeholder { color: #A8BAB2; }
+
+.settings-input-sm {
+  height: 38px;
+  border-radius: 9px;
+  border: 1.5px solid #C8DAD2;
+  background: #F5F1EA;
+  padding: 0 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.settings-input-sm:focus {
+  border-color: #2D6A4F;
+  background: #fff;
+}
+.settings-input-sm::placeholder { color: #A8BAB2; }
+
+/* ── Location confirmed badge ─────────────────────────────────────────── */
+
+.settings-location-confirmed {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #EEF5F0;
+  border: 1px solid #C8DAD2;
+}
+
+.settings-location-text {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A3628;
+  line-height: 1.4;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.settings-location-clear {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #8FA393;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+.settings-location-clear:hover { color: #C0392B; }
+
+.settings-location-hint {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+}
+
+/* ── Address suggestions dropdown ────────────────────────────────────── */
+
+.settings-address-wrap {
+  position: relative;
+}
+
+.settings-suggestions {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-suggestion-item {
+  padding: 10px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #111;
+  cursor: pointer;
+  border-bottom: 1px solid #EEF5F0;
+  transition: background 0.1s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.settings-suggestion-item:last-child { border-bottom: none; }
+.settings-suggestion-item:hover { background: #EEF5F0; }
+
+/* ── Save button ──────────────────────────────────────────────────────── */
+
+.settings-save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 46px;
+  border-radius: 11px;
+  background: #1A3628;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.settings-save-btn:hover { background: #22463A; }
+.settings-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Pastures section ─────────────────────────────────────────────────── */
+
+.settings-pastures-header {
+  padding: 14px 16px 10px;
+}
+
+.settings-pastures-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.settings-pastures-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+  margin-top: 2px;
+  display: block;
+}
+
+/* ── Location list ────────────────────────────────────────────────────── */
+
+.settings-loc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid #EEF5F0;
+}
+
+.settings-loc-item {
+  border-bottom: 1px solid #EEF5F0;
+}
+.settings-loc-item:last-child { border-bottom: none; }
+
+/* Normal row (name + action buttons) */
+.settings-loc-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+}
+
+.settings-loc-name {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-loc-btn {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid #C8DAD2;
+  background: #F5F1EA;
+  color: #3A5A48;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.settings-loc-btn:hover { background: #EBF2EE; }
+
+.settings-loc-btn-danger {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid #FECACA;
+  background: #FEF3F2;
+  color: #B91C1C;
+  cursor: pointer;
+  transition: background 0.12s;
+  flex-shrink: 0;
+}
+.settings-loc-btn-danger:hover { background: #fee2e2; }
+
+/* Edit-name row */
+.settings-loc-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+}
+
+.settings-loc-edit-save {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: #1A3628;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-loc-edit-save:hover { background: #22463A; }
+.settings-loc-edit-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.settings-loc-edit-cancel {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: #F5F1EA;
+  color: #5A7A6A;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid #C8DAD2;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.settings-loc-edit-cancel:hover { background: #EBF2EE; }
+
+/* Assign panel */
+.settings-assign-panel {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-assign-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-assign-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.settings-assign-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+}
+
+.settings-assign-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid #C8DAD2;
+  background: #F9F6F0;
+}
+
+.settings-assign-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #EEF5F0;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.settings-assign-item:last-child { border-bottom: none; }
+.settings-assign-item:hover { background: #EEF5F0; }
+
+.settings-assign-animal-name {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-assign-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #5A7A6A;
+  flex-shrink: 0;
+}
+
+.settings-assign-species {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #A8BAB2;
+  flex-shrink: 0;
+}
+
+.settings-assign-empty {
+  padding: 14px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #A8BAB2;
+  text-align: center;
+}
+
+.settings-assign-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8FA393;
+}
+
+.settings-assign-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-assign-save {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: #1A3628;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-assign-save:hover { background: #22463A; }
+.settings-assign-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.settings-assign-cancel {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: #F5F1EA;
+  color: #5A7A6A;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid #C8DAD2;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.settings-assign-cancel:hover { background: #EBF2EE; }
+
+/* ── Add location row ────────────────────────────────────────────────── */
+
+.settings-add-loc-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid #EEF5F0;
+}
+
+.settings-add-loc-btn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: #1A3628;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-add-loc-btn:hover { background: #22463A; }
+.settings-add-loc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Not-authenticated state ──────────────────────────────────────────── */
+
+.settings-unauth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  min-height: 100vh;
+  background: #F5F1EA;
+}
+
+.settings-unauth-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: #EEF5F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.settings-unauth-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1A3628;
+  margin-bottom: 8px;
+}
+
+.settings-unauth-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #8FA393;
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+/* ── Loading state ────────────────────────────────────────────────────── */
+
+.settings-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #8FA393;
+  min-height: 100vh;
+  background: #F5F1EA;
+}

@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MapPin, Save, XCircle, Cog, Loader2, Plus } from "lucide-react";
+import "./Settings.css";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -181,26 +179,21 @@ export default function Settings() {
 
   if (!isAuthenticated) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Ranch Settings</h1>
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
-            <Cog className="w-10 h-10 text-primary/50" />
-          </div>
-          <h2 className="font-bold text-xl text-foreground mb-2">Ranch Settings</h2>
-          <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
-            Sign in as a ranch owner to manage your ranch name and location.
-          </p>
+      <div className="settings-unauth">
+        <div className="settings-unauth-icon">
+          <Cog size={32} color="#5A7A6A" />
         </div>
+        <div className="settings-unauth-title">Ranch Settings</div>
+        <p className="settings-unauth-sub">Sign in as a ranch owner to manage your ranch name and location.</p>
       </div>
     );
   }
 
   if (isLoading || !role) {
     return (
-      <div className="flex items-center gap-2 p-12 text-muted-foreground animate-pulse">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="font-bold text-sm">Loading...</span>
+      <div className="settings-loading">
+        <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+        Loading…
       </div>
     );
   }
@@ -252,191 +245,213 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-5 max-w-lg mx-auto pb-20">
+    <div className="settings-page">
 
-      <h1 className="text-2xl font-black font-display text-foreground">Ranch Settings</h1>
+      <div className="settings-header">
+        <span className="settings-header-title">Ranch Settings</span>
+      </div>
 
-      {/* ── Ranch Info + Location (single unified card) ───────────────────── */}
-      <form onSubmit={handleSubmit}>
-        <Card className="overflow-hidden">
-          {/* Ranch Name */}
-          <div className="px-5 pt-5 pb-4 space-y-2">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ranch Name</p>
-            <Input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="e.g. Double Bar Ranch"
-              required
-            />
-          </div>
+      <div className="settings-body">
 
-          <div className="border-t border-border" />
+        {/* ── Ranch Info + Location ── */}
+        <form onSubmit={handleSubmit}>
+          <div className="settings-card">
 
-          {/* Location */}
-          <div className="px-5 py-4 space-y-3">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Location</p>
-
-            {lat !== null && lon !== null && (
-              <div className="flex items-start gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2.5">
-                <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <p className="flex-1 text-sm text-foreground font-medium leading-snug min-w-0 break-words">
-                  {geocodeLabel ?? `${lat.toFixed(6)}, ${lon.toFixed(6)}`}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
-                  className="p-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
-                  title="Clear location"
-                >
-                  <XCircle className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            <div className="relative">
-              <Input
-                value={address}
-                onChange={e => handleAddressChange(e.target.value)}
-                placeholder={lat !== null ? "Enter new address…" : "Search for your ranch address…"}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                autoComplete="off"
+            {/* Ranch Name */}
+            <div className="settings-card-section">
+              <div className="settings-section-label">Ranch Name</div>
+              <input
+                className="settings-input"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="e.g. Double Bar Ranch"
+                required
               />
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-lg overflow-hidden">
-                  {suggestions.map((s, i) => (
-                    <li
-                      key={i}
-                      onMouseDown={() => selectSuggestion(s)}
-                      className="px-4 py-2.5 text-sm cursor-pointer hover:bg-muted text-foreground truncate border-b border-border last:border-0"
-                    >
-                      {s.display_name}
-                    </li>
-                  ))}
-                </ul>
+            </div>
+
+            {/* Location */}
+            <div className="settings-card-section">
+              <div className="settings-section-label">Location</div>
+
+              {lat !== null && lon !== null && (
+                <div className="settings-location-confirmed">
+                  <MapPin size={15} color="#2D6A4F" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <p className="settings-location-text">
+                    {geocodeLabel ?? `${lat.toFixed(6)}, ${lon.toFixed(6)}`}
+                  </p>
+                  <button
+                    type="button"
+                    className="settings-location-clear"
+                    onClick={() => { setLat(null); setLon(null); setGeocodeLabel(null); setAddress(""); setSuggestions([]); }}
+                  >
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              )}
+
+              <div className="settings-address-wrap">
+                <input
+                  className="settings-input"
+                  value={address}
+                  onChange={e => handleAddressChange(e.target.value)}
+                  placeholder={lat !== null ? "Enter new address…" : "Search for your ranch address…"}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  autoComplete="off"
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="settings-suggestions">
+                    {suggestions.map((s, i) => (
+                      <li key={i} className="settings-suggestion-item" onMouseDown={() => selectSuggestion(s)}>
+                        {s.display_name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {lat === null && lon === null && (
+                <p className="settings-location-hint">Used for weather data and AI-powered herd alerts.</p>
               )}
             </div>
 
-            {lat === null && lon === null && (
-              <p className="text-xs text-muted-foreground">
-                Used for weather data and AI-powered herd alerts.
-              </p>
-            )}
-          </div>
-
-          {/* Save button — inside card footer */}
-          <div className="border-t border-border px-5 py-4">
-            <Button type="submit" className="w-full gap-2" isLoading={updateMutation.isPending}>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </Button>
-          </div>
-        </Card>
-      </form>
-
-      {/* ── Pastures & Locations ──────────────────────────────────────────── */}
-      <Card className="overflow-hidden">
-        <div className="px-5 pt-5 pb-3 space-y-0.5">
-          <p className="text-sm font-bold text-foreground">Pastures &amp; Locations</p>
-          <p className="text-xs text-muted-foreground">Tag animals to specific areas. They'll be grouped by location in the Herd Directory.</p>
-        </div>
-
-        {locations.length > 0 && (
-          <ul className="border-t border-border divide-y divide-border">
-            {locations.map(loc => (
-              <li
-                key={loc.id}
-                className={assigningLocId === loc.id ? "px-4 py-4 space-y-3" : "flex items-center gap-3 px-4 py-3"}
+            {/* Save */}
+            <div className="settings-card-section">
+              <button
+                type="submit"
+                className="settings-save-btn"
+                disabled={updateMutation.isPending}
               >
-                {editingLocId === loc.id ? (
-                  <>
-                    <Input
-                      value={editLocName}
-                      onChange={e => setEditLocName(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
-                      className="flex-1 h-9"
-                      autoFocus
-                    />
-                    <Button type="button" size="sm" onClick={() => saveLocEdit(loc.id)} isLoading={savingLoc} className="shrink-0">Save</Button>
-                    <Button type="button" size="sm" variant="ghost" onClick={() => setEditingLocId(null)} className="shrink-0">Cancel</Button>
-                  </>
-                ) : assigningLocId === loc.id ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-foreground">{loc.name}</span>
-                      <span className="text-xs text-muted-foreground font-medium">
-                        {selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected
-                      </span>
-                    </div>
-                    {allAnimals === null ? (
-                      <div className="flex items-center gap-2 py-2 text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                        <span className="text-sm">Loading animals…</span>
-                      </div>
-                    ) : allAnimals.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-2">No animals in your herd yet.</p>
-                    ) : (
-                      <div className="max-h-52 overflow-y-auto rounded-xl border border-border divide-y divide-border">
-                        {allAnimals.map(a => (
-                          <label key={a.id} className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={selectedAnimalIds.has(a.id)}
-                              onChange={e => {
-                                setSelectedAnimalIds(prev => {
-                                  const next = new Set(prev);
-                                  if (e.target.checked) next.add(a.id); else next.delete(a.id);
-                                  return next;
-                                });
-                              }}
-                              className="w-4 h-4 rounded accent-primary shrink-0"
-                            />
-                            <span className="text-sm font-semibold text-foreground truncate flex-1">{a.name}</span>
-                            {a.tagNumber && <span className="text-xs text-muted-foreground font-mono shrink-0">#{a.tagNumber}</span>}
-                            <span className="text-xs text-muted-foreground shrink-0 ml-1">{a.species}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <Button type="button" size="sm" onClick={saveAssignments} isLoading={savingAssign} disabled={allAnimals === null} className="shrink-0">
-                        Save Assignments
-                      </Button>
-                      <Button type="button" size="sm" variant="ghost" onClick={() => setAssigningLocId(null)} className="shrink-0">Cancel</Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span className="flex-1 text-sm font-semibold text-foreground">{loc.name}</span>
-                    <button type="button" onClick={() => openAssignPanel(loc.id)} className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-border bg-muted text-foreground hover:bg-accent transition-colors">
-                      Assign Animals
-                    </button>
-                    <button type="button" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }} className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-border bg-muted text-foreground hover:bg-accent transition-colors">
-                      Edit Name
-                    </button>
-                    <button type="button" onClick={() => deleteLocation(loc.id)} className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
-                      Delete
-                    </button>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+                {updateMutation.isPending
+                  ? <><Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />Saving…</>
+                  : <><Save size={15} />Save Changes</>
+                }
+              </button>
+            </div>
+          </div>
+        </form>
 
-        <div className="px-4 py-3 border-t border-border flex gap-2">
-          <Input
-            value={newLocName}
-            onChange={e => setNewLocName(e.target.value)}
-            placeholder="e.g. South Pasture, Barn, Lot A"
-            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
-          />
-          <Button type="button" onClick={addLocation} isLoading={addingLoc} disabled={!newLocName.trim()} className="shrink-0 gap-1.5">
-            <Plus className="w-4 h-4" />
-            Add
-          </Button>
+        {/* ── Pastures & Locations ── */}
+        <div className="settings-card">
+          <div className="settings-pastures-header">
+            <div className="settings-pastures-title">Pastures &amp; Locations</div>
+            <span className="settings-pastures-sub">Tag animals to specific areas. They'll be grouped by location in the Herd page.</span>
+          </div>
+
+          {locations.length > 0 && (
+            <ul className="settings-loc-list">
+              {locations.map(loc => (
+                <li key={loc.id} className="settings-loc-item">
+
+                  {editingLocId === loc.id ? (
+                    <div className="settings-loc-edit-row">
+                      <input
+                        className="settings-input-sm"
+                        value={editLocName}
+                        onChange={e => setEditLocName(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveLocEdit(loc.id); } }}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        className="settings-loc-edit-save"
+                        onClick={() => saveLocEdit(loc.id)}
+                        disabled={savingLoc}
+                      >
+                        {savingLoc ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : null}
+                        Save
+                      </button>
+                      <button type="button" className="settings-loc-edit-cancel" onClick={() => setEditingLocId(null)}>Cancel</button>
+                    </div>
+                  ) : assigningLocId === loc.id ? (
+                    <div className="settings-assign-panel">
+                      <div className="settings-assign-header">
+                        <span className="settings-assign-name">{loc.name}</span>
+                        <span className="settings-assign-count">{selectedAnimalIds.size} of {allAnimals?.length ?? "…"} selected</span>
+                      </div>
+
+                      {allAnimals === null ? (
+                        <div className="settings-assign-loading">
+                          <Loader2 size={14} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                          Loading animals…
+                        </div>
+                      ) : allAnimals.length === 0 ? (
+                        <p className="settings-assign-empty">No animals in your herd yet.</p>
+                      ) : (
+                        <div className="settings-assign-list">
+                          {allAnimals.map(a => (
+                            <label key={a.id} className="settings-assign-item">
+                              <input
+                                type="checkbox"
+                                checked={selectedAnimalIds.has(a.id)}
+                                onChange={e => {
+                                  setSelectedAnimalIds(prev => {
+                                    const next = new Set(prev);
+                                    if (e.target.checked) next.add(a.id); else next.delete(a.id);
+                                    return next;
+                                  });
+                                }}
+                                style={{ width: 16, height: 16, flexShrink: 0, accentColor: "#1A3628" }}
+                              />
+                              <span className="settings-assign-animal-name">{a.name}</span>
+                              {a.tagNumber && <span className="settings-assign-tag">#{a.tagNumber}</span>}
+                              <span className="settings-assign-species">{a.species}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="settings-assign-actions">
+                        <button
+                          type="button"
+                          className="settings-assign-save"
+                          onClick={saveAssignments}
+                          disabled={savingAssign || allAnimals === null}
+                        >
+                          {savingAssign && <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />}
+                          Save Assignments
+                        </button>
+                        <button type="button" className="settings-assign-cancel" onClick={() => setAssigningLocId(null)}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="settings-loc-row">
+                      <span className="settings-loc-name">{loc.name}</span>
+                      <button type="button" className="settings-loc-btn" onClick={() => openAssignPanel(loc.id)}>Assign Animals</button>
+                      <button type="button" className="settings-loc-btn" onClick={() => { setEditingLocId(loc.id); setEditLocName(loc.name); setAssigningLocId(null); }}>Edit Name</button>
+                      <button type="button" className="settings-loc-btn-danger" onClick={() => deleteLocation(loc.id)}>Delete</button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="settings-add-loc-row">
+            <input
+              className="settings-input-sm"
+              value={newLocName}
+              onChange={e => setNewLocName(e.target.value)}
+              placeholder="e.g. South Pasture, Barn, Lot A"
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLocation(); } }}
+              style={{ height: 44, borderRadius: 10 }}
+            />
+            <button
+              type="button"
+              className="settings-add-loc-btn"
+              onClick={addLocation}
+              disabled={addingLoc || !newLocName.trim()}
+            >
+              {addingLoc
+                ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                : <Plus size={15} />
+              }
+              Add
+            </button>
+          </div>
         </div>
-      </Card>
+
+      </div>
     </div>
   );
 }
