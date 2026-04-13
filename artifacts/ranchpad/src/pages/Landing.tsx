@@ -3,11 +3,7 @@ import { useAuthModal } from "@/contexts/auth-modal-context";
 import "./Landing.css";
 
 export default function Landing() {
-  const { openSignup, openLogin } = useAuthModal();
-
-  const scrollToHow = () => {
-    document.getElementById("lp-how")?.scrollIntoView({ behavior: "smooth" });
-  };
+  const { openSignup } = useAuthModal();
 
   return (
     <div className="landing-page">
@@ -17,20 +13,16 @@ export default function Landing() {
         <div className="lp-eyebrow">AI-Powered Livestock Management</div>
 
         <h1 className="lp-headline">
-          Know before<br /><em>it happens.</em>
+          All herd records in one place.
         </h1>
 
         <p className="lp-sub">
-          RanchPad cross-references your animal's health history with real-time
-          local weather to warn you about disease risk before symptoms show up.
+          Every document easily accessible for customers, vets, or anyone in seconds.
         </p>
 
         <div className="lp-cta-row">
           <button className="lp-btn-primary" onClick={openSignup}>
-            Start Free 14-Day Trial
-          </button>
-          <button className="lp-btn-ghost" onClick={scrollToHow}>
-            See How It Works →
+            Start Your Free 2-Week Trial
           </button>
         </div>
 
@@ -173,14 +165,6 @@ export default function Landing() {
             </div>
           </div>
         </div>
-
-        {/* Trust bar */}
-        <div className="lp-trust-bar">
-          <div className="lp-trust-item"><strong>14-day</strong> free trial</div>
-          <div className="lp-trust-item"><strong>No card</strong> required</div>
-          <div className="lp-trust-item"><strong>$12/mo</strong> after trial</div>
-          <div className="lp-trust-item"><strong>Cancel</strong> anytime</div>
-        </div>
       </section>
 
       {/* ── FEATURES ─────────────────────────────────────────────────────── */}
@@ -241,74 +225,6 @@ export default function Landing() {
               investigation, grazing rotation, and pen management made simple.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section className="lp-how" id="lp-how">
-        <p className="lp-section-label">How It Works</p>
-        <h2 className="lp-section-headline">
-          Set up in minutes. Runs in the background.
-        </h2>
-        <p className="lp-section-sub">
-          No training. No complicated onboarding. Just add your animals and
-          RanchPad gets to work.
-        </p>
-
-        <div className="lp-steps-row">
-          <div className="lp-step">
-            <div className="lp-step-num">1</div>
-            <h4>Add Your Herd</h4>
-            <p>Enter your animals with basic info — species, tag, age. Import via CSV or add one by one.</p>
-          </div>
-          <div className="lp-step">
-            <div className="lp-step-num">2</div>
-            <h4>Log Health Events</h4>
-            <p>Record treatments, vet visits, and notes as they happen. Photos and field notes included.</p>
-          </div>
-          <div className="lp-step">
-            <div className="lp-step-num">3</div>
-            <h4>AI Monitors Constantly</h4>
-            <p>RanchPad cross-references your animals' histories with live local weather 24/7 and alerts you to risk.</p>
-          </div>
-          <div className="lp-step">
-            <div className="lp-step-num">4</div>
-            <h4>Act Before It's a Problem</h4>
-            <p>Get actionable, individual-animal alerts ranked by severity — so you know exactly who to check first.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── PRICING ──────────────────────────────────────────────────────── */}
-      <section className="lp-pricing">
-        <p className="lp-section-label">Simple Pricing</p>
-        <h2 className="lp-section-headline">One plan. Everything included.</h2>
-        <p className="lp-section-sub">
-          No tiers, no confusing add-ons. If you raise livestock, this is built
-          for you.
-        </p>
-
-        <div className="lp-pricing-card">
-          <div className="lp-price-amount"><sup>$</sup>12</div>
-          <div className="lp-price-period">per month · billed monthly</div>
-
-          <ul className="lp-price-features">
-            <li>Unlimited animals across all species</li>
-            <li>AI-powered predictive disease alerts</li>
-            <li>Real-time local weather integration</li>
-            <li>Full health record history</li>
-            <li>Role-based team access</li>
-            <li>One-tap PDF export</li>
-            <li>CSV import &amp; export</li>
-            <li>Pasture &amp; location tagging</li>
-            <li>Photo uploads on health records</li>
-            <li>FAMACHA auto-alerts</li>
-          </ul>
-
-          <button className="lp-btn-green" onClick={openSignup}>
-            Start Free 14-Day Trial
-          </button>
-          <p className="lp-price-trial">No credit card required. Cancel anytime.</p>
         </div>
       </section>
 
