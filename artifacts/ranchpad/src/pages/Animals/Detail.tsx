@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
-import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw, ScanLine, Scissors } from "lucide-react";
+import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw, Scissors } from "lucide-react";
 import "./Detail.css";
 import { 
   useGetAnimal, useDeleteAnimal, 
@@ -560,12 +560,6 @@ export default function AnimalDetail() {
             <ArrowLeft size={15} />
             {fromAlerts ? "Back to Alerts" : "Back to Herd"}
           </Link>
-          {role !== "viewer" && (
-            <button className="detail-scan-btn" onClick={() => setScanRecordsOpen(true)}>
-              <ScanLine size={13} />
-              Add from Photo
-            </button>
-          )}
         </div>
         <div className="detail-hero">
           <div className="detail-avatar">{emoji}</div>
