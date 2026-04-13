@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { SimpleDialog as Dialog } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { ArrowLeft, Edit2, Activity, Pill, AlertTriangle, Trash2, Plus, Camera, X, Loader2, XCircle, FileDown, Archive, RotateCcw, ScanLine, Scissors } from "lucide-react";
+import "./Detail.css";
 import { 
   useGetAnimal, useDeleteAnimal, 
   useListMedications, useCreateMedication, useDeleteMedication, useUpdateMedication,
@@ -352,8 +353,8 @@ export default function AnimalDetail() {
         sireName: animal.sireName ?? null,
         sire: animal.sire ?? null,
         babies: animal.babies ?? [],
-        archivedAt: animal.archivedAt ?? null,
-        archiveReason: animal.archiveReason ?? null,
+        archivedAt: (animal as any).archivedAt ?? null,
+        archiveReason: (animal as any).archiveReason ?? null,
         archiveDate: (animal as any).archiveDate ?? null,
         archiveNotes: (animal as any).archiveNotes ?? null,
         healthEvents: (pdfHealthEvents || []).map(ev => ({
@@ -519,248 +520,194 @@ export default function AnimalDetail() {
   };
 
   if (isLoading) {
-    return <div className="p-12 text-center text-muted-foreground animate-pulse font-bold">Loading profile...</div>;
+    return <div className="detail-page"><div className="detail-loading">Loading profile…</div></div>;
   }
 
   if (!animal) {
-    return <div className="p-12 text-center text-muted-foreground font-bold text-xl">Animal not found</div>;
+    return <div className="detail-page"><div className="detail-loading">Animal not found</div></div>;
   }
 
+  const a = animal as AnimalDetailWithArchive;
+  const isArchived = !!a.archivedAt;
+  const isCullFlag = !!a.isCull;
+  const SPECIES_EMOJI: Record<string, string> = { Cattle: "🐄", Sheep: "🐑", Goat: "🐐", Pig: "🐖", Horse: "🐴", Chicken: "🐔", Duck: "🦆", Alpaca: "🦙", Llama: "🦙", Rabbit: "🐇", Dog: "🐕" };
+  const emoji = SPECIES_EMOJI[animal.species] ?? "🐾";
+  const latestSev = (animal as AnimalDetail & { latestHealthSeverity?: string }).latestHealthSeverity;
+  const healthBadgeClass = latestSev === "high" ? "alert" : latestSev === "medium" ? "watch" : "healthy";
+  const healthDotColor = latestSev === "high" ? "#ef4444" : latestSev === "medium" ? "#eab308" : "#22c55e";
+  const healthLabel = latestSev === "high" ? "Urgent" : latestSev === "medium" ? "Watch" : "Healthy";
+  const facts = [
+    { label: "Species", value: animal.species },
+    { label: "Sex", value: animal.sex },
+    { label: "Breed", value: animal.breed || "Unknown" },
+    { label: "Age", value: formatAge(animal.dateOfBirth) },
+    ...(a.locationName ? [{ label: "Location", value: a.locationName }] : []),
+    ...(animal.dateOfBirth ? [{ label: "Born", value: format(parseISO(animal.dateOfBirth), "MMM d, yyyy") }] : []),
+  ];
+  const showFamacha = ["Sheep", "Goat"].includes(animal.species);
+  const tabs = [
+    { id: "health", label: "Health", icon: Activity },
+    { id: "meds", label: "Medications", icon: Pill },
+    ...(showFamacha ? [{ id: "famacha", label: "FAMACHA", icon: AlertTriangle }] : []),
+  ] as { id: string; label: string; icon: React.ElementType }[];
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-20">
-      <div className="flex items-center justify-between">
-        <Link href={fromAlerts ? "/alerts" : "/animals"} className="flex items-center text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-1" /> {fromAlerts ? "Back to Alerts" : "Back to Herd"}
-        </Link>
-        {role !== "viewer" && (
-          <Button variant="outline" size="sm" className="bg-card min-h-[36px] gap-1.5" onClick={() => setScanRecordsOpen(true)}>
-            <ScanLine className="w-4 h-4" />
-            Add from Photo
-          </Button>
-        )}
+    <div className="detail-page">
+      {/* ── Dark green header ── */}
+      <div className="detail-header">
+        <div className="detail-nav-row">
+          <Link href={fromAlerts ? "/alerts" : "/animals"} className="detail-back-btn">
+            <ArrowLeft size={15} />
+            {fromAlerts ? "Back to Alerts" : "Back to Herd"}
+          </Link>
+          {role !== "viewer" && (
+            <button className="detail-scan-btn" onClick={() => setScanRecordsOpen(true)}>
+              <ScanLine size={13} />
+              Add from Photo
+            </button>
+          )}
+        </div>
+        <div className="detail-hero">
+          <div className="detail-avatar">{emoji}</div>
+          <div className="detail-hero-info">
+            <div className="detail-animal-name">{animal.name}</div>
+            {animal.tagNumber && <span className="detail-tag-badge">#{animal.tagNumber}</span>}
+            <div className={`detail-health-badge ${healthBadgeClass}`}>
+              <span className="detail-health-dot" style={{ backgroundColor: healthDotColor }} />
+              {healthLabel}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Header Card */}
-      {(() => {
-        const a = animal as AnimalDetailWithArchive;
-        const isArchived = !!a.archivedAt;
-        const SPECIES_EMOJI: Record<string, string> = { Cattle: "🐄", Sheep: "🐑", Goat: "🐐", Pig: "🐖", Horse: "🐴", Chicken: "🐔", Duck: "🦆", Alpaca: "🦙", Llama: "🦙", Rabbit: "🐇", Dog: "🐕" };
-        const emoji = SPECIES_EMOJI[animal.species] ?? "🐾";
-        const healthColor = (animal as AnimalDetail & { latestHealthSeverity?: string }).latestHealthSeverity === "high"
-          ? { dot: "#ef4444", label: "Urgent", bg: "bg-red-500/10 text-red-400" }
-          : (animal as AnimalDetail & { latestHealthSeverity?: string }).latestHealthSeverity === "medium"
-          ? { dot: "#eab308", label: "Watch", bg: "bg-yellow-500/10 text-yellow-400" }
-          : { dot: "#22c55e", label: "Healthy", bg: "bg-green-500/10 text-green-400" };
+      {/* ── Archive banner ── */}
+      {isArchived && (
+        <div className="detail-archive-banner">
+          <Archive size={14} style={{ color: "#C97D20", flexShrink: 0 }} />
+          <span className="detail-archive-banner-text">
+            Archived — {a.archiveReason ? ARCHIVE_REASON_LABELS[a.archiveReason as ArchiveReason] : "Archived"}
+            {a.archiveDate && ` on ${a.archiveDate}`}
+            {a.archiveNotes && ` · ${a.archiveNotes}`}
+          </span>
+        </div>
+      )}
 
-        const facts = [
-          { label: "Species", value: animal.species },
-          { label: "Sex", value: animal.sex },
-          { label: "Breed", value: animal.breed || "Unknown" },
-          { label: "Age", value: formatAge(animal.dateOfBirth) },
-          ...(a.locationName ? [{ label: "Location", value: a.locationName }] : []),
-          ...(animal.dateOfBirth ? [{ label: "Born", value: format(parseISO(animal.dateOfBirth), "MMM d, yyyy") }] : []),
-        ];
-
-        return (
-          <Card className="overflow-hidden border-2 border-border">
-            {isArchived && (
-              <div className="bg-amber-900/30 border-b border-amber-600/30 px-5 py-2.5 flex items-center gap-2.5">
-                <Archive className="w-4 h-4 text-amber-400 shrink-0" />
-                <p className="text-sm text-amber-300 font-semibold">
-                  Archived — {a.archiveReason ? ARCHIVE_REASON_LABELS[a.archiveReason as ArchiveReason] : "Archived"}
-                  {a.archiveDate && ` on ${a.archiveDate}`}
-                  {a.archiveNotes && <span className="ml-2 font-normal opacity-75">· {a.archiveNotes}</span>}
-                </p>
-              </div>
-            )}
-
-            <div className="p-5 space-y-4">
-              {/* Identity row */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center shrink-0 text-4xl leading-none">
-                  {emoji}
+      <div className="detail-body">
+        {/* ── Facts card ── */}
+        <div className="detail-card">
+          <div className="detail-card-body">
+            <div className="detail-facts-grid">
+              {facts.map(({ label, value }) => (
+                <div key={label} className="detail-fact-chip">
+                  <div className="detail-fact-label">{label}</div>
+                  <div className="detail-fact-value">{value}</div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-2xl font-black font-display text-foreground leading-tight">{animal.name}</h1>
-                    {animal.tagNumber && (
-                      <span className="text-sm font-bold font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-lg border border-border">#{animal.tagNumber}</span>
-                    )}
-                  </div>
-                  {/* Health status badge */}
-                  <span className={`inline-flex items-center gap-1.5 mt-1 text-xs font-bold px-2.5 py-1 rounded-full ${healthColor.bg}`}>
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: healthColor.dot }} />
-                    {healthColor.label}
-                  </span>
-                </div>
-              </div>
-
-              {/* Fact chips grid */}
-              <div className="grid grid-cols-2 gap-2">
-                {facts.map(({ label, value }) => (
-                  <div key={label} className="bg-muted/50 rounded-xl px-3 py-2.5 border border-border/60">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{label}</p>
-                    <p className="text-sm font-bold text-foreground">{value}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Lineage */}
-              {(animal.sire || animal.sireName || animal.dam || animal.damName) && (
-                <div className="flex flex-wrap gap-2 pt-1 border-t border-border/50">
-                  {(animal.sire || animal.sireName) && (
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="font-semibold text-muted-foreground">Sire:</span>
-                      {animal.sire
-                        ? <Link href={`/animals/${animal.sire.id}`} className="font-bold text-primary hover:underline">{animal.sire.name}</Link>
-                        : <span className="font-bold text-foreground">{animal.sireName}</span>
-                      }
-                    </div>
-                  )}
-                  {(animal.sire || animal.sireName) && (animal.dam || animal.damName) && (
-                    <span className="text-muted-foreground/40">·</span>
-                  )}
-                  {(animal.dam || animal.damName) && (
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="font-semibold text-muted-foreground">Dam:</span>
-                      {animal.dam
-                        ? <Link href={`/animals/${animal.dam.id}`} className="font-bold text-primary hover:underline">{animal.dam.name}</Link>
-                        : <span className="font-bold text-foreground">{animal.damName}</span>
-                      }
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Card>
-        );
-      })()}
-
-      {/* Action Buttons */}
-      {(() => {
-        const a = animal as AnimalDetailWithArchive;
-        const isArchived = !!a.archivedAt;
-        const isCullFlag = !!a.isCull;
-        return (
-          <div className="flex items-center gap-3 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-card min-h-[44px]"
-              onClick={exportPDF}
-              isLoading={isExporting}
-              aria-label="Export animal record as PDF"
-            >
-              <FileDown className="w-4 h-4 mr-2" />
-              Export PDF
-            </Button>
-            {!isArchived && role !== "viewer" && (
-              <Link href={`/animals/${animal.id}/edit`}>
-                <Button variant="outline" size="sm" className="bg-card min-h-[44px]"><Edit2 className="w-4 h-4 mr-2" /> Edit Profile</Button>
-              </Link>
-            )}
-            {!isArchived && role !== "viewer" && !isCullFlag && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-[44px] border-orange-600/40 text-orange-400 hover:bg-orange-600/10"
-                onClick={markAsCull}
-                disabled={culling}
-              >
-                {culling ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Scissors className="w-4 h-4 mr-1.5" />}
-                Mark as Cull
-              </Button>
-            )}
-            {!isArchived && role !== "viewer" && isCullFlag && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-[44px] border-orange-600/60 bg-orange-600/10 text-orange-400 hover:bg-orange-600/20"
-                onClick={removeFromCull}
-                disabled={culling}
-              >
-                {culling ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Scissors className="w-4 h-4 mr-1.5" />}
-                Remove from Cull
-              </Button>
-            )}
-            {!isArchived && role === "owner" && (
-              <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={() => setArchiveDialogOpen(true)}>
-                <Archive className="w-4 h-4 mr-1.5" /> Archive
-              </Button>
-            )}
-            {!isArchived && role === "ranch_hand" && (
-              <Button variant="outline" size="sm" className="min-h-[44px] border-amber-600/40 text-amber-500 hover:bg-amber-600/10" onClick={requestArchiveAnimal}>
-                <Archive className="w-4 h-4 mr-1.5" /> Request Archive
-              </Button>
-            )}
-            {isArchived && role === "owner" && (
-              <>
-                <Button variant="outline" size="sm" className="min-h-[44px] border-primary/40 text-primary hover:bg-primary/10" onClick={restoreAnimal} disabled={restoring}>
-                  {restoring ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <RotateCcw className="w-4 h-4 mr-1.5" />}
-                  Restore
-                </Button>
-                <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
-                  if(confirm("Permanently delete this animal? All records will be lost.")) {
-                    deleteMutation.mutate({ animalId });
-                  }
-                }}><Trash2 className="w-4 h-4" /></Button>
-              </>
-            )}
-            {!isArchived && role === "owner" && (
-              <Button variant="destructive" size="sm" className="min-w-[44px] min-h-[44px]" aria-label="Delete animal" onClick={() => {
-                if(confirm("Are you sure you want to delete this animal? All history will be lost.")) {
-                  deleteMutation.mutate({ animalId });
-                }
-              }}><Trash2 className="w-4 h-4" /></Button>
-            )}
-            {!isArchived && role === "ranch_hand" && (
-              <Button variant="outline" size="sm" className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10" onClick={requestDeleteAnimal}>
-                <Trash2 className="w-4 h-4 mr-1.5" /> Request Deletion
-              </Button>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* Tab Navigation */}
-      {(() => {
-        const showFamacha = ["Sheep", "Goat"].includes(animal.species);
-        const tabs = [
-          { id: "health", label: "Health Events", icon: Activity },
-          { id: "meds", label: "Medications", icon: Pill },
-          ...(showFamacha ? [{ id: "famacha", label: "FAMACHA", icon: AlertTriangle }] : []),
-        ];
-        return (
-          <div className="relative">
-            <div className="flex overflow-x-auto hide-scrollbar border-b border-border/60 pb-px gap-2 sm:gap-6">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
-                  className={`flex items-center gap-2 py-3 px-1 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {tab.icon && <tab.icon className="w-4 h-4" />}
-                  {tab.label}
-                </button>
               ))}
             </div>
-            <div className="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-background to-transparent pointer-events-none sm:hidden" />
+            {(animal.sire || animal.sireName || animal.dam || animal.damName) && (
+              <div className="detail-lineage-row">
+                {(animal.sire || animal.sireName) && (
+                  <div className="detail-lineage-item">
+                    <span className="detail-lineage-label">Sire:</span>
+                    {animal.sire
+                      ? <Link href={`/animals/${animal.sire.id}`} className="detail-lineage-link">{animal.sire.name}</Link>
+                      : <span className="detail-lineage-name">{animal.sireName}</span>
+                    }
+                  </div>
+                )}
+                {(animal.dam || animal.damName) && (
+                  <div className="detail-lineage-item">
+                    <span className="detail-lineage-label">Dam:</span>
+                    {animal.dam
+                      ? <Link href={`/animals/${animal.dam.id}`} className="detail-lineage-link">{animal.dam.name}</Link>
+                      : <span className="detail-lineage-name">{animal.damName}</span>
+                    }
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        );
-      })()}
+        </div>
 
-      {/* Tab Content */}
-      <div className="min-h-[400px]">
-        {activeTab === "health" && <HealthTab animalId={animalId} />}
-        {activeTab === "meds" && <MedsTab animalId={animalId} />}
-        {activeTab === "famacha" && ["Sheep", "Goat"].includes(animal.species) && <FamachaTab animalId={animalId} />}
+        {/* ── Action buttons ── */}
+        <div className="detail-actions">
+          <button className="detail-action-btn" onClick={exportPDF} disabled={isExporting}>
+            {isExporting ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
+            Export PDF
+          </button>
+          {!isArchived && role !== "viewer" && (
+            <Link href={`/animals/${animal.id}/edit`} className="detail-action-btn edit">
+              <Edit2 size={13} /> Edit Profile
+            </Link>
+          )}
+          {!isArchived && role !== "viewer" && !isCullFlag && (
+            <button className="detail-action-btn cull" onClick={markAsCull} disabled={culling}>
+              {culling ? <Loader2 size={13} className="animate-spin" /> : <Scissors size={13} />}
+              Mark as Cull
+            </button>
+          )}
+          {!isArchived && role !== "viewer" && isCullFlag && (
+            <button className="detail-action-btn cull active" onClick={removeFromCull} disabled={culling}>
+              {culling ? <Loader2 size={13} className="animate-spin" /> : <Scissors size={13} />}
+              Remove from Cull
+            </button>
+          )}
+          {!isArchived && role === "owner" && (
+            <button className="detail-action-btn archive" onClick={() => setArchiveDialogOpen(true)}>
+              <Archive size={13} /> Archive
+            </button>
+          )}
+          {!isArchived && role === "ranch_hand" && (
+            <button className="detail-action-btn archive" onClick={requestArchiveAnimal}>
+              <Archive size={13} /> Request Archive
+            </button>
+          )}
+          {isArchived && role === "owner" && (
+            <>
+              <button className="detail-action-btn restore" onClick={restoreAnimal} disabled={restoring}>
+                {restoring ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
+                Restore
+              </button>
+              <button className="detail-action-btn danger-solid" onClick={() => { if(confirm("Permanently delete this animal? All records will be lost.")) deleteMutation.mutate({ animalId }); }}>
+                <Trash2 size={13} /> Delete
+              </button>
+            </>
+          )}
+          {!isArchived && role === "owner" && (
+            <button className="detail-action-btn danger" onClick={() => { if(confirm("Delete this animal? All history will be lost.")) deleteMutation.mutate({ animalId }); }}>
+              <Trash2 size={13} /> Delete
+            </button>
+          )}
+          {!isArchived && role === "ranch_hand" && (
+            <button className="detail-action-btn danger" onClick={requestDeleteAnimal}>
+              <Trash2 size={13} /> Request Deletion
+            </button>
+          )}
+        </div>
+
+        {/* ── Tab bar ── */}
+        <div className="detail-tabs">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`detail-tab${activeTab === tab.id ? " active" : ""}`}
+              onClick={() => setActiveTab(tab.id as "health" | "meds" | "famacha")}
+            >
+              <tab.icon size={13} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Tab content ── */}
+        <div className="detail-tab-content">
+          {activeTab === "health" && <HealthTab animalId={animalId} />}
+          {activeTab === "meds" && <MedsTab animalId={animalId} />}
+          {activeTab === "famacha" && showFamacha && <FamachaTab animalId={animalId} />}
+        </div>
       </div>
 
-      {/* Archive Dialog */}
+      {/* ── Archive Dialog ── */}
       <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen} title="Archive Animal">
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -780,11 +727,7 @@ export default function AnimalDetail() {
           </div>
           <div className="space-y-2">
             <Label>Date</Label>
-            <Input
-              type="date"
-              value={archiveDate}
-              onChange={e => setArchiveDate(e.target.value)}
-            />
+            <Input type="date" value={archiveDate} onChange={e => setArchiveDate(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Notes (optional)</Label>
@@ -796,11 +739,7 @@ export default function AnimalDetail() {
           </div>
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1" onClick={() => setArchiveDialogOpen(false)}>Cancel</Button>
-            <Button
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white border-0"
-              onClick={submitArchive}
-              isLoading={archiving}
-            >
+            <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white border-0" onClick={submitArchive} isLoading={archiving}>
               <Archive className="w-4 h-4 mr-1.5" /> Archive Animal
             </Button>
           </div>
@@ -899,10 +838,14 @@ function HealthTab({ animalId }: { animalId: number }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="font-display font-bold text-xl">Health History</h3>
-        {role !== "viewer" && <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Event</Button>}
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="detail-section-header">
+        <div className="detail-section-title">Health History</div>
+        {role !== "viewer" && (
+          <button className="detail-log-btn" onClick={() => setIsAddOpen(true)}>
+            <Plus size={13} /> Log Event
+          </button>
+        )}
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setPendingAddPhotos([]); }} title="Log Health Event">
@@ -959,47 +902,58 @@ function HealthTab({ animalId }: { animalId: number }) {
         </form>
       </Dialog>
 
-      {isLoading ? <div className="animate-pulse bg-card h-32 rounded-xl" /> :
-       events?.length === 0 ? <p className="text-muted-foreground p-8 text-center bg-card rounded-xl border border-dashed">No health events recorded.</p> : (
-        <div className="grid gap-3">
+      {isLoading ? (
+        <div className="detail-skeleton" style={{ height: 100 }} />
+      ) : events?.length === 0 ? (
+        <div className="detail-empty">No health events recorded yet.</div>
+      ) : (
+        <>
           {events?.sort((a: HealthEvent, b: HealthEvent) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()).map((ev: HealthEvent) => (
-            <Card key={ev.id} className="border-l-4 overflow-hidden shadow-sm group" style={{ borderLeftColor: ev.severity === 'high' ? 'var(--color-destructive)' : ev.severity === 'medium' ? '#eab308' : '#22c55e' }}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-sm text-foreground">{formatDate(ev.eventDate)}</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${
-                        ev.severity === 'high' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
-                        ev.severity === 'medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/30' :
-                        'bg-green-500/15 text-green-400 border border-green-500/30'
-                      }`}>{ev.severity}</span>
+            <div key={ev.id} className={`detail-event-card ${ev.severity}`}>
+              <div className="detail-event-body">
+                <div className="detail-event-row">
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+                      <span className="detail-event-date">{formatDate(ev.eventDate)}</span>
+                      <span className={`detail-sev-badge ${ev.severity}`}>{ev.severity}</span>
                     </div>
-                    <p className="text-foreground">{ev.description}</p>
+                    <div className="detail-event-desc">{ev.description}</div>
                   </div>
-                  <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                  <div className="detail-event-actions">
                     {role !== "viewer" && (
-                      <button onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); setPendingEditPhotos([]); }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-primary bg-muted hover:bg-muted/80 border border-border rounded-lg transition-colors" aria-label="Edit event">
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
+                      <button
+                        className="detail-record-edit-btn"
+                        onClick={() => { setEditingEventId(ev.id); setEditDesc(ev.description); setEditDate(ev.eventDate); setEditSev(ev.severity as "low"|"medium"|"high"); setPendingEditPhotos([]); }}
+                        aria-label="Edit event"
+                      >
+                        <Edit2 size={11} /> Edit
                       </button>
                     )}
                     {role === "owner" && (
-                      <button onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Delete event">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      <button
+                        className="detail-record-del-btn"
+                        onClick={() => { if(confirm("Delete this event?")) deleteMutation.mutate({ animalId, healthEventId: ev.id }); }}
+                        aria-label="Delete event"
+                      >
+                        <Trash2 size={11} /> Delete
                       </button>
                     )}
                     {role === "ranch_hand" && (
-                      <button onClick={() => requestDeleteEvent(ev.id, ev.eventDate)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      <button
+                        className="detail-record-del-btn"
+                        onClick={() => requestDeleteEvent(ev.id, ev.eventDate)}
+                        aria-label="Request deletion"
+                      >
+                        <Trash2 size={11} /> Delete
                       </button>
                     )}
                   </div>
                 </div>
                 <PhotoGallery photos={healthPhotos?.[ev.id] ?? []} />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
-        </div>
+        </>
       )}
     </div>
   );
@@ -1083,10 +1037,14 @@ function MedsTab({ animalId }: { animalId: number }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="font-display font-bold text-xl">Medication Records</h3>
-        {role !== "viewer" && <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Med</Button>}
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="detail-section-header">
+        <div className="detail-section-title">Medication Records</div>
+        {role !== "viewer" && (
+          <button className="detail-log-btn" onClick={() => setIsAddOpen(true)}>
+            <Plus size={13} /> Log Med
+          </button>
+        )}
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setPendingAddPhotos([]); }} title="Record Medication">
@@ -1147,54 +1105,65 @@ function MedsTab({ animalId }: { animalId: number }) {
         </form>
       </Dialog>
 
-      {isLoading ? <div className="animate-pulse bg-card h-32 rounded-xl" /> :
-       meds?.length === 0 ? <p className="text-muted-foreground p-8 text-center bg-card rounded-xl border border-dashed">No medications recorded.</p> : (
-        <div className="grid gap-3">
+      {isLoading ? (
+        <div className="detail-skeleton" style={{ height: 100 }} />
+      ) : meds?.length === 0 ? (
+        <div className="detail-empty">No medications recorded yet.</div>
+      ) : (
+        <>
           {meds?.sort((a: MedicationRecord, b: MedicationRecord) => new Date(b.dateGiven).getTime() - new Date(a.dateGiven).getTime()).map((med: MedicationRecord) => (
-            <Card key={med.id} className="shadow-sm group">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-primary text-lg">{med.medicationName}</h4>
-                      {med.dosage && <Badge variant="secondary">{med.dosage}</Badge>}
-                    </div>
-                    <div className="text-sm text-muted-foreground font-medium mt-1 flex flex-wrap gap-3">
-                      <span>Given {format(parseISO(med.dateGiven + (med.dateGiven.length === 10 ? "T12:00:00" : "")), "MMM d, yyyy")}</span>
-                      {med.nextDueDate && (() => {
-                        const dueDate = parseISO(med.nextDueDate + "T12:00:00");
-                        const overdue = isPast(dueDate);
-                        return (
-                          <span className={overdue ? "text-red-500 dark:text-red-400 font-semibold" : "text-amber-600 dark:text-amber-400 font-semibold"}>
-                            {overdue ? "Overdue" : "Due"} · {format(dueDate, "MMM d, yyyy")}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                    {role !== "viewer" && (
-                      <button onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); setPendingEditPhotos([]); }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-muted-foreground hover:text-primary bg-muted hover:bg-muted/80 border border-border rounded-lg transition-colors" aria-label="Edit medication">
-                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    )}
-                    {role === "owner" && (
-                      <button onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }) }} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Delete medication">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
-                      </button>
-                    )}
-                    {role === "ranch_hand" && (
-                      <button onClick={() => requestDeleteMed(med.id, med.medicationName)} className="inline-flex items-center gap-1.5 px-3 min-h-[36px] text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-colors" aria-label="Request deletion" title="Request deletion">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
-                      </button>
-                    )}
-                  </div>
+            <div key={med.id} className="detail-med-card">
+              <div style={{ flex: 1 }}>
+                <div>
+                  <span className="detail-med-name">{med.medicationName}</span>
+                  {med.dosage && <span className="detail-med-dose">{med.dosage}</span>}
+                </div>
+                <div className="detail-med-dates">
+                  <span>Given {format(parseISO(med.dateGiven + (med.dateGiven.length === 10 ? "T12:00:00" : "")), "MMM d, yyyy")}</span>
+                  {med.nextDueDate && (() => {
+                    const dueDate = parseISO(med.nextDueDate + "T12:00:00");
+                    const overdue = isPast(dueDate);
+                    return (
+                      <span className={overdue ? "detail-med-overdue" : "detail-med-due"}>
+                        {overdue ? "Overdue" : "Due"} · {format(dueDate, "MMM d, yyyy")}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <PhotoGallery photos={medPhotos?.[med.id] ?? []} />
-              </CardContent>
-            </Card>
+              </div>
+              <div className="detail-event-actions">
+                {role !== "viewer" && (
+                  <button
+                    className="detail-record-edit-btn"
+                    onClick={() => { setEditingMedId(med.id); setEditName(med.medicationName); setEditDose(med.dosage || ""); setEditDate(med.dateGiven); setEditNextDate(med.nextDueDate || ""); setPendingEditPhotos([]); }}
+                    aria-label="Edit medication"
+                  >
+                    <Edit2 size={11} /> Edit
+                  </button>
+                )}
+                {role === "owner" && (
+                  <button
+                    className="detail-record-del-btn"
+                    onClick={() => { if(confirm("Delete?")) deleteMutation.mutate({ animalId, medicationId: med.id }); }}
+                    aria-label="Delete medication"
+                  >
+                    <Trash2 size={11} /> Delete
+                  </button>
+                )}
+                {role === "ranch_hand" && (
+                  <button
+                    className="detail-record-del-btn"
+                    onClick={() => requestDeleteMed(med.id, med.medicationName)}
+                    aria-label="Request deletion"
+                  >
+                    <Trash2 size={11} /> Delete
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
-        </div>
+        </>
       )}
     </div>
   );
@@ -1260,13 +1229,17 @@ function FamachaTab({ animalId }: { animalId: number }) {
     });
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="detail-section-header">
         <div>
-          <h3 className="font-display font-bold text-xl">FAMACHA Eye Scores</h3>
-          <p className="text-sm text-muted-foreground">Monitor anemia/parasite load (1=Critical, 5=Healthy)</p>
+          <div className="detail-section-title">FAMACHA Eye Scores</div>
+          <div className="detail-section-subtitle">Monitor anemia/parasite load (1=Critical, 5=Healthy)</div>
         </div>
-        {role !== "viewer" && <Button size="sm" onClick={() => setIsAddOpen(true)}><Plus className="w-4 h-4 mr-1"/> Log Score</Button>}
+        {role !== "viewer" && (
+          <button className="detail-log-btn" onClick={() => setIsAddOpen(true)}>
+            <Plus size={13} /> Log Score
+          </button>
+        )}
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen} title="Record FAMACHA">
@@ -1279,17 +1252,9 @@ function FamachaTab({ animalId }: { animalId: number }) {
             <Label>Score (1-5)</Label>
             <div className="flex justify-between gap-2">
               {[1,2,3,4,5].map(num => (
-                <button 
-                  key={num} 
-                  type="button"
-                  onClick={() => setScore(num)}
-                  className={`flex-1 h-14 rounded-xl font-black text-xl transition-all ${
-                    score === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'
-                  }`}
-                  style={{
-                    backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f97316' : num === 3 ? '#eab308' : num === 4 ? '#86efac' : '#22c55e',
-                    color: num <= 3 ? 'white' : '#14532d'
-                  }}
+                <button key={num} type="button" onClick={() => setScore(num)}
+                  className={`flex-1 h-14 rounded-xl font-black text-xl transition-all ${score === num ? 'ring-4 ring-offset-2 ring-primary scale-110 shadow-lg' : 'opacity-60 hover:opacity-100'}`}
+                  style={{ backgroundColor: num === 1 ? '#ef4444' : num === 2 ? '#f97316' : num === 3 ? '#eab308' : num === 4 ? '#86efac' : '#22c55e', color: num <= 3 ? 'white' : '#14532d' }}
                 >{num}</button>
               ))}
             </div>
@@ -1298,21 +1263,6 @@ function FamachaTab({ animalId }: { animalId: number }) {
           <Button type="submit" className="w-full" isLoading={createMutation.isPending}>Save Score</Button>
         </form>
       </Dialog>
-
-      {chartData.length > 1 && (
-        <Card className="p-4 shadow-sm border-border bg-card">
-          <div className="h-[200px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="date" tick={{fontSize: 12, fill: 'var(--color-muted-foreground)'}} axisLine={false} tickLine={false} />
-                <YAxis domain={[1, 5]} reversed={true} ticks={[1,2,3,4,5]} tick={{fontSize: 12, fill: 'var(--color-muted-foreground)'}} axisLine={false} tickLine={false} />
-                <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                <Line type="monotone" dataKey="score" stroke="var(--color-primary)" strokeWidth={4} dot={{r: 6, fill: 'var(--color-card)', strokeWidth: 3}} activeDot={{r: 8}} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
 
       <Dialog open={editingId !== null} onOpenChange={(open) => { if (!open) setEditingId(null); }} title="Edit FAMACHA Score">
         <form onSubmit={e => { e.preventDefault(); if (editingId) updateMutation.mutate({ animalId, famachaId: editingId, data: { score: editScore, recordedDate: editDate } }); }} className="space-y-6">
@@ -1335,96 +1285,82 @@ function FamachaTab({ animalId }: { animalId: number }) {
         </form>
       </Dialog>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {scores?.sort((a: FamachaScore, b: FamachaScore) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map((s: FamachaScore) => (
-          <Card key={s.id} className="text-center shadow-sm group relative">
-            <CardContent className="p-3">
-              <div className="text-3xl font-black mb-1" style={{ color: s.score === 1 ? '#ef4444' : s.score === 2 ? '#f97316' : s.score === 3 ? '#eab308' : '#22c55e' }}>
+      {chartData.length > 1 && (
+        <div className="detail-chart-card">
+          <div style={{ height: 180 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#8FA393' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[1, 5]} reversed ticks={[1,2,3,4,5]} tick={{ fontSize: 11, fill: '#8FA393' }} axisLine={false} tickLine={false} />
+                <RechartsTooltip contentStyle={{ borderRadius: 10, border: '1px solid #C8DAD2', boxShadow: '0 2px 8px rgba(26,54,40,0.1)', fontSize: 12 }} />
+                <Line type="monotone" dataKey="score" stroke="#1A3628" strokeWidth={3} dot={{ r: 5, fill: '#fff', stroke: '#1A3628', strokeWidth: 2 }} activeDot={{ r: 7 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {scores && scores.length > 0 && (
+        <div className="detail-famacha-grid">
+          {scores.sort((a: FamachaScore, b: FamachaScore) => new Date(b.recordedDate).getTime() - new Date(a.recordedDate).getTime()).map((s: FamachaScore) => (
+            <div key={s.id} className="detail-famacha-cell">
+              <div
+                className="detail-famacha-score"
+                style={{ color: s.score === 1 ? '#ef4444' : s.score === 2 ? '#f97316' : s.score === 3 ? '#C97D20' : '#2D6A4F' }}
+              >
                 {s.score}
               </div>
-              <div className="text-xs font-bold text-muted-foreground">{formatDate(s.recordedDate)}</div>
-              {/* Mobile: always-visible action row */}
+              <div className="detail-famacha-date">{formatDate(s.recordedDate)}</div>
               {role !== "viewer" && (
-                <div className="flex justify-center gap-1 mt-2 sm:hidden">
+                <div className="detail-famacha-actions">
                   <button
+                    className="detail-famacha-btn"
                     onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
-                    className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-primary rounded-lg hover:bg-muted"
-                    aria-label="Edit FAMACHA score"
+                    aria-label="Edit score"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 size={12} />
                   </button>
                   {role === "owner" && (
                     <button
+                      className="detail-famacha-btn del"
                       onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
-                      className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted"
-                      aria-label="Delete FAMACHA score"
+                      aria-label="Delete score"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 size={12} />
                     </button>
                   )}
                   {role === "ranch_hand" && (
                     <button
+                      className="detail-famacha-btn del"
                       onClick={() => requestDeleteFamacha(s.id, s.recordedDate)}
-                      className="flex items-center justify-center w-[44px] h-[44px] text-muted-foreground hover:text-destructive rounded-lg hover:bg-muted"
                       aria-label="Request deletion"
-                      title="Request deletion"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 size={12} />
                     </button>
                   )}
                 </div>
               )}
-              {/* Desktop: hover-reveal corner buttons */}
-              {role !== "viewer" && (
-                <div className="absolute top-0.5 right-0.5 hidden sm:flex opacity-0 group-hover:opacity-100 transition-all gap-0.5">
-                  <button
-                    onClick={() => { setEditingId(s.id); setEditScore(s.score); setEditDate(s.recordedDate); }}
-                    className="p-1.5 rounded-full hover:bg-muted"
-                    title="Edit score"
-                    aria-label="Edit FAMACHA score"
-                  >
-                    <Edit2 className="w-3 h-3 text-muted-foreground" />
-                  </button>
-                  {role === "owner" && (
-                    <button
-                      onClick={() => { if(confirm("Delete this FAMACHA score?")) deleteFamachaMutation.mutate({ animalId, famachaId: s.id }); }}
-                      className="p-1.5 rounded-full hover:bg-muted"
-                      title="Delete score"
-                      aria-label="Delete FAMACHA score"
-                    >
-                      <Trash2 className="w-3 h-3 text-destructive/70" />
-                    </button>
-                  )}
-                  {role === "ranch_hand" && (
-                    <button
-                      onClick={() => requestDeleteFamacha(s.id, s.recordedDate)}
-                      className="p-1.5 rounded-full hover:bg-muted"
-                      title="Request deletion"
-                      aria-label="Request deletion"
-                    >
-                      <Trash2 className="w-3 h-3 text-destructive/70" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* How alerts work */}
-      <div className="rounded-xl border border-border/50 bg-muted/30 px-4 py-3 space-y-1.5">
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">How score alerts work</p>
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-yellow-500" />
-          <span>An alert fires in the Alerts page when three consecutive readings are each worse than the last — for example, 2 → 3 → 4.</span>
+            </div>
+          ))}
         </div>
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground/50" />
+      )}
+
+      {scores?.length === 0 && (
+        <div className="detail-empty">No FAMACHA scores recorded yet.</div>
+      )}
+
+      <div className="detail-famacha-info">
+        <div className="detail-famacha-info-title">How score alerts work</div>
+        <div className="detail-famacha-info-row">
+          <AlertTriangle size={12} style={{ color: '#C97D20', flexShrink: 0, marginTop: 1 }} />
+          <span>An alert fires when three consecutive readings each get worse — for example, 2 → 3 → 4.</span>
+        </div>
+        <div className="detail-famacha-info-row">
+          <AlertTriangle size={12} style={{ color: '#C8DAD2', flexShrink: 0, marginTop: 1 }} />
           <span>Each score must be logged on a separate date. Scores are compared in chronological order.</span>
         </div>
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground/50" />
+        <div className="detail-famacha-info-row">
+          <AlertTriangle size={12} style={{ color: '#C8DAD2', flexShrink: 0, marginTop: 1 }} />
           <span>If you dismiss an alert and then log another worse score, a new alert will appear automatically.</span>
         </div>
       </div>
