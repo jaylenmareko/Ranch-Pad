@@ -215,7 +215,6 @@ export default function AccountSettings() {
     <div className="space-y-8 max-w-2xl mx-auto">
       <div>
         <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Account Settings</h1>
-        <p className="text-muted-foreground font-medium mt-1">Manage your personal account details.</p>
       </div>
 
       {/* Your Account */}
