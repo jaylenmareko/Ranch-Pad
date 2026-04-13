@@ -12,7 +12,7 @@ export default function Landing() {
       <section className="lp-hero">
         <div className="lp-eyebrow">AI-Powered Livestock Management</div>
 
-        <h1 className="lp-headline">
+        <h1 className="lp-headline" style={{ whiteSpace: "nowrap" }}>
           All herd records in one place.
         </h1>
 
