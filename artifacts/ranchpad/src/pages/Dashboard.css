@@ -198,18 +198,20 @@
 /* ── Section wrapper ─────────────────────────────────────────────────────── */
 .dash-section {
   margin: 14px 16px 0;
-  background: #FAFAF8;
-  border: 1px solid #EAF0EC;
-  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(26,54,40,0.07);
 }
 
 .dash-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid #EAF0EC;
+  padding: 11px 14px;
+  background: #EEF5F0;
+  border-bottom: 1.5px solid #C8DAD2;
 }
 
 .dash-section-title {
@@ -253,7 +255,7 @@
   display: flex;
   gap: 12px;
   padding: 11px 14px;
-  border-bottom: 1px solid #EAF0EC;
+  border-bottom: 1px solid #D8E8DF;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -408,7 +410,7 @@
   align-items: center;
   gap: 10px;
   padding: 9px 14px;
-  border-bottom: 1px solid #EAF0EC;
+  border-bottom: 1px solid #D8E8DF;
   text-decoration: none;
 }
 
@@ -465,7 +467,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  border-bottom: 1px solid #EAF0EC;
+  border-bottom: 1px solid #D8E8DF;
   text-decoration: none;
   transition: background 0.15s;
 }
@@ -515,7 +517,7 @@
   align-items: center;
   gap: 12px;
   padding: 13px 14px;
-  border-bottom: 1px solid #EAF0EC;
+  border-bottom: 1px solid #D8E8DF;
   text-decoration: none;
   transition: background 0.15s;
 }
