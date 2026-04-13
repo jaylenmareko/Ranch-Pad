@@ -5,7 +5,7 @@ import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 interface PastureLocation { id: number; name: string; }
 interface HerdAnimal { id: number; name: string; tagNumber?: string | null; species: string; locationId?: number | null; }
@@ -449,6 +449,18 @@ export default function Settings() {
               Add
             </button>
           </div>
+        </div>
+
+        {/* ── Account Settings link ── */}
+        <div className="settings-card">
+          <Link href="/account" className="settings-nav-link">
+            <div className="settings-nav-link-icon">👤</div>
+            <div className="settings-nav-link-body">
+              <div className="settings-nav-link-title">Account Settings</div>
+              <div className="settings-nav-link-sub">Profile, password &amp; subscription</div>
+            </div>
+            <span className="settings-nav-link-chevron">›</span>
+          </Link>
         </div>
 
       </div>

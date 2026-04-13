@@ -349,20 +349,12 @@ function AuthDashboard() {
             </div>
           </div>
 
-          {/* ── Quick Links ── */}
-          <div className="dash-section" style={{ margin: "14px 16px 0" }}>
-            <div className="dash-section-header">
-              <span className="dash-section-title">Quick Links</span>
-            </div>
-            <Link href="/account" className="dash-quick-link">
-              <div className="dash-quick-link-icon">👤</div>
-              <div className="dash-quick-link-body">
-                <div className="dash-quick-link-title">Account Settings</div>
-                <div className="dash-quick-link-sub">Profile, password, subscription</div>
+          {/* ── Quick Links — owner only ── */}
+          {role === "owner" && (
+            <div className="dash-section" style={{ margin: "14px 16px 0" }}>
+              <div className="dash-section-header">
+                <span className="dash-section-title">Quick Links</span>
               </div>
-              <span className="dash-quick-link-chevron">›</span>
-            </Link>
-            {role === "owner" && (
               <Link href="/team" className="dash-quick-link">
                 <div className="dash-quick-link-icon">👥</div>
                 <div className="dash-quick-link-body">
@@ -371,8 +363,8 @@ function AuthDashboard() {
                 </div>
                 <span className="dash-quick-link-chevron">›</span>
               </Link>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
     </div>

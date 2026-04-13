@@ -540,6 +540,58 @@
   line-height: 1.5;
 }
 
+/* ── Nav link row ─────────────────────────────────────────────────────── */
+
+.settings-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.settings-nav-link:hover { background: #F9F6F0; }
+
+.settings-nav-link-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #EEF5F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.settings-nav-link-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-nav-link-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.settings-nav-link-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+  margin-top: 1px;
+}
+
+.settings-nav-link-chevron {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  color: #C8DAD2;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 /* ── Loading state ────────────────────────────────────────────────────── */
 
 .settings-loading {
