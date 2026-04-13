@@ -21,7 +21,7 @@ function roleLabel(r: string) {
 export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { isAuthenticated, role, logout } = useAuth();
+  const { isAuthenticated, role, logout, userName } = useAuth();
   const [, setLocation] = useLocation();
   const { ranches, activeRanchId, setActiveRanch, isLoadingRanches } = useRanch();
   const [switchingId, setSwitchingId] = useState<number | null>(null);
@@ -487,8 +487,8 @@ export default function Settings() {
                         <div className="settings-ranch-name">{r.name}</div>
                         <div className="settings-ranch-sub">
                           <span className={`settings-ranch-role settings-ranch-role--${r.role}`}>{roleLabel(r.role)}</span>
-                          {r.ownerName && r.role !== "owner" && (
-                            <span className="settings-ranch-owner-name">· {r.ownerName}'s ranch</span>
+                          {r.role !== "owner" && userName && (
+                            <span className="settings-ranch-owner-name">· {userName}</span>
                           )}
                         </div>
                       </div>
