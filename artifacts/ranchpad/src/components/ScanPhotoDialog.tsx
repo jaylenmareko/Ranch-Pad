@@ -6,8 +6,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Camera, Upload, Loader2, CheckCircle, XCircle, Check, ChevronLeft } from "lucide-react";
+import "./ScanPhotoDialog.css";
 import { useCreateAnimal } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -143,146 +143,103 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col gap-0">
-        <DialogHeader className="pb-4">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col gap-0">
+        <DialogHeader className="pb-3">
           <DialogTitle className="flex items-center gap-2">
             {stage === "idle" && (
               <button
                 onClick={() => setStage("species")}
                 className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
-                aria-label="Back to species selection"
+                aria-label="Back"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft size={16} />
               </button>
             )}
-            {stage === "species" ? "What kind of animal is on this page?" : "Scan Record Book"}
+            {stage === "species" ? "What kind of animal?" : "Scan Record Book"}
           </DialogTitle>
           <DialogDescription>
-            {stage !== "species" && `Taking a photo of ${selectedSpecies?.toLowerCase()} records. Snap a photo of your record book, tag list, or handwritten notes.`}
+            {stage !== "species" && `Scanning ${selectedSpecies?.toLowerCase()} records. Snap a photo of your record book, tag list, or handwritten notes.`}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto min-h-0 space-y-3">
+        <div className="flex-1 overflow-y-auto min-h-0" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
           {/* ── Step 1: Pick species ── */}
           {stage === "species" && (
-            <div className="py-1 space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                {SPECIES_OPTIONS.map(({ label, emoji }) => (
-                  <button
-                    key={label}
-                    onClick={() => pickSpecies(label)}
-                    className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border p-5 hover:border-primary hover:bg-primary/5 transition-colors"
-                  >
-                    <span className="text-3xl">{emoji}</span>
-                    <span className="font-semibold text-sm">{label}</span>
-                  </button>
-                ))}
-              </div>
+            <div className="scan-species-grid">
+              {SPECIES_OPTIONS.map(({ label, emoji }) => (
+                <button key={label} className="scan-species-btn" onClick={() => pickSpecies(label)}>
+                  <span className="scan-species-emoji">{emoji}</span>
+                  <span className="scan-species-label">{label}</span>
+                </button>
+              ))}
             </div>
           )}
 
           {/* ── Step 2: Pick photo ── */}
           {stage === "idle" && (
-            <div className="space-y-4 py-1">
+            <>
               <input
                 ref={cameraInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
-                className="hidden"
-                onChange={e => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFile(f);
-                  e.target.value = "";
-                }}
+                style={{ display: "none" }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
               />
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border p-8 hover:border-primary hover:bg-primary/5 transition-colors"
-                >
-                  <Camera className="w-8 h-8 text-muted-foreground" />
-                  <div className="text-center">
-                    <p className="font-semibold text-sm">Take Photo</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Use your camera</p>
-                  </div>
+              <div className="scan-pick-grid">
+                <button className="scan-pick-btn" onClick={() => cameraInputRef.current?.click()}>
+                  <Camera size={28} className="scan-pick-icon" />
+                  <span className="scan-pick-title">Take Photo</span>
+                  <span className="scan-pick-sub">Use your camera</span>
                 </button>
-
-                <button
-                  onClick={() => {
-                    const input = document.createElement("input");
-                    input.type = "file";
-                    input.accept = "image/*";
-                    input.onchange = e => {
-                      const f = (e.target as HTMLInputElement).files?.[0];
-                      if (f) handleFile(f);
-                    };
-                    input.click();
-                  }}
-                  className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border p-8 hover:border-primary hover:bg-primary/5 transition-colors"
-                >
-                  <Upload className="w-8 h-8 text-muted-foreground" />
-                  <div className="text-center">
-                    <p className="font-semibold text-sm">Upload Photo</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">From your device</p>
-                  </div>
+                <button className="scan-pick-btn" onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file"; input.accept = "image/*";
+                  input.onchange = e => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) handleFile(f); };
+                  input.click();
+                }}>
+                  <Upload size={28} className="scan-pick-icon" />
+                  <span className="scan-pick-title">Upload Photo</span>
+                  <span className="scan-pick-sub">From your device</span>
                 </button>
               </div>
-
               {error && (
-                <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-                  <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-                  <p className="text-sm font-medium text-red-700 dark:text-red-300">{error}</p>
+                <div className="scan-error">
+                  <XCircle size={16} color="#DC2626" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span className="scan-error-text">{error}</span>
                 </div>
               )}
-
-              <p className="text-xs text-muted-foreground text-center pb-2">
-                Works with handwritten record books, printed ear tag lists, and typed documents.
-              </p>
-            </div>
+              <p className="scan-pick-hint">Works with record books, tag lists, and handwritten notes.</p>
+            </>
           )}
 
           {/* ── Scanning ── */}
           {stage === "scanning" && (
-            <div className="flex flex-col items-center justify-center gap-4 py-16">
-              <Loader2 className="w-10 h-10 animate-spin text-primary" />
-              <div className="text-center">
-                <p className="font-semibold">Reading your records…</p>
-                <p className="text-sm text-muted-foreground mt-1">Claude is scanning the photo for {selectedSpecies?.toLowerCase()} records.</p>
-              </div>
+            <div className="scan-loading">
+              <Loader2 size={36} color="#2D6A4F" style={{ animation: "spin 1s linear infinite" }} />
+              <span className="scan-loading-title">Reading your records…</span>
+              <span className="scan-loading-sub">Scanning the photo for {selectedSpecies?.toLowerCase()} records.</span>
             </div>
           )}
 
-          {/* ── Review extracted animals ── */}
+          {/* ── Review ── */}
           {stage === "review" && (
             <>
-              <p className="text-sm text-muted-foreground pb-1">
-                Found <span className="font-semibold text-foreground">{animals.length} animal{animals.length !== 1 ? "s" : ""}</span>. Review and edit before adding to your herd. Uncheck any you don't want.
+              <p className="scan-found-count">
+                Found <strong>{animals.length} animal{animals.length !== 1 ? "s" : ""}</strong>. Review and edit, then uncheck any you don't want.
               </p>
-
               {animals.map((animal, i) => (
-                <div
-                  key={i}
-                  className={`rounded-2xl border p-4 transition-colors ${
-                    animal.selected
-                      ? "border-primary/30 bg-primary/5"
-                      : "border-border bg-muted/30 opacity-50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
+                <div key={i} className={`scan-animal-card${animal.selected ? "" : " deselected"}`}>
+                  <div className="scan-animal-card-inner">
                     <button
+                      className={`scan-check-btn${animal.selected ? " checked" : ""}`}
                       onClick={() => toggleAnimal(i)}
-                      className={`mt-0.5 w-5 h-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-colors ${
-                        animal.selected ? "bg-primary border-primary" : "border-border bg-background"
-                      }`}
-                      aria-label={animal.selected ? "Deselect animal" : "Select animal"}
+                      aria-label={animal.selected ? "Deselect" : "Select"}
                     >
-                      {animal.selected && <Check className="w-3 h-3 text-primary-foreground" />}
+                      {animal.selected && <Check size={12} color="#fff" />}
                     </button>
-
-                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+                    <div className="scan-animal-fields">
                       {[
                         { label: "Tag #", field: "tagNumber" as const, type: "text", placeholder: "—" },
                         { label: "Name", field: "name" as const, type: "text", placeholder: "—" },
@@ -290,11 +247,11 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                         { label: "Sex", field: "sex" as const, type: "text", placeholder: "—" },
                         { label: "Date of Birth", field: "dateOfBirth" as const, type: "date" },
                       ].map(({ label, field, type, placeholder }) => (
-                        <div key={field}>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{label}</p>
+                        <div key={field} className="scan-field">
+                          <span className="scan-field-label">{label}</span>
                           <input
                             type={type}
-                            className="w-full text-sm font-medium bg-transparent border-b border-border focus:border-primary outline-none py-0.5 disabled:cursor-not-allowed"
+                            className="scan-field-input"
                             value={(animal[field] as string) ?? ""}
                             placeholder={placeholder}
                             disabled={!animal.selected}
@@ -302,27 +259,21 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
                           />
                         </div>
                       ))}
-
-                      <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Species</p>
+                      <div className="scan-field">
+                        <span className="scan-field-label">Species</span>
                         <select
-                          className="w-full text-sm font-medium bg-transparent border-b border-border focus:border-primary outline-none py-0.5 disabled:cursor-not-allowed"
+                          className="scan-field-select"
                           value={animal.species}
                           disabled={!animal.selected}
                           onChange={e => updateAnimal(i, "species", e.target.value)}
                         >
-                          {SPECIES_OPTIONS.map(({ label }) => (
-                            <option key={label} value={label}>{label}</option>
-                          ))}
+                          {SPECIES_OPTIONS.map(({ label }) => <option key={label} value={label}>{label}</option>)}
                         </select>
                       </div>
                     </div>
                   </div>
-
                   {animal.notes && (
-                    <p className="mt-2.5 ml-8 text-xs text-muted-foreground italic leading-relaxed">
-                      Note: {animal.notes}
-                    </p>
+                    <p className="scan-animal-notes">Note: {animal.notes}</p>
                   )}
                 </div>
               ))}
@@ -331,38 +282,32 @@ export function ScanPhotoDialog({ open, onOpenChange }: ScanPhotoDialogProps) {
 
           {/* ── Adding ── */}
           {stage === "adding" && (
-            <div className="flex flex-col items-center justify-center gap-4 py-16">
-              <Loader2 className="w-10 h-10 animate-spin text-primary" />
-              <p className="font-semibold">Adding animals to your herd…</p>
+            <div className="scan-loading">
+              <Loader2 size={36} color="#2D6A4F" style={{ animation: "spin 1s linear infinite" }} />
+              <span className="scan-loading-title">Adding to your herd…</span>
             </div>
           )}
 
           {/* ── Done ── */}
           {stage === "done" && (
-            <div className="flex flex-col items-center justify-center gap-4 py-16">
-              <CheckCircle className="w-12 h-12 text-green-500" />
-              <div className="text-center">
-                <p className="font-semibold text-lg">
-                  {addedCount} animal{addedCount !== 1 ? "s" : ""} added to your herd
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">You can edit any animal from the Herd Directory.</p>
-              </div>
-              <Button onClick={() => handleClose(false)}>Done</Button>
+            <div className="scan-done">
+              <CheckCircle size={48} color="#2D6A4F" />
+              <span className="scan-done-title">{addedCount} animal{addedCount !== 1 ? "s" : ""} added</span>
+              <span className="scan-done-sub">You can edit any animal from the Herd page.</span>
+              <button className="scan-done-btn" onClick={() => handleClose(false)}>Done</button>
             </div>
           )}
         </div>
 
         {/* ── Review footer ── */}
         {stage === "review" && (
-          <div className="flex items-center justify-between gap-3 pt-4 mt-2 border-t border-border">
-            <p className="text-sm text-muted-foreground">
-              {selectedCount} of {animals.length} selected
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStage("idle")}>Try another photo</Button>
-              <Button onClick={handleAddSelected} disabled={selectedCount === 0}>
-                Add {selectedCount} animal{selectedCount !== 1 ? "s" : ""} to herd
-              </Button>
+          <div className="scan-footer">
+            <span className="scan-footer-count">{selectedCount} of {animals.length} selected</span>
+            <div className="scan-footer-actions">
+              <button className="scan-btn-outline" onClick={() => setStage("idle")}>Try another photo</button>
+              <button className="scan-btn-primary" onClick={handleAddSelected} disabled={selectedCount === 0}>
+                Add {selectedCount} animal{selectedCount !== 1 ? "s" : ""}
+              </button>
             </div>
           </div>
         )}
