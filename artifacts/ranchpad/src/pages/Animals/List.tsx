@@ -918,11 +918,6 @@ export default function AnimalList() {
               </div>
             )}
           </div>
-          {isOwnerOrHand && (
-            <Link href="/animals/new">
-              <button className="herd-add-btn">+ Add</button>
-            </Link>
-          )}
         </div>
       </div>
 
