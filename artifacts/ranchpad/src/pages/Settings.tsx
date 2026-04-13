@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Save, XCircle, Cog, Loader2, Plus, CheckCircle2 } from "lucide-react";
+import { MapPin, Save, XCircle, Cog, Loader2, Plus, CheckCircle2, LogOut } from "lucide-react";
 import "./Settings.css";
 import { useGetRanch, useUpdateRanch } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,7 +21,7 @@ function roleLabel(r: string) {
 export default function Settings() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, logout } = useAuth();
   const [, setLocation] = useLocation();
   const { ranches, activeRanchId, setActiveRanch, isLoadingRanches } = useRanch();
   const [switchingId, setSwitchingId] = useState<number | null>(null);
@@ -528,6 +528,16 @@ export default function Settings() {
             <span className="settings-nav-link-chevron">›</span>
           </Link>
         </div>
+
+        {/* ── Sign Out ── */}
+        <button
+          type="button"
+          className="settings-signout-btn"
+          onClick={() => logout()}
+        >
+          <LogOut size={15} />
+          Sign Out
+        </button>
 
       </div>
     </div>

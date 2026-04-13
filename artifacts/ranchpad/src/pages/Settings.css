@@ -691,6 +691,30 @@
   line-height: 1;
 }
 
+/* ── Sign Out button ──────────────────────────────────────────────────── */
+
+.settings-signout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1.5px solid #F0C5BF;
+  background: #FDF0EE;
+  color: #B03A2E;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.settings-signout-btn:hover {
+  background: #F8DDD9;
+  border-color: #D9998F;
+}
+
 /* ── Loading state ────────────────────────────────────────────────────── */
 
 .settings-loading {
