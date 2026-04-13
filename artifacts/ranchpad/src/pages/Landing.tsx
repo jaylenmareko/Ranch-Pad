@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useAuthModal } from "@/contexts/auth-modal-context";
+import { RanchPadLogo } from "@/components/RanchPadLogo";
 import "./Landing.css";
 
 export default function Landing() {
@@ -10,7 +11,7 @@ export default function Landing() {
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
       <nav className="lp-nav">
-        <div className="lp-nav-logo">Ranch<span>Pad</span></div>
+        <RanchPadLogo size="sm" variant="dark" />
         <div className="lp-nav-actions">
           <button className="lp-nav-login" onClick={openLogin}>Log In</button>
           <button className="lp-nav-signup" onClick={openSignup}>Get Started</button>
@@ -275,7 +276,7 @@ export default function Landing() {
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
       <footer className="lp-footer">
-        <div className="lp-footer-logo">Ranch<span>Pad</span></div>
+        <RanchPadLogo size="sm" variant="dark" />
         <div className="lp-footer-links">
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
