@@ -228,12 +228,14 @@ export default function AlertsList() {
 
   const buildAnimalLabel = (alert: Alert): string | null => {
     if (!alert.animalId) return null;
+    const suffix = alert.animalSpecies ? ` · ${alert.animalSpecies}` : "";
+    if (alert.animalTagNumber && alert.animalName) {
+      return `#${alert.animalTagNumber} (${alert.animalName})${suffix}`;
+    }
     if (alert.animalTagNumber) {
-      const suffix = alert.animalSpecies ? ` · ${alert.animalSpecies}` : "";
       return `#${alert.animalTagNumber}${suffix}`;
     }
     if (alert.animalName) {
-      const suffix = alert.animalSpecies ? ` · ${alert.animalSpecies}` : "";
       return `${alert.animalName}${suffix}`;
     }
     return null;

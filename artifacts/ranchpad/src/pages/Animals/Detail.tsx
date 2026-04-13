@@ -564,8 +564,13 @@ export default function AnimalDetail() {
         <div className="detail-hero">
           <div className="detail-avatar">{emoji}</div>
           <div className="detail-hero-info">
-            <div className="detail-animal-name">{animal.name}</div>
-            {animal.tagNumber && <span className="detail-tag-badge">#{animal.tagNumber}</span>}
+            <div className="detail-animal-name">
+              {animal.tagNumber ? `#${animal.tagNumber}` : animal.name}
+            </div>
+            {animal.tagNumber
+              ? <span className="detail-tag-badge">{animal.name}</span>
+              : null
+            }
             <div className={`detail-health-badge ${healthBadgeClass}`}>
               <span className="detail-health-dot" style={{ backgroundColor: healthDotColor }} />
               {healthLabel}
