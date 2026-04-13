@@ -9,9 +9,6 @@
 .dash-header {
   background: #1A3628;
   padding: 16px 16px 0;
-  margin: 0 16px;
-  border-radius: 16px;
-  overflow: hidden;
 }
 
 .dash-header-top {
@@ -511,6 +508,53 @@
 .dash-animal-badge.healthy { background: rgba(45,106,79,0.12); color: #2D6A4F; }
 .dash-animal-badge.alert   { background: rgba(192,57,43,0.12); color: #c0392b; }
 .dash-animal-badge.watch   { background: rgba(245,158,11,0.12); color: #b45309; }
+
+/* ── Quick-link rows ─────────────────────────────────────────────────────── */
+.dash-quick-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-bottom: 1px solid #EAF0EC;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.dash-quick-link:last-child { border-bottom: none; }
+.dash-quick-link:hover { background: rgba(0,0,0,0.02); }
+
+.dash-quick-link-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #EAF0EC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.dash-quick-link-body { flex: 1; min-width: 0; }
+
+.dash-quick-link-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  margin-bottom: 1px;
+}
+
+.dash-quick-link-sub {
+  font-size: 11px;
+  color: #666666;
+}
+
+.dash-quick-link-chevron {
+  font-size: 18px;
+  color: #AAAAAA;
+  flex-shrink: 0;
+}
 
 /* ── Example alert (faded) ───────────────────────────────────────────────── */
 .dash-example-label {

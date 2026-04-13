@@ -1,189 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  Home, Bell, LogOut, Settings, Menu, LogIn, UserPlus, Warehouse, Users,
-  ChevronRight, Plus, MapPin, CheckCircle2, XCircle, Tractor, UserCog, X, FolderOpen, ArrowUpDown
+  Plus, MapPin, CheckCircle2, XCircle, Tractor, X, FolderOpen
 } from "lucide-react";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useRanch, type RanchInfo } from "@/contexts/ranch-context";
-import { useAuthModal } from "@/contexts/auth-modal-context";
 import { SimpleDialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-
-function CowIcon({ className }: { className?: string }) {
-  return <span className={className} style={{ fontSize: "1rem", lineHeight: 1, display: "inline-flex", alignItems: "center" }}>🐄</span>;
-}
-
-// ── Nav item definition ────────────────────────────────────────────────────────
-
-interface NavItem {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  badge?: number;
-}
-
-function getOwnerRanchItems(): NavItem[] {
-  return [
-    { href: "/", icon: Home, label: "Dashboard" },
-    { href: "/animals", icon: Tractor, label: "Herd" },
-    { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
-  ];
-}
-
-function getViewerItems(): NavItem[] {
-  return [
-    { href: "/animals", icon: Tractor, label: "Herd" },
-    { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
-  ];
-}
-
-function getPersonalRanchItems(pendingDeleteRequests: number): NavItem[] {
-  return [
-    { href: "/", icon: Home, label: "Dashboard" },
-    { href: "/animals", icon: Tractor, label: "Herd" },
-    { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
-    { href: "/settings", icon: Settings, label: "Ranch Settings" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
-  ];
-}
-
-// Flat nav items for solo owners
-function getFlatNavItems(pendingDeleteRequests: number): NavItem[] {
-  return [
-    { href: "/", icon: Home, label: "Dashboard" },
-    { href: "/animals", icon: Tractor, label: "Herd" },
-    { href: "/alerts", icon: Bell, label: "Alerts" },
-    { href: "/team", icon: Users, label: "Team", badge: pendingDeleteRequests },
-    { href: "/settings", icon: Settings, label: "Ranch Settings" },
-    { href: "/account", icon: UserCog, label: "Account Settings" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import or Export Data" },
-  ];
-}
-
-// ── Single nav link ────────────────────────────────────────────────────────────
-
-function NavLink({
-  href, icon: Icon, label, active, badge, onClick, indent,
-}: {
-  href: string; icon: React.ElementType; label: string; active: boolean; badge?: number; onClick?: () => void; indent?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={cn(
-        "relative flex items-center gap-2.5 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
-        indent ? "px-3 pl-7" : "px-3",
-        active
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-      )}
-    >
-      {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-primary" />
-      )}
-      <Icon className={cn("w-4 h-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
-      {label}
-      {badge != null && badge > 0 && (
-        <span className="ml-auto flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-background text-xs font-bold leading-none">
-          {badge > 9 ? "9+" : badge}
-        </span>
-      )}
-    </Link>
-  );
-}
-
-// ── Expandable ranch folder ────────────────────────────────────────────────────
-
-function RanchFolder({
-  ranch,
-  items,
-  isOpen,
-  onToggle,
-  activeRanchId,
-  currentPath,
-  onNavClick,
-  noPersonalRanchCta,
-}: {
-  ranch: RanchInfo;
-  items: NavItem[];
-  isOpen: boolean;
-  onToggle: () => void;
-  activeRanchId: number | null;
-  currentPath: string;
-  onNavClick: (ranchId: number) => void;
-  noPersonalRanchCta?: () => void;
-}) {
-  const isActiveRanch = activeRanchId === ranch.id;
-  const folderLabel = ranch.isPersonal ? "My Ranch" : `${ranch.ownerName ?? "Owner"}'s Ranch`;
-
-  return (
-    <div className="mb-0.5">
-      <button
-        onClick={onToggle}
-        className={cn(
-          "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors",
-          isActiveRanch
-            ? "text-foreground"
-            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-        )}
-      >
-        <ChevronRight
-          className={cn(
-            "w-3.5 h-3.5 shrink-0 transition-transform duration-200",
-            isOpen ? "rotate-90" : ""
-          )}
-        />
-        <Warehouse className="w-3.5 h-3.5 shrink-0 opacity-70" />
-        <span className="truncate flex-1 text-left">{folderLabel}</span>
-        {isActiveRanch && (
-          <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-        )}
-      </button>
-
-      {isOpen && (
-        <div className="mt-0.5 ml-1 flex flex-col gap-0.5">
-          {noPersonalRanchCta ? (
-            <button
-              onClick={noPersonalRanchCta}
-              className="flex items-center gap-2 px-3 pl-7 py-2 rounded-lg text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Set up My Ranch
-            </button>
-          ) : (
-            items.map((item) => {
-              const isActive =
-                isActiveRanch &&
-                (item.href === "/" ? currentPath === "/" : currentPath.startsWith(item.href));
-              return (
-                <NavLink
-                  key={item.href}
-                  href={item.href}
-                  icon={item.icon}
-                  label={item.label}
-                  active={isActive}
-                  badge={item.badge}
-                  indent
-                  onClick={() => onNavClick(ranch.id)}
-                />
-              );
-            })
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── My Ranch Setup Dialog ──────────────────────────────────────────────────────
 
@@ -203,11 +30,9 @@ function MyRanchSetupDialog({
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Pastures (step 2)
   const [pastures, setPastures] = useState<string[]>([]);
   const [newPastureName, setNewPastureName] = useState("");
 
-  // Address geocoding state
   const [address, setAddress] = useState("");
   const [geocodedLat, setGeocodedLat] = useState<number | null>(null);
   const [geocodedLon, setGeocodedLon] = useState<number | null>(null);
@@ -422,24 +247,74 @@ function MyRanchSetupDialog({
   );
 }
 
-// ── Profile box ────────────────────────────────────────────────────────────────
+// ── Bottom Tab Bar ─────────────────────────────────────────────────────────────
 
-function ProfileBox({ userName }: { userName: string | null }) {
-  const initials = userName
-    ? userName.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase()
-    : "?";
+const TABS = [
+  { href: "/",              emoji: "🏠", label: "Home"     },
+  { href: "/animals",       emoji: "🐄", label: "Herd"     },
+  { href: "/alerts",        emoji: "🔔", label: "Alerts"   },
+  { href: "/import-export", emoji: "↕",  label: "Data"     },
+  { href: "/settings",      emoji: "⚙️", label: "Settings" },
+];
+
+function BottomNav({ location }: { location: string }) {
+  const isActive = (href: string) =>
+    href === "/" ? location === "/" : location.startsWith(href);
 
   return (
-    <div className="px-3 py-3 border-t border-border/60">
-      <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg">
-        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0">
-          {initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">{userName ?? "..."}</p>
-        </div>
-      </div>
-    </div>
+    <nav style={{
+      display: "flex",
+      alignItems: "stretch",
+      background: "#ffffff",
+      borderTop: "1px solid #EAF0EC",
+      height: 64,
+      flexShrink: 0,
+    }}>
+      {TABS.map(tab => {
+        const active = isActive(tab.href);
+        return (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 3,
+              textDecoration: "none",
+              position: "relative",
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            {active && (
+              <span style={{
+                position: "absolute",
+                top: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 28,
+                height: 3,
+                background: "#1A3628",
+                borderRadius: "0 0 4px 4px",
+              }} />
+            )}
+            <span style={{ fontSize: 20, lineHeight: 1 }}>{tab.emoji}</span>
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 10,
+              fontWeight: active ? 700 : 500,
+              color: active ? "#1A3628" : "#8FA393",
+              letterSpacing: "0.02em",
+              lineHeight: 1,
+            }}>
+              {tab.label}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -447,235 +322,16 @@ function ProfileBox({ userName }: { userName: string | null }) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { logout, isAuthenticated, role, isViewer, pendingDeleteRequests, userName } = useAuth();
-  const { ranches, activeRanchId, activeRanch, hasPersonalRanch, setActiveRanch, refreshRanches } = useRanch();
-  const { openLogin, openSignup } = useAuthModal();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const { setActiveRanch, refreshRanches } = useRanch();
   const [setupOpen, setSetupOpen] = useState(false);
 
-  // Determine sidebar mode
-  const hasInvitedRanches = ranches.some(r => !r.isPersonal);
-  const showFolderSidebar = isAuthenticated && (hasInvitedRanches || role === "owner");
-
-  // Invited (non-personal) ranches
-  const invitedRanches = ranches.filter(r => !r.isPersonal);
-  const personalRanch = ranches.find(r => r.isPersonal) ?? null;
-
-  // Track open folders; default to the folder containing the active ranch
-  const [openFolders, setOpenFolders] = useState<Set<number>>(() => {
-    const set = new Set<number>();
-    const saved = localStorage.getItem("ranchpad_active_ranch");
-    if (saved) set.add(parseInt(saved, 10));
-    return set;
-  });
-
-  // When active ranch changes, open its folder
-  useEffect(() => {
-    if (activeRanchId) {
-      setOpenFolders(prev => new Set([...prev, activeRanchId]));
-    }
-  }, [activeRanchId]);
-
-  const toggleFolder = (ranchId: number) => {
-    setOpenFolders(prev => {
-      const next = new Set(prev);
-      if (next.has(ranchId)) next.delete(ranchId);
-      else next.add(ranchId);
-      return next;
-    });
-  };
-
-  const handleNavClick = (ranchId: number) => {
-    if (ranchId !== activeRanchId) setActiveRanch(ranchId);
-  };
-
   const isLanding = !isAuthenticated;
-  const isOwner = role === "owner";
-
-  const isActive = (href: string) =>
-    href === "/" ? location === "/" : location.startsWith(href);
-
-  // ── Flat nav renderer (solo owners) ─────────────────────────────────────────
-  const renderFlatNav = (onItemClick?: () => void) => {
-    const items = getFlatNavItems(pendingDeleteRequests);
-    return items.map((item) => {
-      if (item.href === "/" && isViewer) return null;
-      if ((item.href === "/settings" || item.href === "/team") && !isOwner) return null;
-      return (
-        <NavLink
-          key={item.href}
-          href={item.href}
-          icon={item.icon}
-          label={item.label}
-          active={isActive(item.href)}
-          badge={item.badge}
-          onClick={() => { onItemClick?.(); }}
-        />
-      );
-    });
-  };
-
-  // ── Folder nav renderer (multi-ranch) ────────────────────────────────────────
-  const renderFolderNav = (onItemClick?: () => void) => (
-    <>
-      {invitedRanches.map((ranch) => (
-        <RanchFolder
-          key={ranch.id}
-          ranch={ranch}
-          items={ranch.role === "viewer" ? getViewerItems() : getOwnerRanchItems()}
-          isOpen={openFolders.has(ranch.id)}
-          onToggle={() => toggleFolder(ranch.id)}
-          activeRanchId={activeRanchId}
-          currentPath={location}
-          onNavClick={(id) => { handleNavClick(id); onItemClick?.(); }}
-        />
-      ))}
-
-      <div className="border-t border-border/40 mt-1 pt-1 flex flex-col gap-0.5">
-        {hasPersonalRanch && personalRanch ? (
-          <RanchFolder
-            ranch={personalRanch}
-            items={getPersonalRanchItems(pendingDeleteRequests)}
-            isOpen={openFolders.has(personalRanch.id)}
-            onToggle={() => toggleFolder(personalRanch.id)}
-            activeRanchId={activeRanchId}
-            currentPath={location}
-            onNavClick={(id) => { handleNavClick(id); onItemClick?.(); }}
-          />
-        ) : (
-          <RanchFolder
-            ranch={{ id: -1, name: "My Ranch", role: "none", ownerName: null, isPersonal: true }}
-            items={[]}
-            isOpen={openFolders.has(-1)}
-            onToggle={() => toggleFolder(-1)}
-            activeRanchId={activeRanchId}
-            currentPath={location}
-            onNavClick={() => {}}
-            noPersonalRanchCta={() => { setSetupOpen(true); onItemClick?.(); }}
-          />
-        )}
-
-        <NavLink
-          href="/account"
-          icon={UserCog}
-          label="Account Settings"
-          active={isActive("/account")}
-          onClick={() => { onItemClick?.(); }}
-        />
-      </div>
-    </>
-  );
-
-  const sidebarBottom = (
-    <div className="border-t border-border">
-      {isAuthenticated ? (
-        <>
-          <ProfileBox userName={userName} />
-          <div className="px-3 pb-3">
-            <button
-              onClick={() => logout()}
-              className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="px-3 py-4 flex flex-col gap-2">
-          <button
-            onClick={openSignup}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30"
-          >
-            <UserPlus className="w-3.5 h-3.5" /> Sign Up Free
-          </button>
-          <button
-            onClick={openLogin}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-white/5 transition-colors"
-          >
-            <LogIn className="w-3.5 h-3.5" /> Log In
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
-  const mobileSidebarBottom = (
-    <div className="border-t border-border">
-      {isAuthenticated ? (
-        <>
-          <ProfileBox userName={userName} />
-          <div className="px-3 pb-3">
-            <button
-              onClick={() => { setMenuOpen(false); logout(); }}
-              className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="px-3 py-4 flex flex-col gap-2">
-          <button
-            onClick={() => { setMenuOpen(false); openSignup(); }}
-            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md shadow-primary/30"
-          >
-            <UserPlus className="w-3.5 h-3.5" /> Sign Up Free
-          </button>
-          <button
-            onClick={() => { setMenuOpen(false); openLogin(); }}
-            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-white/5 transition-colors"
-          >
-            <LogIn className="w-3.5 h-3.5" /> Log In
-          </button>
-        </div>
-      )}
-    </div>
-  );
 
   return (
-    <div className="h-screen overflow-hidden bg-background flex flex-col md:flex-row">
+    <div className={cn("h-screen overflow-hidden flex flex-col", isLanding ? "bg-background" : "bg-[#F5F1EA]")}>
 
-      {/* ── Desktop Sidebar ──────────────────────────────────────────────── */}
-      <aside
-        className={cn("hidden w-56 shrink-0 flex-col border-r border-border z-10 h-full", isLanding ? "" : "md:flex")}
-        style={{ background: "hsl(var(--sidebar))" }}
-      >
-        <Link href="/" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity shrink-0">
-          <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
-        </Link>
-
-        <nav className="flex-1 px-3 pb-4 flex flex-col gap-0.5 overflow-y-auto">
-          {showFolderSidebar ? renderFolderNav() : renderFlatNav()}
-        </nav>
-
-        {sidebarBottom}
-      </aside>
-
-      {/* ── Mobile Slide-Out Menu ─────────────────────────────────────────── */}
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent
-          side="left"
-          className="w-64 p-0 flex flex-col border-r border-border"
-          style={{ background: "hsl(var(--sidebar))" }}
-        >
-          <SheetTitle className="sr-only">Navigation menu</SheetTitle>
-          <div className="px-5 py-5 border-b border-border flex items-center gap-2.5 shrink-0">
-            <span className="font-display font-bold text-lg tracking-tight text-foreground">RanchPad</span>
-          </div>
-
-          <nav className="flex-1 px-3 py-3 flex flex-col gap-0.5 overflow-y-auto">
-            {showFolderSidebar
-              ? renderFolderNav(() => setMenuOpen(false))
-              : renderFlatNav(() => setMenuOpen(false))}
-          </nav>
-
-          {mobileSidebarBottom}
-        </SheetContent>
-      </Sheet>
-
-      {/* ── My Ranch Setup Dialog ─────────────────────────────────────────── */}
+      {/* Ranch Setup Dialog */}
       <MyRanchSetupDialog
         open={setupOpen}
         onOpenChange={setSetupOpen}
@@ -685,30 +341,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         }}
       />
 
-      {/* ── Main Content ──────────────────────────────────────────────────── */}
+      {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile top bar */}
-        <header className={cn("flex items-center gap-2 px-3 h-12 border-b border-border sticky top-0 z-20", isLanding ? "hidden" : "md:hidden")} style={{ background: "#1A3628" }}>
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors shrink-0"
-            aria-label="Open menu"
-          >
-            <Menu className="w-5 h-5" style={{ color: "rgba(255,255,255,0.8)" }} />
-          </button>
-
-          <Link href="/" className="flex items-center gap-0 hover:opacity-80 transition-opacity">
-            <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 17, color: "#fff", letterSpacing: "-0.3px" }}>Ranch</span>
-            <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 17, color: "#F0A845", letterSpacing: "-0.3px" }}>Pad</span>
-          </Link>
-        </header>
-
-        <div className={cn("flex-1 overflow-y-auto", isLanding ? "flex flex-col" : "p-5 md:p-8")}>
-          <div className={cn("w-full", isLanding ? "flex-1 flex flex-col" : "max-w-5xl mx-auto")}>
+        <div className={cn("flex-1 overflow-y-auto", isLanding ? "flex flex-col" : "")}>
+          <div className={cn("w-full", isLanding ? "flex-1 flex flex-col" : "")}>
             {children}
           </div>
         </div>
       </main>
+
+      {/* Bottom Navigation — authenticated only */}
+      {!isLanding && <BottomNav location={location} />}
     </div>
   );
 }
