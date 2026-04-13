@@ -4,6 +4,7 @@ import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { useAuthModal } from "@/contexts/auth-modal-context";
+import { RanchPadLogo } from "@/components/RanchPadLogo";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -57,8 +58,8 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10">
-          <span className="font-display font-bold text-xl text-primary tracking-tight">RanchPad</span>
+        <div style={{ marginBottom: 36 }}>
+          <RanchPadLogo size="md" />
         </div>
 
         {done ? (

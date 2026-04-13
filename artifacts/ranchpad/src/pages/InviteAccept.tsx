@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Warehouse, Shield, Eye } from "lucide-react";
+import { Shield, Eye } from "lucide-react";
+import { RanchPadLogo } from "@/components/RanchPadLogo";
 import "./InviteAccept.css";
 
 function roleLabel(role: string): string {
@@ -124,10 +125,7 @@ export default function InviteAccept() {
 
       {/* ── Logo ──────────────────────────────────────────────────────────── */}
       <div className="invite-logo">
-        <div className="invite-logo-icon">
-          <Warehouse size={20} color="#FFFFFF" />
-        </div>
-        <span className="invite-logo-name">RanchPad</span>
+        <RanchPadLogo size="md" />
       </div>
 
       <div className="invite-wrap">

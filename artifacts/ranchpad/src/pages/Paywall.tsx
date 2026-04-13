@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, Loader2, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { RanchPadLogo } from "@/components/RanchPadLogo";
 import type { BillingStatus } from "@/hooks/use-billing";
 
 interface PaywallProps {
@@ -40,8 +41,8 @@ export default function Paywall({ billingStatus }: PaywallProps) {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <span className="font-display font-bold text-3xl text-primary tracking-tight">RanchPad</span>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
+          <RanchPadLogo size="lg" />
         </div>
 
         {/* Status message */}
