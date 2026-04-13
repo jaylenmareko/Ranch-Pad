@@ -172,12 +172,18 @@
 
 .lp-cta-row {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
   justify-content: center;
   position: relative;
   margin-bottom: 64px;
+}
+
+.lp-cta-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
 }
 
 .lp-btn-primary {
@@ -419,33 +425,6 @@
 
 .lp-mini-stat-label { font-size: 7px; color: var(--lp-text-faint); margin-top: 1px; }
 
-/* ── Trust bar ─────────────────────────────────────────────────────────────── */
-.lp-trust-bar {
-  background: rgba(255,255,255,0.04);
-  border-top: 1px solid rgba(255,255,255,0.08);
-  padding: 20px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  flex-wrap: wrap;
-  position: relative;
-  width: 100%;
-  margin-top: 60px;
-}
-
-.lp-trust-item {
-  font-size: 13px;
-  color: rgba(255,255,255,0.45);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.lp-trust-item strong {
-  color: rgba(255,255,255,0.75);
-  font-weight: 600;
-}
 
 /* ── Features section ──────────────────────────────────────────────────────── */
 .lp-features {
@@ -769,7 +748,6 @@
   .lp-feature-card.hero-card { grid-column: span 1; }
   .lp-steps-row { flex-direction: column; align-items: center; }
   .lp-step + .lp-step::before { display: none; }
-  .lp-trust-bar { gap: 20px; }
   .lp-pricing-card { padding: 48px 24px; }
   .lp-phone-wrap .lp-phone-frame:nth-child(2) { display: none; }
 }

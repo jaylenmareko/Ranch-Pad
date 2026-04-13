@@ -34,6 +34,7 @@ export default function Landing() {
           <button className="lp-btn-primary" onClick={openSignup}>
             Start Your Free 2-Week Trial
           </button>
+          <p className="lp-cta-sub">$12/month after trial and cancel anytime.</p>
         </div>
 
         {/* Phone mockups */}
@@ -192,12 +193,6 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Trust bar */}
-        <div className="lp-trust-bar">
-          <div className="lp-trust-item"><strong>14-day</strong> free trial</div>
-          <div className="lp-trust-item"><strong>$12/mo</strong> after trial</div>
-          <div className="lp-trust-item"><strong>Cancel</strong> anytime</div>
-        </div>
       </section>
 
       {/* ── FEATURES ─────────────────────────────────────────────────────── */}
