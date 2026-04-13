@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Plus, ChevronDown, ChevronRight, Download, Upload, CheckCircle, XCircle, Loader2, PawPrint, Calendar, MapPin, ArrowRight, Check, Minus, Trash2, CheckSquare, Archive, FileDown, Scissors } from "lucide-react";
+import "./List.css";
 import { useListAnimals, type Animal } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { useRanch } from "@/contexts/ranch-context";
@@ -118,44 +119,38 @@ function AnimalCard({
       ? "#eab308"
       : "transparent";
 
+  const statusClass = animal.latestHealthSeverity === "high" ? "alert"
+    : animal.latestHealthSeverity === "medium" ? "watch" : "healthy";
+  const statusLabel = animal.latestHealthSeverity === "high" ? "⚠ Urgent"
+    : animal.latestHealthSeverity === "medium" ? "Watch" : "Healthy";
+
   const inner = (
-    <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-border bg-card transition-colors hover:bg-muted/20 ${selected ? "bg-primary/5" : ""}`}
-      style={{ borderLeft: `4px solid ${accentColor}` }}
-    >
-      {selectMode && (
+    <div className={`herd-animal-card${selected ? " selected" : ""}`}>
+      {selectMode ? (
         <SelectCheckbox
           checked={!!selected}
           onClick={(e) => { e.stopPropagation(); onToggle?.(); }}
         />
+      ) : (
+        <div className="herd-animal-avatar">{speciesIcon(animal.species)}</div>
       )}
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm text-foreground leading-tight truncate">
+      <div className="herd-animal-info">
+        <div className="herd-animal-name">
           {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
-          {animal.tagNumber && animal.name ? <span className="font-normal text-muted-foreground ml-1.5">{animal.name}</span> : null}
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5 truncate">
-          {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
-        </p>
+          {animal.tagNumber && animal.name ? <span className="herd-animal-tag-name"> · {animal.name}</span> : null}
+        </div>
+        <div className="herd-animal-meta">
+          {[animal.sex, animal.breed, formatAge(animal.dateOfBirth)].filter(Boolean).join(" · ")}
+        </div>
         {animal.sex === "Female" && animal.expectedDueDate && (
-          <p className="text-xs font-semibold text-pink-400 mt-0.5">
+          <span className="herd-animal-due">
             Due {new Date(animal.expectedDueDate).toLocaleDateString()}
-          </p>
-        )}
-        {animal.latestHealthSeverity === "high" && (
-          <span className="inline-flex items-center gap-1 mt-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
-            ⚠ Urgent health event
-          </span>
-        )}
-        {animal.latestHealthSeverity === "medium" && (
-          <span className="inline-flex items-center gap-1 mt-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eab30820", color: "#eab308" }}>
-            ⚠ Needs monitoring
           </span>
         )}
       </div>
-      <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground">
-        <span>{formatAge(animal.dateOfBirth)}</span>
-        {!selectMode && <ChevronRight className="w-3.5 h-3.5 opacity-40" />}
+      <div className="herd-animal-right">
+        <span className={`herd-status-badge ${statusClass}`}>{statusLabel}</span>
+        {!selectMode && <span className="herd-chevron">›</span>}
       </div>
     </div>
   );
@@ -231,13 +226,9 @@ function SpeciesFolder({
   const someSelected = selectMode ? selectedCount > 0 && selectedCount < animals.length : false;
 
   if (nested) {
-    // Inner style — matches Alerts TypeFolder
     return (
-      <div className="rounded-xl border border-border/60 bg-background/30 overflow-hidden">
-        <button
-          onClick={toggle}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-white/3 transition-colors text-left"
-        >
+      <div className="herd-nested-folder">
+        <button onClick={toggle} className="herd-nested-folder-header">
           {selectMode && (
             <SelectCheckbox
               checked={allSelected}
@@ -246,17 +237,19 @@ function SpeciesFolder({
             />
           )}
           <ChevronDown
-            className="w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200"
+            className="herd-nested-chevron"
             style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           />
-          <span className="text-sm font-semibold text-foreground flex-1 truncate">{species}</span>
-          {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
-          {highCount > 0 && <span className="text-xs font-bold text-destructive">⚠ {highCount}</span>}
-          {medCount > 0 && highCount === 0 && <span className="text-xs font-bold text-yellow-500">⚠ {medCount}</span>}
-          <span className="text-xs text-muted-foreground font-medium">{animals.length}</span>
+          <span className="herd-nested-title">{species}</span>
+          {!open && <span className="herd-folder-hint">tap to open</span>}
+          <div className="herd-folder-badges">
+            {highCount > 0 && <span className="herd-folder-badge alert">{highCount} urgent</span>}
+            {medCount > 0 && highCount === 0 && <span className="herd-folder-badge watch">{medCount} watch</span>}
+            <span className="herd-folder-badge count">{animals.length}</span>
+          </div>
         </button>
         {open && (
-          <div className="px-2.5 pb-2.5 space-y-2 border-t border-border/40 pt-2.5">
+          <div className="herd-nested-body">
             {animals.map(animal => (
               <AnimalCard
                 key={animal.id}
@@ -272,13 +265,9 @@ function SpeciesFolder({
     );
   }
 
-  // Outer/standalone style — matches Alerts SeverityFolder
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
-      <button
-        onClick={toggle}
-        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
-      >
+    <div className="herd-folder">
+      <button onClick={toggle} className="herd-folder-header">
         {selectMode && (
           <SelectCheckbox
             checked={allSelected}
@@ -287,32 +276,20 @@ function SpeciesFolder({
           />
         )}
         <ChevronDown
-          className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
+          className="herd-folder-chevron"
           style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
         />
-        <span className="font-bold text-sm text-foreground flex-1 truncate">{species}</span>
-        {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
-        <div className="flex items-center gap-1.5">
-          {highCount > 0 && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
-              {highCount} urgent
-            </span>
-          )}
-          {medCount > 0 && highCount === 0 && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eab30820", color: "#eab308" }}>
-              {medCount} watch
-            </span>
-          )}
-          <span
-            className="text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: `${accentColor === "transparent" ? "#ffffff" : accentColor}15`, color: accentColor === "transparent" ? "var(--muted-foreground)" : accentColor }}
-          >
-            {animals.length} {animals.length === 1 ? "animal" : "animals"}
-          </span>
+        <span className="herd-folder-icon">{speciesIcon(species)}</span>
+        <span className="herd-folder-title">{species}</span>
+        {!open && <span className="herd-folder-hint">tap to open</span>}
+        <div className="herd-folder-badges">
+          {highCount > 0 && <span className="herd-folder-badge alert">{highCount} urgent</span>}
+          {medCount > 0 && highCount === 0 && <span className="herd-folder-badge watch">{medCount} watch</span>}
+          <span className="herd-folder-badge count">{animals.length}</span>
         </div>
       </button>
       {open && (
-        <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-3">
+        <div className="herd-folder-body">
           {animals.map(animal => (
             <AnimalCard
               key={animal.id}
@@ -381,52 +358,33 @@ function LocationFolder({
   const accentColor = highCount > 0 ? "#ef4444" : medCount > 0 ? "#eab308" : "transparent";
 
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm" style={{ borderLeft: `4px solid ${accentColor}` }}>
-      <button
-        onClick={toggle}
-        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors text-left"
-      >
+    <div className="herd-folder">
+      <button onClick={toggle} className="herd-folder-header">
         {selectMode && (
           <SelectCheckbox
             checked={allSelected}
             indeterminate={someSelected}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleSpecies?.(allIds, allSelected);
-            }}
+            onClick={(e) => { e.stopPropagation(); onToggleSpecies?.(allIds, allSelected); }}
           />
         )}
         <ChevronDown
-          className="w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200"
+          className="herd-folder-chevron"
           style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
         />
-        <MapPin className={`w-4 h-4 shrink-0 ${isUnassigned ? "text-muted-foreground/40" : "text-primary"}`} />
-        <span className="font-bold text-sm text-foreground flex-1 truncate">
+        <MapPin className={`herd-folder-mappin ${isUnassigned ? "unassigned" : "assigned"}`} />
+        <span className="herd-folder-title">
           {isUnassigned ? "No Location Set" : locationName}
         </span>
-        {!open && <span className="text-xs text-muted-foreground/60 font-medium shrink-0">tap to open</span>}
-        <div className="flex items-center gap-1.5">
-          {highCount > 0 && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
-              {highCount} urgent
-            </span>
-          )}
-          {medCount > 0 && highCount === 0 && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eab30820", color: "#eab308" }}>
-              {medCount} watch
-            </span>
-          )}
-          <span
-            className="text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: `${accentColor === "transparent" ? "#ffffff" : accentColor}15`, color: accentColor === "transparent" ? "var(--muted-foreground)" : accentColor }}
-          >
-            {animals.length} {animals.length === 1 ? "animal" : "animals"}
-          </span>
+        {!open && <span className="herd-folder-hint">tap to open</span>}
+        <div className="herd-folder-badges">
+          {highCount > 0 && <span className="herd-folder-badge alert">{highCount} urgent</span>}
+          {medCount > 0 && highCount === 0 && <span className="herd-folder-badge watch">{medCount} watch</span>}
+          <span className="herd-folder-badge count">{animals.length}</span>
         </div>
       </button>
 
       {open && (
-        <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-3">
+        <div className="herd-folder-body">
           {bySpecies.map(([species, speciesAnimals]) => (
             <SpeciesFolder
               key={`${folderKey}-${species}`}
@@ -919,7 +877,7 @@ export default function AnimalList() {
   const bulkDeleteConfirmLabel = role === "owner" ? "Delete" : "Send Requests";
 
   return (
-    <div className="space-y-5">
+    <div className="herd-page">
       {/* Always-present hidden inputs and dialogs */}
       <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
       <ImportModeDialog
@@ -928,7 +886,6 @@ export default function AnimalList() {
         onAdd={() => pendingFile && doImport(pendingFile, false)}
         onReplace={() => pendingFile && doImport(pendingFile, true)}
       />
-      {/* Bulk Delete Confirmation Dialog */}
       <SimpleDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen} title={bulkDeleteTitle}>
         <div className="space-y-5">
           <p className="text-sm text-muted-foreground leading-relaxed">{bulkDeleteBody}</p>
@@ -949,301 +906,273 @@ export default function AnimalList() {
         </div>
       </SimpleDialog>
 
-      {hasNoAnimals ? (
-        <EmptyHerdOverlay role={role} />
-      ) : (
-      <>
-
-      {/* Select-mode toolbar */}
-      {selectMode && (
-        <div className="flex gap-2">
-          <button
-            onClick={selectAll}
-            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex-1"
-          >
-            Select All
-          </button>
-          <Button
-            variant="destructive"
-            disabled={selectedIds.size === 0}
-            onClick={() => setBulkDeleteOpen(true)}
-            className="h-10 px-4 rounded-lg font-semibold text-sm flex-1"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete ({selectedIds.size})
-          </Button>
-          <button
-            onClick={exitSelectMode}
-            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg font-semibold text-sm bg-muted border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex-1"
-          >
-            Cancel
-          </button>
+      {/* Dark green header */}
+      <div className="herd-header">
+        <div className="herd-header-row">
+          <div>
+            <div className="herd-page-label">Your Herd</div>
+            <div className="herd-page-title">{activeRanch?.name ?? "Herd"}</div>
+            {animals && !isLoading && (
+              <div className="herd-header-count">
+                {(animals as Animal[]).length} {(animals as Animal[]).length === 1 ? "animal" : "animals"}
+              </div>
+            )}
+          </div>
+          {isOwnerOrHand && (
+            <Link href="/animals/new">
+              <button className="herd-add-btn">+ Add</button>
+            </Link>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Active / Archived tab bar */}
-      {!selectMode && (
-        <div className="flex items-center border-b border-border/60 pb-px gap-6">
-          <button
-            onClick={() => setShowArchived(false)}
-            className={`flex items-center gap-2 py-2.5 px-1 text-sm font-bold transition-all border-b-2 ${
-              !showArchived ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <PawPrint className="w-4 h-4" />
-            Active Herd
-          </button>
-          <button
-            onClick={() => setShowArchived(true)}
-            className={`flex items-center gap-2 py-2.5 px-1 text-sm font-bold transition-all border-b-2 ${
-              showArchived ? "border-amber-500 text-amber-400" : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Archive className="w-4 h-4" />
-            Archived
-          </button>
-          <div className="ml-auto flex items-center gap-1">
+      {hasNoAnimals ? (
+        <div className="herd-body">
+          <EmptyHerdOverlay role={role} />
+        </div>
+      ) : (
+      <div className="herd-body">
+
+        {/* Select-mode toolbar */}
+        {selectMode && (
+          <div className="herd-select-toolbar">
+            <button onClick={selectAll} className="herd-select-btn">Select All</button>
+            <button
+              className="herd-select-btn delete"
+              disabled={selectedIds.size === 0}
+              onClick={() => setBulkDeleteOpen(true)}
+            >
+              <Trash2 style={{ width: 14, height: 14 }} />
+              Delete ({selectedIds.size})
+            </button>
+            <button onClick={exitSelectMode} className="herd-select-btn">Cancel</button>
+          </div>
+        )}
+
+        {/* Active / Archived tab bar */}
+        {!selectMode && (
+          <div className="herd-tabs">
+            <button
+              onClick={() => setShowArchived(false)}
+              className={`herd-tab${!showArchived ? " active" : ""}`}
+            >
+              Active
+              {!showArchived && animals && (
+                <span className="herd-tab-count">{(animals as Animal[]).length}</span>
+              )}
+            </button>
+            <button
+              onClick={() => setShowArchived(true)}
+              className={`herd-tab${showArchived ? " active" : ""}`}
+            >
+              Archived
+            </button>
             {isOwnerOrHand && (
               <button
                 onClick={() => setSelectMode(true)}
-                className="flex items-center gap-1.5 py-1.5 px-3 text-sm font-semibold rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                className="herd-tab-delete-btn"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 style={{ width: 13, height: 13 }} />
                 Delete
               </button>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Import error */}
-      {importError && (
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-          <XCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-red-700 dark:text-red-300">{importError}</p>
-          </div>
-          <button onClick={() => setImportError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors" aria-label="Dismiss">
-            <XCircle className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Import success */}
-      {importSummary && (
-        <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" />
-              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
-                Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
-                {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} ${importSummary.skipped.length === 1 ? "row" : "rows"} skipped`}
-              </p>
-            </div>
-            <button onClick={() => setImportSummary(null)} className="shrink-0 text-green-400 hover:text-green-600 transition-colors" aria-label="Dismiss">
-              <XCircle className="w-4 h-4" />
+        {/* Import error */}
+        {importError && (
+          <div className="herd-error-banner">
+            <XCircle style={{ width: 16, height: 16, color: "#c0392b", flexShrink: 0, marginTop: 1 }} />
+            <p className="herd-error-banner-msg">{importError}</p>
+            <button onClick={() => setImportError(null)} className="herd-error-banner-close" aria-label="Dismiss">
+              <XCircle style={{ width: 14, height: 14 }} />
             </button>
           </div>
-          {importSummary.skipped.length > 0 && (
-            <ul className="space-y-1 pl-7">
-              {importSummary.skipped.map((s, i) => (
-                <li key={i} className="text-xs text-yellow-700 dark:text-yellow-400">
-                  <span className="font-semibold">Row {s.row}:</span> {plainEnglishSkipReason(s.reason)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+        )}
 
-      {/* Due Soon banner */}
-      {dueSoonFilter && (
-        <div className="flex items-center justify-between gap-3 px-5 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
-            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-              Showing animals due within the next 30 days
-            </p>
-          </div>
-          <button
-            onClick={() => setLocation("/animals")}
-            className="shrink-0 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-xs font-semibold uppercase tracking-wide"
-          >
-            Show all
-          </button>
-        </div>
-      )}
-
-      {/* Filter bar */}
-      {!selectMode && !showArchived && (
-        <div className="bg-card border border-border p-3 rounded-2xl shadow-sm">
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                placeholder="Search by name or tag..."
-                className="pl-12 border-none bg-muted/30 focus-visible:bg-background"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+        {/* Import success */}
+        {importSummary && (
+          <div className="herd-success-banner">
+            <div className="herd-success-banner-row">
+              <span className="herd-success-banner-text">
+                <CheckCircle style={{ width: 15, height: 15, flexShrink: 0 }} />
+                Import complete — {importSummary.animalsCreated} {importSummary.animalsCreated === 1 ? "animal" : "animals"} added
+                {importSummary.skipped.length > 0 && `, ${importSummary.skipped.length} skipped`}
+              </span>
+              <button onClick={() => setImportSummary(null)} style={{ color: "#8FA393", background: "none", border: "none", cursor: "pointer" }} aria-label="Dismiss">
+                <XCircle style={{ width: 14, height: 14 }} />
+              </button>
             </div>
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearAllFilters} className="shrink-0 text-destructive hover:text-destructive">
-                Clear filters
-              </Button>
+            {importSummary.skipped.length > 0 && (
+              <ul style={{ paddingLeft: 22, display: "flex", flexDirection: "column", gap: 4 }}>
+                {importSummary.skipped.map((s, i) => (
+                  <li key={i} style={{ fontSize: 11, color: "#8a7200" }}>
+                    <strong>Row {s.row}:</strong> {plainEnglishSkipReason(s.reason)}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Archived Animals Content */}
-      {showArchived && (
-        archivedLoading ? (
-          <div className="space-y-4">
-            {[1, 2].map(i => (
-              <div key={i} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                <div className="h-14 bg-muted/40 animate-pulse" />
-                <div className="divide-y divide-border/40">
-                  {[1, 2, 3].map(j => <div key={j} className="h-12 bg-muted/20 animate-pulse" />)}
+        {/* Due Soon banner */}
+        {dueSoonFilter && (
+          <div className="herd-due-banner">
+            <span className="herd-due-banner-text">
+              <Calendar style={{ width: 14, height: 14, flexShrink: 0 }} />
+              Showing animals due within the next 30 days
+            </span>
+            <button onClick={() => setLocation("/animals")} className="herd-due-banner-clear">
+              Show all
+            </button>
+          </div>
+        )}
+
+        {/* Search bar */}
+        {!selectMode && !showArchived && (
+          <div className="herd-search-wrap">
+            <Search className="herd-search-icon" />
+            <input
+              className="herd-search-input"
+              placeholder="Search by name or tag..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {hasActiveFilters && (
+              <button onClick={clearAllFilters} className="herd-clear-btn">Clear</button>
+            )}
+          </div>
+        )}
+
+        {/* Archived Animals Content */}
+        {showArchived && (
+          archivedLoading ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[1, 2].map(i => (
+                <div key={i} className="herd-skeleton">
+                  <div className="herd-skeleton-header" />
+                  {[1, 2, 3].map(j => <div key={j} className="herd-skeleton-row" />)}
                 </div>
+              ))}
+            </div>
+          ) : !archivedAnimals || archivedAnimals.length === 0 ? (
+            <div className="herd-empty">
+              <div className="herd-empty-icon"><Archive style={{ width: 24, height: 24, color: "#8FA393" }} /></div>
+              <div className="herd-empty-title">No archived animals</div>
+              <p className="herd-empty-sub">Archive an animal from its detail page when it's sold, deceased, or transferred. Records are preserved.</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {Object.entries(
+                archivedAnimals.reduce<Record<string, Animal[]>>((acc, a) => {
+                  (acc[a.species] = acc[a.species] || []).push(a);
+                  return acc;
+                }, {})
+              ).sort(([a], [b]) => a.localeCompare(b)).map(([species, speciesAnimals]) => (
+                <SpeciesFolder key={`archived-${species}`} species={species} animals={speciesAnimals} initialOpen />
+              ))}
+            </div>
+          )
+        )}
+
+        {/* Main Content */}
+        {!showArchived && (isLoading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[1, 2].map(i => (
+              <div key={i} className="herd-skeleton">
+                <div className="herd-skeleton-header" />
+                {[1, 2, 3].map(j => <div key={j} className="herd-skeleton-row" />)}
               </div>
             ))}
           </div>
-        ) : !archivedAnimals || archivedAnimals.length === 0 ? (
-          <div className="text-center py-20 bg-card rounded-3xl border border-border border-dashed">
-            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <Archive className="w-8 h-8 text-muted-foreground/40" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground">No archived animals</h3>
-            <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
-              Archive an animal from its detail page when it's sold, deceased, or transferred. Records are preserved.
+        ) : grouped.length === 0 ? (
+          <div className="herd-empty">
+            <div className="herd-empty-icon">🐄</div>
+            <div className="herd-empty-title">No animals found</div>
+            <p className="herd-empty-sub">
+              {search || hasActiveFilters
+                ? "Try adjusting your search or filters."
+                : role === "viewer"
+                  ? "No animals have been assigned to you yet. Contact the ranch owner."
+                  : "Your herd is empty. Add your first animal to get started."}
             </p>
+            {!search && !hasActiveFilters && role !== "viewer" && (
+              <Button className="mt-6" onClick={() => setLocation("/animals/new")}>Add First Animal</Button>
+            )}
           </div>
-        ) : (
-          <div className="space-y-4">
-            {Object.entries(
-              archivedAnimals.reduce<Record<string, Animal[]>>((acc, a) => {
-                (acc[a.species] = acc[a.species] || []).push(a);
-                return acc;
-              }, {})
-            ).sort(([a], [b]) => a.localeCompare(b)).map(([species, speciesAnimals]) => (
-              <SpeciesFolder
-                key={`archived-${species}`}
-                species={species}
-                animals={speciesAnimals}
-                initialOpen
+        ) : locationGrouped ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {locationGrouped.map(([locId, { name, animals: locAnimals }]) => (
+              <LocationFolder
+                key={locId ?? "unassigned"}
+                locationId={locId}
+                locationName={name}
+                animals={locAnimals}
+                initialOpen={dueSoonFilter ? true : undefined}
+                selectMode={selectMode}
+                selectedIds={selectedIds}
+                onToggleAnimal={toggleAnimal}
+                onToggleSpecies={toggleGroup}
               />
             ))}
           </div>
-        )
-      )}
-
-      {/* Content */}
-      {!showArchived && (isLoading ? (
-        <div className="space-y-4">
-          {[1, 2].map(i => (
-            <div key={i} className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-              <div className="h-14 bg-muted/40 animate-pulse" />
-              <div className="divide-y divide-border/40">
-                {[1, 2, 3].map(j => <div key={j} className="h-12 bg-muted/20 animate-pulse" />)}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : grouped.length === 0 ? (
-        <div className="text-center py-20 bg-card rounded-3xl border border-border border-dashed">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl leading-none">🐄</span>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {grouped.map(([species, speciesAnimals]) => (
+              <SpeciesFolder
+                key={`${species}-${dueSoonFilter}`}
+                species={species}
+                animals={speciesAnimals}
+                initialOpen={dueSoonFilter ? true : undefined}
+                selectMode={selectMode}
+                selectedIds={selectedIds}
+                onToggleAnimal={toggleAnimal}
+                onToggleSpecies={toggleGroup}
+              />
+            ))}
           </div>
-          <h3 className="text-xl font-bold text-foreground">No animals found</h3>
-          <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            {search || hasActiveFilters
-              ? "Try adjusting your search or filters."
-              : role === "viewer"
-                ? "No animals have been assigned to you yet. Contact the ranch owner."
-                : "Your herd is empty. Add your first animal to get started."}
-          </p>
-          {!search && !hasActiveFilters && role !== "viewer" && (
-            <Button className="mt-6" onClick={() => setLocation("/animals/new")}>Add First Animal</Button>
-          )}
-        </div>
-      ) : locationGrouped ? (
-        <div className="space-y-4">
-          {locationGrouped.map(([locId, { name, animals: locAnimals }]) => (
-            <LocationFolder
-              key={locId ?? "unassigned"}
-              locationId={locId}
-              locationName={name}
-              animals={locAnimals}
-              initialOpen={dueSoonFilter ? true : undefined}
-              selectMode={selectMode}
-              selectedIds={selectedIds}
-              onToggleAnimal={toggleAnimal}
-              onToggleSpecies={toggleGroup}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {grouped.map(([species, speciesAnimals]) => (
-            <SpeciesFolder
-              key={`${species}-${dueSoonFilter}`}
-              species={species}
-              animals={speciesAnimals}
-              initialOpen={dueSoonFilter ? true : undefined}
-              selectMode={selectMode}
-              selectedIds={selectedIds}
-              onToggleAnimal={toggleAnimal}
-              onToggleSpecies={toggleGroup}
-            />
-          ))}
-        </div>
-      ))}
+        ))}
 
-      {/* Cull Section */}
-      {!showArchived && !selectMode && cullAnimals && cullAnimals.length > 0 && (
-        <div className="mt-4 rounded-xl border border-orange-500/30 overflow-hidden" style={{ background: "rgba(234,88,12,0.04)" }}>
-          <button
-            className="w-full flex items-center gap-2 py-2.5 px-3 text-sm font-bold transition-all"
-            onClick={() => setShowCull(v => !v)}
-          >
-            <Scissors className="w-4 h-4 text-orange-400" />
-            <span className="text-orange-400">Cull List</span>
-            <span className="ml-1 text-xs font-bold bg-orange-500/15 text-orange-400 border border-orange-500/25 rounded-full px-2 py-0.5">
-              {cullAnimals.length}
-            </span>
-            {showCull
-              ? <ChevronDown className="w-4 h-4 text-orange-400/60 ml-auto" />
-              : <ChevronRight className="w-4 h-4 text-orange-400/60 ml-auto" />}
-          </button>
-          {showCull && (
-            <div className="px-3 pb-3 space-y-2">
-              {cullAnimals.map(animal => (
-                <Link key={animal.id} href={`/animals/${animal.id}`}>
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 bg-card transition-colors hover:bg-muted/20"
-                    style={{ borderColor: "rgba(234,88,12,0.25)", borderLeftColor: "#f97316", borderLeftWidth: 4 }}>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-foreground leading-tight truncate">
-                        {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
-                        {animal.tagNumber && animal.name ? <span className="font-normal text-muted-foreground ml-1.5">{animal.name}</span> : null}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
-                      </p>
+        {/* Cull Section */}
+        {!showArchived && !selectMode && cullAnimals && cullAnimals.length > 0 && (
+          <div className="herd-cull-folder">
+            <button className="herd-cull-header" onClick={() => setShowCull(v => !v)}>
+              <Scissors style={{ width: 14, height: 14, color: "#ea580c", flexShrink: 0 }} />
+              <span className="herd-cull-title">Cull List</span>
+              <span className="herd-cull-count">{cullAnimals.length}</span>
+              {showCull
+                ? <ChevronDown style={{ width: 14, height: 14, color: "rgba(234,88,12,0.5)", marginLeft: "auto" }} />
+                : <ChevronRight style={{ width: 14, height: 14, color: "rgba(234,88,12,0.5)", marginLeft: "auto" }} />}
+            </button>
+            {showCull && (
+              <div className="herd-cull-body">
+                {cullAnimals.map(animal => (
+                  <Link key={animal.id} href={`/animals/${animal.id}`}>
+                    <div className="herd-cull-card">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="herd-cull-card-name">
+                          {animal.tagNumber ? `#${animal.tagNumber}` : animal.name ?? "No tag"}
+                          {animal.tagNumber && animal.name
+                            ? <span style={{ fontWeight: 400, color: "#666" }}> · {animal.name}</span>
+                            : null}
+                        </div>
+                        <div className="herd-cull-card-meta">
+                          {[animal.sex, animal.breed].filter(Boolean).join(" · ")}
+                        </div>
+                      </div>
+                      <span className="herd-cull-hint">
+                        {animal.cullNote ? "tap to edit" : "tap to open"}
+                      </span>
+                      <ChevronRight style={{ width: 13, height: 13, color: "rgba(234,88,12,0.4)", flexShrink: 0 }} />
                     </div>
-                    <span className="text-xs text-muted-foreground/50 font-medium shrink-0 whitespace-nowrap">
-                      {animal.cullNote ? "tap to edit note" : "tap to open note"}
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-orange-400/50 shrink-0" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-      </>
+      </div>
       )}
     </div>
   );

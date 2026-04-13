@@ -11,7 +11,7 @@ import "@/lib/fetch-interceptor";
 // Providers
 import { AuthProvider } from "@/hooks/use-auth";
 import { useAuth } from "@/hooks/use-auth";
-import { AuthModalProvider } from "@/contexts/auth-modal-context";
+import { AuthModalProvider, useAuthModal } from "@/contexts/auth-modal-context";
 import { RanchProvider } from "@/contexts/ranch-context";
 
 // Components
