@@ -221,14 +221,14 @@
   gap: 8px;
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
-  font-weight: 600;
-  color: #8FA393;
+  font-weight: 700;
+  color: #1A1A1A;
   text-transform: uppercase;
   letter-spacing: 0.07em;
 }
 
 .dash-section-title svg {
-  color: #8FA393;
+  color: #1A3628;
 }
 
 .dash-section-count {
@@ -286,7 +286,7 @@
   font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  color: #5A6B5E;
+  color: #111111;
   line-height: 1.55;
   margin-bottom: 2px;
 }
@@ -308,9 +308,9 @@
 .dash-alert-row-detail-inner {
   padding: 8px 0 4px;
   font-size: 12px;
-  color: #4B5C54;
+  color: #222222;
   line-height: 1.5;
-  border-top: 1px solid #EAF0EC;
+  border-top: 1px solid #D0DDD5;
   margin-top: 6px;
 }
 
@@ -318,7 +318,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #9CA8A3;
+  color: #555555;
   padding: 4px;
   border-radius: 6px;
   display: flex;
@@ -331,7 +331,7 @@
   min-height: 32px;
 }
 
-.dash-dismiss-btn:hover { background: #EAF0EC; color: #1C2B26; }
+.dash-dismiss-btn:hover { background: #EAF0EC; color: #000; }
 
 .dash-refresh-btn {
   display: inline-flex;
@@ -375,7 +375,7 @@
 .dash-empty-sub {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
-  color: #5A6B5E;
+  color: #444444;
 }
 
 .dash-skeleton {
@@ -398,13 +398,13 @@
   gap: 6px;
   font-size: 10px;
   font-weight: 700;
-  color: #8A9A93;
+  color: #333333;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 10px 14px 6px;
 }
 
-.dash-sub-section-label svg { color: #2D6A4F; }
+.dash-sub-section-label svg { color: #1A3628; }
 
 .dash-up-row {
   display: flex;
@@ -420,14 +420,14 @@
 .dash-up-name {
   font-size: 13px;
   font-weight: 600;
-  color: #1C2B26;
+  color: #111111;
   flex: 1;
   min-width: 0;
 }
 
 .dash-up-sub {
   font-size: 11px;
-  color: #8A9A93;
+  color: #555555;
   font-weight: 400;
 }
 
@@ -450,9 +450,9 @@
   gap: 4px;
   font-size: 11px;
   font-weight: 600;
-  color: #6B7C74;
+  color: #1A3628;
   background: #EAF0EC;
-  border: 1px solid #D5E2D8;
+  border: 1px solid #C5D5CC;
   border-radius: 7px;
   padding: 4px 9px;
   cursor: pointer;
@@ -497,7 +497,7 @@
 
 .dash-animal-meta {
   font-size: 11px;
-  color: #8A9A93;
+  color: #444444;
 }
 
 .dash-animal-badge {
