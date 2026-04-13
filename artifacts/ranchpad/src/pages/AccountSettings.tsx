@@ -76,7 +76,7 @@ export default function AccountSettings() {
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
-        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Account Settings</h1>
+        <h1 className="text-xl font-black text-foreground whitespace-nowrap">Personal Account Settings</h1>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
             <UserCog className="w-10 h-10 text-primary/50" />
@@ -214,7 +214,7 @@ export default function AccountSettings() {
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Account Settings</h1>
+        <h1 className="text-xl font-black font-display text-foreground whitespace-nowrap">Personal Account Settings</h1>
       </div>
 
       {/* Your Account */}

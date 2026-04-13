@@ -522,7 +522,7 @@ export default function Settings() {
           <Link href="/account" className="settings-nav-link">
             <div className="settings-nav-link-icon">👤</div>
             <div className="settings-nav-link-body">
-              <div className="settings-nav-link-title">Account Settings</div>
+              <div className="settings-nav-link-title">Personal Account Settings</div>
               <div className="settings-nav-link-sub">Profile, password &amp; subscription</div>
             </div>
             <span className="settings-nav-link-chevron">›</span>

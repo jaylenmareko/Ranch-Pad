@@ -2,10 +2,8 @@ import React, { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, Check, Link2, UserMinus, Shield, Eye, Users, ClipboardList, CheckCircle, XCircle, ChevronDown, X, Trash2 } from "lucide-react";
+import "./Team.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,15 +57,10 @@ function roleLabel(role: string): string {
 }
 
 function RoleBadge({ role }: { role: string }) {
-  const label = roleLabel(role);
-  const classMap: Record<string, string> = {
-    Owner: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    "Ranch Hand": "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    Viewer: "bg-muted text-muted-foreground border-border",
-  };
+  const key = role === "member" ? "ranch_hand" : role;
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${classMap[label] ?? "bg-muted text-muted-foreground"}`}>
-      {label}
+    <span className={`team-role-badge team-role-badge--${key}`}>
+      {roleLabel(role)}
     </span>
   );
 }
@@ -279,166 +272,151 @@ export default function Team() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-5 max-w-lg mx-auto pb-20">
+    <div className="team-page">
 
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4">
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="team-header">
         <div>
-          <h1 className="text-2xl font-black font-display text-foreground">Team</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Manage who has access to your ranch</p>
+          <div className="team-header-title">Team</div>
+          <div className="team-header-sub">Manage who has access to your ranch</div>
         </div>
         <button
           onClick={() => { setInviteOpen(v => !v); setInviteUrl(null); }}
-          className={`shrink-0 flex items-center gap-1.5 h-9 px-4 rounded-xl text-sm font-semibold transition-colors border ${
-            inviteOpen
-              ? "bg-muted border-border text-muted-foreground"
-              : "bg-primary border-primary text-primary-foreground hover:bg-primary/90"
-          }`}
+          className={inviteOpen ? "team-cancel-btn" : "team-invite-btn"}
         >
-          <Link2 className="w-3.5 h-3.5" />
+          <Link2 size={14} />
           {inviteOpen ? "Cancel" : "Invite"}
         </button>
       </div>
 
-      {/* ── Invite Panel (slide-in when open) ─────────────────────────────── */}
-      {inviteOpen && (
-        <Card className="border border-border bg-card">
-          <CardContent className="pt-5 space-y-4">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Select a role</p>
-            <div className="flex gap-2">
-              <RoleToggleButton
-                active={inviteRole === "ranch_hand"}
-                icon={<Shield className="w-3.5 h-3.5" />}
-                label="Ranch Hand"
-                description="Can add and edit records"
+      <div className="team-body">
+
+        {/* ── Invite Panel ──────────────────────────────────────────────── */}
+        {inviteOpen && (
+          <div className="team-invite-panel">
+            <div className="team-invite-role-label">Select a role</div>
+
+            <div className="team-role-toggles">
+              <button
+                className={`team-role-toggle${inviteRole === "ranch_hand" ? " team-role-toggle--active" : ""}`}
                 onClick={() => { setInviteRole("ranch_hand"); setInviteUrl(null); }}
-              />
-              <RoleToggleButton
-                active={inviteRole === "viewer"}
-                icon={<Eye className="w-3.5 h-3.5" />}
-                label="Viewer"
-                description="Read-only, assigned animals only"
+              >
+                <Shield size={14} className="team-role-toggle-icon" />
+                <div>
+                  <div className="team-role-toggle-label">Ranch Hand</div>
+                  <div className="team-role-toggle-desc">Can add and edit records</div>
+                </div>
+              </button>
+              <button
+                className={`team-role-toggle${inviteRole === "viewer" ? " team-role-toggle--active" : ""}`}
                 onClick={() => { setInviteRole("viewer"); setInviteUrl(null); }}
-              />
+              >
+                <Eye size={14} className="team-role-toggle-icon" />
+                <div>
+                  <div className="team-role-toggle-label">Viewer</div>
+                  <div className="team-role-toggle-desc">Read-only, assigned animals only</div>
+                </div>
+              </button>
             </div>
 
             <button
               onClick={generateInvite}
               disabled={generating}
-              className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="team-generate-btn"
             >
               {generating ? "Generating…" : "Generate Invite Link"}
             </button>
 
             {inviteUrl && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
-                <p className="flex-1 text-xs font-mono text-foreground truncate">{inviteUrl}</p>
-                <button
-                  onClick={copyInviteUrl}
-                  className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-                  title="Copy link"
-                >
-                  {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+              <div className="team-invite-url-row">
+                <span className="team-invite-url-text">{inviteUrl}</span>
+                <button onClick={copyInviteUrl} className="team-copy-btn" title="Copy link">
+                  {copied ? <Check size={16} color="#2D6A4F" /> : <Copy size={16} />}
                 </button>
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground">
+            <p className="team-invite-expire-note">
               Links expire in 24 hours and can only be used once.
             </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Deletion Requests (shown prominently if any) ───────────────────── */}
-      {pendingRequests.length > 0 && (
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-amber-500/20">
-            <ClipboardList className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="text-sm font-bold text-foreground flex-1">Deletion Requests</span>
-            <span className="text-xs font-bold bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded-full">
-              {pendingRequests.length}
-            </span>
           </div>
-          <div className="divide-y divide-amber-500/10">
+        )}
+
+        {/* ── Deletion Requests ─────────────────────────────────────────── */}
+        {pendingRequests.length > 0 && (
+          <div className="team-delete-requests">
+            <div className="team-delete-requests-header">
+              <ClipboardList size={15} color="#C97D20" style={{ flexShrink: 0 }} />
+              <span className="team-delete-requests-label">Deletion Requests</span>
+              <span className="team-delete-count-badge">{pendingRequests.length}</span>
+            </div>
             {pendingRequests.map(req => (
-              <div key={req.id} className="flex items-center gap-3 px-4 py-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{req.resourceName}</p>
-                  <p className="text-xs text-muted-foreground">
+              <div key={req.id} className="team-delete-row">
+                <div className="team-delete-row-body">
+                  <div className="team-delete-resource-name">{req.resourceName}</div>
+                  <div className="team-delete-resource-sub">
                     {resourceTypeLabel(req.resourceType)} · {req.requesterName}
-                  </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => resolveRequest(req.id, "approve")}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
-                  >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Approve
+                <div className="team-delete-actions">
+                  <button className="team-approve-btn" onClick={() => resolveRequest(req.id, "approve")}>
+                    <CheckCircle size={13} /> Approve
                   </button>
-                  <button
-                    onClick={() => resolveRequest(req.id, "deny")}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 transition-colors"
-                  >
-                    <XCircle className="w-3.5 h-3.5" />
-                    Deny
+                  <button className="team-deny-btn" onClick={() => resolveRequest(req.id, "deny")}>
+                    <XCircle size={13} /> Deny
                   </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Members + Pending Invites ──────────────────────────────────────── */}
-      <Card className="border border-border bg-card overflow-hidden">
-        {/* Members */}
-        {members.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <Users className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No team members yet.</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Use the Invite button above to add someone.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {members.map(m => (
-              <div key={m.userId} className="flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors">
-                {/* Avatar initial */}
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-muted-foreground">{m.name.charAt(0).toUpperCase()}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
-                </div>
-                {m.role !== "owner" && (
-                  <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
-                )}
-                <div className="flex items-center gap-1 shrink-0">
-                  {m.role === "owner" && <RoleBadge role={m.role} />}
-                  {m.role !== "owner" && (
-                    <button
-                      onClick={() => removeMember(m.userId, m.name)}
-                      className="text-xs font-semibold text-destructive hover:text-destructive/80 px-2 py-1 rounded-lg hover:bg-destructive/10 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Pending Invites — inline below members */}
-        {pendingInvites.length > 0 && (
-          <div className="border-t border-border">
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30">
-              <Link2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex-1">Pending Invites</span>
-              <span className="text-xs text-muted-foreground">{pendingInvites.length}</span>
+        {/* ── Members + Pending Invites ──────────────────────────────────── */}
+        <div className="team-card">
+          <div className="team-card-header">
+            <Users size={14} color="#5A7A6A" style={{ flexShrink: 0 }} />
+            <span className="team-card-header-label">Members</span>
+            <span className="team-card-header-count">{members.length}</span>
+          </div>
+
+          {members.length === 0 ? (
+            <div className="team-empty">
+              <div className="team-empty-icon">👥</div>
+              <div className="team-empty-text">No team members yet.</div>
+              <div className="team-empty-sub">Use the Invite button above to add someone.</div>
             </div>
-            <div className="divide-y divide-border">
+          ) : (
+            <ul className="team-member-list">
+              {members.map(m => (
+                <li key={m.userId} className="team-member-row">
+                  <div className="team-member-avatar">
+                    <span className="team-member-avatar-initial">{m.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <span className="team-member-name">{m.name}</span>
+                  {m.role !== "owner" && (
+                    <RoleSelect current={m.role} onChange={role => changeRole(m.userId, role)} />
+                  )}
+                  {m.role === "owner"
+                    ? <RoleBadge role={m.role} />
+                    : (
+                      <button className="team-remove-btn" onClick={() => removeMember(m.userId, m.name)}>
+                        Remove
+                      </button>
+                    )
+                  }
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Pending Invites — inline below members */}
+          {pendingInvites.length > 0 && (
+            <>
+              <div className="team-pending-header">
+                <Link2 size={13} color="#8FA393" style={{ flexShrink: 0 }} />
+                <span className="team-card-header-label">Pending Invites</span>
+                <span className="team-card-header-count">{pendingInvites.length}</span>
+              </div>
               {pendingInvites.map(inv => (
                 <PendingInviteRow
                   key={inv.id}
@@ -446,35 +424,34 @@ export default function Team() {
                   onRevoke={() => revokeInvite(inv.id)}
                 />
               ))}
+            </>
+          )}
+        </div>
+
+        {/* ── Viewer Animal Access ───────────────────────────────────────── */}
+        {viewersWithAssignments.length > 0 && (
+          <div className="team-card">
+            <div className="team-card-header">
+              <Eye size={14} color="#5A7A6A" style={{ flexShrink: 0 }} />
+              <span className="team-card-header-label">Viewer Animal Access</span>
+            </div>
+            <div className="team-viewer-list">
+              <p className="team-viewer-note">Viewers only see animals assigned to them.</p>
+              {viewersWithAssignments.map(viewer => (
+                <ViewerAssignmentRow
+                  key={viewer.userId}
+                  viewer={viewer}
+                  allAnimals={allAnimals}
+                  onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
+                  onRemove={removeAssignment}
+                  onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
+                />
+              ))}
             </div>
           </div>
         )}
-      </Card>
 
-      {/* ── Viewer Animal Access ───────────────────────────────────────────── */}
-      {viewersWithAssignments.length > 0 && (
-        <Card className="border border-border bg-card overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border">
-            <Eye className="w-4 h-4 text-primary shrink-0" />
-            <span className="text-sm font-bold text-foreground flex-1">Viewer Animal Access</span>
-          </div>
-          <div className="p-4 space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Viewers only see animals assigned to them.
-            </p>
-            {viewersWithAssignments.map(viewer => (
-              <ViewerAssignmentRow
-                key={viewer.userId}
-                viewer={viewer}
-                allAnimals={allAnimals}
-                onAssign={(animalId) => assignAnimal(viewer.userId, animalId)}
-                onRemove={removeAssignment}
-                onBulkAssign={(animalIds) => bulkAssignAnimals(viewer.userId, animalIds)}
-              />
-            ))}
-          </div>
-        </Card>
-      )}
+      </div>
     </div>
   );
 }
@@ -493,33 +470,26 @@ function PendingInviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () =
   };
 
   return (
-    <div className="flex items-center gap-3 px-6 py-3">
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-mono text-foreground truncate mb-1">{invite.token}</p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-xs text-muted-foreground">
-            Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {new Date(invite.expiresAt).toLocaleDateString([], { month: "short", day: "numeric" })}
-          </p>
+    <div className="team-invite-row">
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="team-invite-token">{invite.token}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
+          <div className="team-invite-expire">
+            Expires {new Date(invite.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ·{" "}
+            {new Date(invite.expiresAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+          </div>
           <button
             onClick={copy}
-            className={`inline-flex items-center gap-1 h-6 px-2.5 rounded-md text-xs font-semibold transition-colors border ${
-              copied
-                ? "bg-primary/10 border-primary/30 text-primary"
-                : "bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
-            }`}
+            className={`team-invite-copy-btn${copied ? " team-invite-copy-btn--copied" : ""}`}
           >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copied ? "Copied!" : "Click to Copy"}
+            {copied ? <Check size={11} /> : <Copy size={11} />}
+            {copied ? "Copied!" : "Copy"}
           </button>
         </div>
       </div>
       <RoleBadge role={invite.role} />
-      <button
-        onClick={onRevoke}
-        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-        title="Revoke invite"
-      >
-        <Trash2 className="w-4 h-4" />
+      <button onClick={onRevoke} className="team-revoke-btn" title="Revoke invite">
+        <Trash2 size={15} />
       </button>
     </div>
   );
@@ -530,34 +500,11 @@ function RoleSelect({ current, onChange }: { current: string; onChange: (role: s
     <select
       value={current === "member" ? "ranch_hand" : current}
       onChange={e => onChange(e.target.value)}
-      className="text-xs rounded-lg border border-border bg-background text-foreground px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+      className="team-role-select"
     >
       <option value="ranch_hand">Ranch Hand</option>
       <option value="viewer">Viewer</option>
     </select>
-  );
-}
-
-function RoleToggleButton({
-  active, icon, label, description, onClick
-}: {
-  active: boolean; icon: React.ReactNode; label: string; description: string; onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 flex items-start gap-2 p-3 rounded-xl border text-left transition-colors ${
-        active
-          ? "border-primary/40 bg-primary/5 text-foreground"
-          : "border-border bg-background text-muted-foreground hover:bg-white/5"
-      }`}
-    >
-      <span className={`mt-0.5 ${active ? "text-primary" : ""}`}>{icon}</span>
-      <div>
-        <p className="text-sm font-semibold">{label}</p>
-        <p className="text-xs mt-0.5 opacity-70">{description}</p>
-      </div>
-    </button>
   );
 }
 
@@ -588,7 +535,6 @@ function ViewerAssignmentRow({
 
   const selectAll = () => setSelected(new Set(unassigned.map(a => a.id)));
   const clearAll = () => setSelected(new Set());
-
   const allSelected = unassigned.length > 0 && selected.size === unassigned.length;
 
   const handleConfirm = async () => {
@@ -601,30 +547,25 @@ function ViewerAssignmentRow({
   };
 
   return (
-    <div className="p-3 rounded-xl bg-muted/30 border border-border space-y-2">
-      <div className="flex items-center gap-2">
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">{viewer.name}</p>
-        </div>
-        <span className="text-xs text-muted-foreground">{viewer.assignments.length} assigned</span>
+    <div className="team-viewer-row">
+      <div className="team-viewer-row-top">
+        <span className="team-viewer-name">{viewer.name}</span>
+        <span className="team-viewer-count">{viewer.assignments.length} assigned</span>
       </div>
 
       {viewer.assignments.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="team-animal-tags">
           {viewer.assignments.map(a => {
             const animal = allAnimals.find(x => x.id === a.animalId);
             return (
-              <span
-                key={a.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
-              >
+              <span key={a.id} className="team-animal-tag">
                 {animal?.name ?? `#${a.animalId}`}
                 <button
                   onClick={() => onRemove(a.id)}
-                  className="ml-0.5 opacity-60 hover:opacity-100 transition-opacity"
+                  className="team-animal-tag-remove"
                   title="Remove"
                 >
-                  <XCircle className="w-3 h-3" />
+                  <XCircle size={12} />
                 </button>
               </span>
             );
@@ -637,64 +578,66 @@ function ViewerAssignmentRow({
           {!pickerOpen ? (
             <button
               onClick={() => { setPickerOpen(true); setSelected(new Set()); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+              className="team-assign-open-btn"
             >
-              <ChevronDown className="w-3.5 h-3.5" />
-              Click to Assign Animals
+              <ChevronDown size={13} />
+              Assign Animals
             </button>
           ) : (
-            <div className="rounded-lg border border-border bg-background overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
-                <span className="text-xs font-semibold text-foreground">Select animals to assign</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={allSelected ? clearAll : selectAll}
-                    className="text-xs font-semibold text-primary hover:underline"
-                  >
+            <div className="team-animal-picker">
+              <div className="team-picker-header">
+                <span className="team-picker-header-label">Select animals to assign</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button className="team-picker-select-all" onClick={allSelected ? clearAll : selectAll}>
                     {allSelected ? "Deselect All" : "Select All"}
                   </button>
                   <button
+                    className="team-picker-close"
                     onClick={() => { setPickerOpen(false); setSelected(new Set()); }}
-                    className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
                     title="Close"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X size={14} />
                   </button>
                 </div>
               </div>
 
-              <div className="max-h-48 overflow-y-auto divide-y divide-border/50">
+              <ul className="team-picker-list">
                 {unassigned.map(a => (
-                  <label
-                    key={a.id}
-                    className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-white/5 transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected.has(a.id)}
-                      onChange={() => toggleAnimal(a.id)}
-                      className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
-                    />
-                    <span className="text-xs text-foreground font-medium flex-1">
-                      {a.name}
-                      {a.tagNumber && <span className="text-muted-foreground"> #{a.tagNumber}</span>}
-                    </span>
-                    <span className="text-xs text-muted-foreground capitalize">{a.species}</span>
-                  </label>
+                  <li key={a.id}>
+                    <label className="team-picker-item">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(a.id)}
+                        onChange={() => toggleAnimal(a.id)}
+                        style={{ width: 14, height: 14, accentColor: "#1A3628", cursor: "pointer", flexShrink: 0 }}
+                      />
+                      <span className="team-picker-item-name">
+                        {a.name}
+                        {a.tagNumber && <span className="team-picker-item-tag"> #{a.tagNumber}</span>}
+                      </span>
+                      <span className="team-picker-item-tag" style={{ textTransform: "capitalize" }}>{a.species}</span>
+                    </label>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
-              <div className="px-3 py-2 border-t border-border">
+              <div className="team-picker-footer">
                 <button
                   onClick={handleConfirm}
                   disabled={selected.size === 0 || assigning}
-                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="team-picker-confirm-btn"
                 >
                   {assigning
                     ? "Assigning…"
                     : selected.size === 0
                     ? "Select animals above"
                     : `Assign ${selected.size} animal${selected.size !== 1 ? "s" : ""}`}
+                </button>
+                <button
+                  onClick={() => { setPickerOpen(false); setSelected(new Set()); }}
+                  className="team-picker-cancel-btn"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
