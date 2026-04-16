@@ -267,7 +267,8 @@ function BottomNav({ location }: { location: string }) {
       alignItems: "stretch",
       background: "#ffffff",
       borderTop: "1px solid #EAF0EC",
-      height: 64,
+      height: "calc(64px + env(safe-area-inset-bottom))",
+      paddingBottom: "env(safe-area-inset-bottom)",
       flexShrink: 0,
     }}>
       {TABS.map(tab => {
