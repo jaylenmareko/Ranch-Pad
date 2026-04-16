@@ -330,7 +330,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isLanding = !isAuthenticated;
 
   return (
-    <div className={cn("h-screen overflow-hidden flex flex-col", isLanding ? "bg-background" : "bg-[#F5F1EA]")}>
+    <div className={cn("h-dvh overflow-hidden flex flex-col", isLanding ? "bg-background" : "bg-[#F5F1EA]")}>
 
       {/* Ranch Setup Dialog */}
       <MyRanchSetupDialog
