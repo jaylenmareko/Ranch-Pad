@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { RanchPadLogo } from "@/components/RanchPadLogo";
@@ -7,6 +8,16 @@ import "./Landing.css";
 
 export default function Landing() {
   const { openSignup, openLogin } = useAuthModal();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+
+  function handleUnmute() {
+    if (videoRef.current) {
+      videoRef.current.muted = false;
+      videoRef.current.play();
+      setMuted(false);
+    }
+  }
 
   return (
     <div className="landing-page">
@@ -54,6 +65,7 @@ export default function Landing() {
         <h2 className="lp-section-headline">From pasture to pocket in seconds</h2>
         <div className="lp-video-wrap">
           <video
+            ref={videoRef}
             className="lp-video"
             src="/demo.mp4"
             autoPlay
@@ -62,6 +74,12 @@ export default function Landing() {
             playsInline
             controls
           />
+          {muted && (
+            <button className="lp-unmute-btn" onClick={handleUnmute} aria-label="Unmute video">
+              <span className="lp-unmute-icon">🔇</span>
+              Tap for sound
+            </button>
+          )}
         </div>
       </section>
 

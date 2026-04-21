@@ -263,6 +263,7 @@
 }
 
 .lp-video-wrap {
+  position: relative;
   max-width: 880px;
   margin: 0 auto;
   border-radius: 16px;
@@ -278,6 +279,39 @@
   display: block;
   max-height: 70vh;
   object-fit: contain;
+}
+
+.lp-unmute-btn {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(10, 20, 14, 0.75);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+  z-index: 2;
+}
+
+.lp-unmute-btn:hover {
+  background: rgba(10, 20, 14, 0.9);
+  transform: translateX(-50%) scale(1.04);
+}
+
+.lp-unmute-icon {
+  font-size: 16px;
+  line-height: 1;
 }
 
 /* ── Features section ──────────────────────────────────────────────────────── */
