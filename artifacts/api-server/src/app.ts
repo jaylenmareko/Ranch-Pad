@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // TEMPORARY ADMIN — remove after use
-app.delete("/admin-purge-user", async (req, res) => {
+app.delete("/api/admin-purge-user", async (req, res) => {
   if (req.headers["x-admin-token"] !== "ranchpad-purge-2026") {
     return res.status(403).json({ error: "forbidden" });
   }

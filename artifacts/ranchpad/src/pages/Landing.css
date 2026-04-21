@@ -246,6 +246,40 @@
 }
 
 
+/* ── Demo Video section ─────────────────────────────────────────────────────── */
+.lp-demo {
+  background: var(--lp-green-deep);
+  padding: 80px 24px 100px;
+  text-align: center;
+}
+
+.lp-demo .lp-section-label {
+  color: var(--lp-amber-light);
+}
+
+.lp-demo .lp-section-headline {
+  color: #fff;
+  margin-bottom: 40px;
+}
+
+.lp-video-wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #000;
+  line-height: 0;
+}
+
+.lp-video {
+  width: 100%;
+  display: block;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
 /* ── Features section ──────────────────────────────────────────────────────── */
 .lp-features {
   background: var(--lp-cream);

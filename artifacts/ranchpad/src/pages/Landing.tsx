@@ -48,6 +48,22 @@ export default function Landing() {
 
       </section>
 
+      {/* ── DEMO VIDEO ───────────────────────────────────────────────────── */}
+      <section className="lp-demo">
+        <p className="lp-section-label">See It In Action</p>
+        <h2 className="lp-section-headline">From pasture to pocket in seconds</h2>
+        <div className="lp-video-wrap">
+          <video
+            className="lp-video"
+            src="/demo.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        </div>
+      </section>
+
       {/* ── FEATURES ─────────────────────────────────────────────────────── */}
       <section className="lp-features">
         <p className="lp-section-label">Built for Ranchers</p>
