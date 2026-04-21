@@ -60,6 +60,7 @@ export default function Landing() {
             muted
             loop
             playsInline
+            controls
           />
         </div>
       </section>
