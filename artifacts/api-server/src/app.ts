@@ -2,7 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import path from "path";
 import router from "./routes/index.js";
-import { db } from "./lib/db.js";
+import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 
 const app: Express = express();
