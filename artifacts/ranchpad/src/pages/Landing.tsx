@@ -62,7 +62,7 @@ export default function Landing() {
       {/* ── DEMO VIDEO ───────────────────────────────────────────────────── */}
       <section className="lp-demo">
         <p className="lp-section-label">See It In Action</p>
-        <h2 className="lp-section-headline">From pasture to pocket in seconds</h2>
+        <h2 className="lp-section-headline">How to use RanchPad Demonstration</h2>
         <div className="lp-video-wrap">
           <video
             ref={videoRef}
