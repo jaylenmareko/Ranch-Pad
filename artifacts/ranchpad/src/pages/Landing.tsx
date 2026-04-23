@@ -47,7 +47,7 @@ export default function Landing() {
           <button className="lp-btn-primary" onClick={openSignup}>
             Create Your Ranch
           </button>
-          <p className="lp-cta-sub">100% Free Until Our First 50 Users</p>
+          <p className="lp-cta-sub">100% Free for First 50 Users</p>
         </div>
 
         {/* Phone mockups */}
