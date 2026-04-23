@@ -163,6 +163,7 @@ export default function Landing() {
         <div className="lp-footer-links">
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
+          <a href="mailto:jaylen@ranchpad.app">Support</a>
         </div>
         <div className="lp-footer-copy">© 2026 RanchPad · Built in Kansas</div>
       </footer>
