@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Save, User, KeyRound, CreditCard, Loader2, UserCog, CheckCircle2 } from "lucide-react";
+import { Save, User, KeyRound, Loader2, UserCog, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
-import { useQuery } from "@tanstack/react-query";
-import type { BillingStatus } from "@/hooks/use-billing";
 import "./AccountSettings.css";
 
 interface UserProfile {
@@ -33,22 +31,6 @@ export default function AccountSettings() {
   const [emailPassword, setEmailPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [isChangingEmail, setIsChangingEmail] = useState(false);
-
-  const [isBillingRedirecting, setIsBillingRedirecting] = useState(false);
-
-  const { data: billing, isLoading: isBillingLoading } = useQuery<BillingStatus>({
-    queryKey: ["/api/billing/status"],
-    queryFn: async () => {
-      const res = await fetch("/api/billing/status");
-      if (!res.ok) throw new Error("Failed to fetch billing status");
-      return res.json() as Promise<BillingStatus>;
-    },
-    enabled: isAuthenticated && isOwner,
-    staleTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    retry: false,
-  });
 
   useEffect(() => {
     if (!isAuthenticated) { setIsLoadingProfile(false); return; }
@@ -170,40 +152,6 @@ export default function AccountSettings() {
       toast({ title: "Password change failed", description: message, variant: "destructive" });
     } finally {
       setIsChangingPassword(false);
-    }
-  }
-
-  async function handleSubscribe() {
-    setIsBillingRedirecting(true);
-    try {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast({ title: "Checkout failed", description: data.message ?? "Please try again.", variant: "destructive" });
-        return;
-      }
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast({ title: "Checkout failed", description: "Network error. Try again.", variant: "destructive" });
-    } finally {
-      setIsBillingRedirecting(false);
-    }
-  }
-
-  async function handleManageBilling() {
-    setIsBillingRedirecting(true);
-    try {
-      const res = await fetch("/api/billing/portal", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast({ title: "Portal error", description: data.message ?? "Please try again.", variant: "destructive" });
-        return;
-      }
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast({ title: "Portal error", description: "Network error. Try again.", variant: "destructive" });
-    } finally {
-      setIsBillingRedirecting(false);
     }
   }
 
@@ -377,79 +325,22 @@ export default function AccountSettings() {
           </form>
         </div>
 
-        {/* ── Subscription — owners only ─────────────────────────────────── */}
+        {/* ── Plan — owners only ─────────────────────────────────────────── */}
         {isOwner && (
           <div className="acct-card">
             <div className="acct-card-header">
-              <CreditCard size={15} color="#2D6A4F" style={{ flexShrink: 0 }} />
-              <span className="acct-card-title">Subscription</span>
+              <CheckCircle2 size={15} color="#2D6A4F" style={{ flexShrink: 0 }} />
+              <span className="acct-card-title">Plan</span>
             </div>
             <div className="acct-section">
-              {isBillingLoading ? (
-                <div className="acct-loading-text">
-                  <Loader2 size={14} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
-                  Loading subscription info…
-                </div>
-              ) : !billing ? (
-                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#8FA393" }}>
-                  Billing information unavailable.
-                </p>
-              ) : (
-                <>
-                  <div className="acct-billing-badges">
-                    {billing.status === "active" && !billing.cancelAtPeriodEnd && (
-                      <span className="acct-status-badge acct-status-badge--active">
-                        <CheckCircle2 size={12} /> Active
-                      </span>
-                    )}
-                    {billing.status === "active" && billing.cancelAtPeriodEnd && (
-                      <span className="acct-status-badge acct-status-badge--cancels">
-                        Cancels {billing.currentPeriodEnd ? new Date(billing.currentPeriodEnd).toLocaleDateString() : "soon"}
-                      </span>
-                    )}
-                    {billing.status === "trialing" && (
-                      <span className="acct-status-badge acct-status-badge--trialing">
-                        {billing.trialDaysLeft != null
-                          ? `Trial — ${billing.trialDaysLeft} ${billing.trialDaysLeft === 1 ? "day" : "days"} left`
-                          : "Trial"}
-                      </span>
-                    )}
-                    {(billing.status === "canceled" || billing.status === "past_due" || billing.status === "none") && (
-                      <span className="acct-status-badge acct-status-badge--muted">
-                        {billing.status === "past_due" ? "Past Due" : billing.status === "canceled" ? "Canceled" : "No Plan"}
-                      </span>
-                    )}
-                  </div>
-
-                  {billing.status === "active" && (
-                    <button
-                      type="button"
-                      className="acct-billing-btn"
-                      disabled={isBillingRedirecting}
-                      onClick={handleManageBilling}
-                    >
-                      {isBillingRedirecting
-                        ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
-                        : <CreditCard size={14} />}
-                      Manage Subscription
-                    </button>
-                  )}
-
-                  {(billing.status === "trialing" || billing.status === "canceled" || billing.status === "none" || billing.status === "past_due") && (
-                    <button
-                      type="button"
-                      className="acct-billing-btn acct-billing-btn--primary"
-                      disabled={isBillingRedirecting}
-                      onClick={handleSubscribe}
-                    >
-                      {isBillingRedirecting
-                        ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
-                        : <CreditCard size={14} />}
-                      {billing.status === "past_due" ? "Reactivate Subscription" : "Subscribe Now"}
-                    </button>
-                  )}
-                </>
-              )}
+              <div className="acct-billing-badges">
+                <span className="acct-status-badge acct-status-badge--active">
+                  <CheckCircle2 size={12} /> Free — All Features Included
+                </span>
+              </div>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#8FA393", marginTop: 8 }}>
+                RanchPad is free for our founding ranchers. No credit card needed.
+              </p>
             </div>
           </div>
         )}

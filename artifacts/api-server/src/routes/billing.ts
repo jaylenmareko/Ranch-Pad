@@ -30,6 +30,18 @@ export interface BillingStatus {
 }
 
 router.get("/billing/status", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  // Free for all users — no paywall
+  const freeStatus: BillingStatus = {
+    status: "active",
+    trialDaysLeft: null,
+    trialEndsAt: null,
+    currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
+    hasAccess: true,
+  };
+  res.json(freeStatus);
+  return;
+
   const ranchId = req.user!.ranchId;
 
   const [ranch] = await db
