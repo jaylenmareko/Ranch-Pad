@@ -72,13 +72,21 @@ router.post("/admin-purge-users-2025", async (req, res) => {
         await db.delete(ranchUsersTable).where(eq(ranchUsersTable.userId, userId));
       }
 
-      // Clean up any remaining delete_requests referencing this user
+      // Clean up any remaining records referencing this user directly
+      await db.delete(animalAssignmentsTable).where(eq(animalAssignmentsTable.viewerUserId, userId));
       await db.delete(deleteRequestsTable).where(
         or(
           eq(deleteRequestsTable.requestedBy, userId),
           eq(deleteRequestsTable.reviewedBy, userId)
         )
       );
+      await db.delete(teamInvitesTable).where(
+        or(
+          eq(teamInvitesTable.createdBy, userId),
+          eq(teamInvitesTable.usedBy, userId)
+        )
+      );
+      await db.delete(ranchUsersTable).where(eq(ranchUsersTable.userId, userId));
 
       await db.delete(usersTable).where(eq(usersTable.id, userId));
       results[email] = "deleted";
