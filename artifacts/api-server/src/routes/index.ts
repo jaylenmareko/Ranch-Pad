@@ -16,7 +16,6 @@ import locationsRouter from "./locations.js";
 import storageRouter from "./storage.js";
 import photosRouter from "./photos.js";
 import ranchNotesRouter from "./ranch-notes.js";
-import adminTempRouter from "./admin-temp.js";
 
 const router: IRouter = Router();
 
@@ -37,6 +36,5 @@ router.use(locationsRouter);
 router.use(storageRouter);
 router.use(photosRouter);
 router.use(ranchNotesRouter);
-router.use(adminTempRouter);
 
 export default router;
