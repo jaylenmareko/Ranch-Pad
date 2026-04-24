@@ -17,7 +17,7 @@ import {
   teamInvitesTable,
   deleteRequestsTable,
 } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -48,14 +48,13 @@ router.post("/admin-purge-users-2025", async (req, res) => {
 
       for (const ranchId of ownerOf) {
         const animals = await db.select().from(animalsTable).where(eq(animalsTable.ranchId, ranchId));
-        const animalIds = animals.map(a => a.id);
 
-        for (const animalId of animalIds) {
-          await db.delete(famachaScoresTable).where(eq(famachaScoresTable.animalId, animalId));
-          await db.delete(medicationRecordsTable).where(eq(medicationRecordsTable.animalId, animalId));
-          await db.delete(healthEventsTable).where(eq(healthEventsTable.animalId, animalId));
-          await db.delete(animalPhotosTable).where(eq(animalPhotosTable.animalId, animalId));
-          await db.delete(animalAssignmentsTable).where(eq(animalAssignmentsTable.animalId, animalId));
+        for (const animal of animals) {
+          await db.delete(famachaScoresTable).where(eq(famachaScoresTable.animalId, animal.id));
+          await db.delete(medicationRecordsTable).where(eq(medicationRecordsTable.animalId, animal.id));
+          await db.delete(healthEventsTable).where(eq(healthEventsTable.animalId, animal.id));
+          await db.delete(animalPhotosTable).where(eq(animalPhotosTable.animalId, animal.id));
+          await db.delete(animalAssignmentsTable).where(eq(animalAssignmentsTable.animalId, animal.id));
         }
 
         await db.delete(alertsTable).where(eq(alertsTable.ranchId, ranchId));
@@ -63,6 +62,7 @@ router.post("/admin-purge-users-2025", async (req, res) => {
         await db.delete(ranchNotesTable).where(eq(ranchNotesTable.ranchId, ranchId));
         await db.delete(pastureLocationsTable).where(eq(pastureLocationsTable.ranchId, ranchId));
         await db.delete(teamInvitesTable).where(eq(teamInvitesTable.ranchId, ranchId));
+        await db.delete(deleteRequestsTable).where(eq(deleteRequestsTable.ranchId, ranchId));
         await db.delete(animalsTable).where(eq(animalsTable.ranchId, ranchId));
         await db.delete(ranchUsersTable).where(eq(ranchUsersTable.ranchId, ranchId));
         await db.delete(ranchesTable).where(eq(ranchesTable.id, ranchId));
@@ -72,7 +72,14 @@ router.post("/admin-purge-users-2025", async (req, res) => {
         await db.delete(ranchUsersTable).where(eq(ranchUsersTable.userId, userId));
       }
 
-      await db.delete(deleteRequestsTable).where(eq(deleteRequestsTable.userId, userId));
+      // Clean up any remaining delete_requests referencing this user
+      await db.delete(deleteRequestsTable).where(
+        or(
+          eq(deleteRequestsTable.requestedBy, userId),
+          eq(deleteRequestsTable.reviewedBy, userId)
+        )
+      );
+
       await db.delete(usersTable).where(eq(usersTable.id, userId));
       results[email] = "deleted";
     } catch (err) {
