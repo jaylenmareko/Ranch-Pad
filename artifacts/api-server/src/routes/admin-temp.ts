@@ -4,7 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-router.post("/api/admin-purge-users-2025", async (req, res) => {
+router.post("/admin-purge-users-2025", async (req, res) => {
   const secret = req.headers["x-admin-secret"];
   if (!secret || secret !== process.env.JWT_SECRET) {
     return res.status(403).json({ error: "Forbidden" });
