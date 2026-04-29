@@ -15,10 +15,11 @@
   - Milestone 2: ✅ 17/17 (100%) — completed 2026-04-29
   - Challenge 3.1: ✅ 8/8 (100%) — completed 2026-04-29
   - Challenge 3.2: ✅ 9/9 (100%) — completed 2026-04-29
-  - Milestone 3: ❌ Not started (unlocked) | Challenges 4.1–4.3: ❌ Not started | Milestone 4: ❌ Not started
+  - Milestone 3: ❌ 0/17 — BOTH ATTEMPTS USED (original + retake both auto-submitted with 0 answers; retake triggered accidentally during modal navigation 2026-04-29) — **CONTACT SOPHIA SUPPORT for reset**
+  - Challenges 4.1–4.3: ❌ Not started | Milestone 4: ❌ Not started
 
 ### Next Steps
-1. **PRIORITY: Financial Accounting** — take Milestone 3 (Unit 3, now unlocked after challenges 3.1 + 3.2)
+1. **URGENT: Contact Sophia support** — Milestone 3 retake was accidentally auto-submitted with 0 answers during modal navigation. Request reset at: https://sei-ets.my.site.com/SophiaLearning/s/
 2. Wait for Personal Finance Touchstone 5 grade — then retake Milestone 2 if needed (currently 10/18)
 3. RanchPad: push Landing.tsx headline change to Replit — new hero: "Never lose a record. Never miss a medication. Never lose an animal to preventable disease."
 4. RanchPad: DM manual creator targets on IG — @veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life
