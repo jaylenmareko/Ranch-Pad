@@ -1,0 +1,44 @@
+# ── Credentials & secrets ─────────────────────────────────────────────────────
+.env
+**/.env
+*.pem
+*.key
+secrets.*
+
+# ── Dependencies ───────────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+.venv/
+**/.venv/
+
+# ── Tooling (auto-managed, not source) ────────────────────────────────────────
+.playwright-mcp/
+.claude/settings.local.json
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+sent_log*
+already_sent.txt
+
+# ── Contact / outreach data (PII) ─────────────────────────────────────────────
+projects/business/Ranch-Pad/outreach/ffa/data/
+projects/business/Ranch-Pad/outreach/creators/data/
+projects/business/Ranch-Pad/outreach/farm-bureau/nefb/data/
+projects/business/TopicLaunch/outreach/tl_emails.json
+projects/business/TopicLaunch/outreach/sent_log.txt
+
+# ── School deliverables & snapshots (generated, not source) ───────────────────
+projects/school/sophia-learning/deliverables/
+projects/school/sophia-learning/snapshots/
+*.docx
+
+# ── Scraped / large binary assets ─────────────────────────────────────────────
+scraped_images/
+**/scraped_images/
+attached_assets/
+**/attached_assets/
+
+# ── Nested git repos (own separate repos, not submodules) ─────────────────────
+projects/business/Ranch-Pad
+projects/business/Prompt-Smith
+projects/business/meat-image-america

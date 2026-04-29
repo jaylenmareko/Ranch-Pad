@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlackRooted — Find Someone Who Matches Your Standards</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --forest: #1c3a2a;
+      --gold: #c9a44a;
+      --gold-light: #e8c97a;
+      --cream: #f7f2ea;
+      --dark: #111;
+      --text: #2a2a2a;
+      --muted: #7a7a7a;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      background: rgba(28, 58, 42, 0.97);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+
+    .logo span {
+      color: var(--white);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 36px;
+    }
+
+    nav ul a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+
+    nav ul a:hover { color: var(--gold); }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--forest) !important;
+      padding: 10px 24px;
+      border-radius: 100px;
+      font-weight: bold !important;
+      transition: background 0.2s !important;
+    }
+
+    .nav-cta:hover { background: var(--gold-light) !important; color: var(--forest) !important; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      background: var(--forest);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 60px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,164,74,0.12) 0%, transparent 70%);
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; left: -100px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,164,74,0.08) 0%, transparent 70%);
+    }
+
+    .hero-content {
+      max-width: 560px;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      background: rgba(201,164,74,0.15);
+      border: 1px solid rgba(201,164,74,0.4);
+      color: var(--gold);
+      font-family: 'Arial', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      font-size: 58px;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 24px;
+      font-weight: normal;
+    }
+
+    .hero h1 em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    .hero p {
+      font-family: 'Arial', sans-serif;
+      font-size: 17px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 40px;
+      max-width: 440px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--forest);
+      border: none;
+      padding: 16px 36px;
+      border-radius: 100px;
+      font-family: 'Arial', sans-serif;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 16px 36px;
+      border-radius: 100px;
+      font-family: 'Arial', sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .hero-visual {
+      z-index: 1;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-left: 80px;
+    }
+
+    /* PHONE MOCKUP */
+    .phone {
+      width: 240px;
+      height: 480px;
+      background: #0e0e0e;
+      border-radius: 36px;
+      border: 6px solid #2a2a2a;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+
+    .phone-2 {
+      margin-top: 60px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px; height: 20px;
+      background: #0e0e0e;
+      border-radius: 10px;
+      z-index: 10;
+    }
+
+    /* SCREEN 1 — Profile Card */
+    .screen-profile {
+      width: 100%; height: 100%;
+      background: linear-gradient(180deg, #2a5c3a 0%, #1c3a2a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 20px;
+    }
+
+    .profile-photo {
+      width: 140px; height: 160px;
+      background: linear-gradient(135deg, #4a7c5a, #2a5c3a);
+      border-radius: 20px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(201,164,74,0.3);
+    }
+
+    .profile-photo::after {
+      content: '👩🏾';
+      font-size: 80px;
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .profile-name {
+      font-size: 18px;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .profile-meta {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 12px;
+    }
+
+    .profile-tag {
+      background: rgba(201,164,74,0.2);
+      border: 1px solid rgba(201,164,74,0.5);
+      color: var(--gold);
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .profile-bio {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      color: rgba(255,255,255,0.55);
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .swipe-btns {
+      display: flex;
+      gap: 16px;
+    }
+
+    .swipe-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 2px solid;
+    }
+
+    .swipe-pass { border-color: rgba(255,80,80,0.5); background: rgba(255,80,80,0.1); }
+    .swipe-like { border-color: rgba(201,164,74,0.6); background: rgba(201,164,74,0.15); }
+    .swipe-star { border-color: rgba(100,180,255,0.5); background: rgba(100,180,255,0.1); }
+
+    /* SCREEN 2 — Messages */
+    .screen-messages {
+      width: 100%; height: 100%;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      padding: 40px 0 0;
+    }
+
+    .msg-header {
+      padding: 0 14px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .msg-header-title {
+      font-size: 14px;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .msg-matches {
+      display: flex;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .match-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3a6a4a, #2a4a3a);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .msg-list { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+    .msg-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .msg-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3a6a4a, #1c3a2a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .msg-info { flex: 1; min-width: 0; }
+
+    .msg-name {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    .msg-preview {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .msg-time {
+      font-family: Arial, sans-serif;
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .msg-unread .msg-name, .msg-unread .msg-preview { color: white; }
+    .msg-unread .msg-preview { color: rgba(255,255,255,0.7); }
+
+    .unread-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      background: var(--forest);
+      padding: 60px;
+      display: flex;
+      justify-content: center;
+      gap: 100px;
+    }
+
+    .stat { text-align: center; }
+
+    .stat-number {
+      font-size: 48px;
+      color: var(--gold);
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* HOW IT WORKS */
+    .how {
+      padding: 100px 60px;
+      background: var(--cream);
+      text-align: center;
+    }
+
+    .section-label {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 40px;
+      color: var(--forest);
+      margin-bottom: 16px;
+      font-weight: normal;
+    }
+
+    .section-sub {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 60px;
+      line-height: 1.6;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .step {
+      max-width: 220px;
+      text-align: center;
+    }
+
+    .step-icon {
+      width: 64px; height: 64px;
+      background: var(--forest);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 20px;
+    }
+
+    .step-num {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .step h3 {
+      font-size: 20px;
+      color: var(--forest);
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    .step p {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .step-line {
+      flex-shrink: 0;
+      width: 40px;
+      height: 1px;
+      background: rgba(201,164,74,0.3);
+      align-self: center;
+      margin-top: -20px;
+    }
+
+    /* FEATURES */
+    .features {
+      background: #f0ebe0;
+      padding: 100px 60px;
+    }
+
+    .features-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 60px;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      border: 1px solid rgba(28,58,42,0.08);
+    }
+
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      color: var(--forest);
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    .feature-card p {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* PRICING */
+    .pricing {
+      padding: 100px 60px;
+      background: var(--cream);
+      text-align: center;
+    }
+
+    .pricing-cards {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 60px;
+      flex-wrap: wrap;
+    }
+
+    .price-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px 32px;
+      width: 260px;
+      border: 1px solid rgba(28,58,42,0.1);
+      text-align: left;
+    }
+
+    .price-card.featured {
+      background: var(--forest);
+      border-color: var(--gold);
+      position: relative;
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: var(--forest);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 16px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .price-tier {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .price-amount {
+      font-size: 36px;
+      color: var(--forest);
+      margin-bottom: 4px;
+    }
+
+    .featured .price-amount { color: var(--white); }
+
+    .price-period {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .featured .price-period { color: rgba(255,255,255,0.5); }
+
+    .price-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .price-features li {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .featured .price-features li { color: rgba(255,255,255,0.75); }
+
+    .check { color: var(--gold); font-weight: bold; flex-shrink: 0; }
+
+    .price-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 100px;
+      border: none;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      background: rgba(28,58,42,0.08);
+      color: var(--forest);
+      transition: all 0.2s;
+    }
+
+    .featured .price-btn {
+      background: var(--gold);
+      color: var(--forest);
+    }
+
+    .price-btn:hover { transform: translateY(-2px); }
+
+    /* CTA */
+    .cta-section {
+      background: var(--forest);
+      padding: 100px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,164,74,0.1) 0%, transparent 70%);
+    }
+
+    .cta-section h2 {
+      font-size: 48px;
+      color: var(--white);
+      margin-bottom: 16px;
+      font-weight: normal;
+      position: relative;
+    }
+
+    .cta-section h2 em { color: var(--gold); font-style: normal; }
+
+    .cta-section p {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .cta-section .btn-primary { position: relative; }
+
+    /* FOOTER */
+    footer {
+      background: #0e1f16;
+      padding: 40px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-size: 18px;
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .footer-logo span { color: rgba(255,255,255,0.4); }
+
+    footer p {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Black<span>Rooted</span></div>
+    <ul>
+      <li><a href="#">How It Works</a></li>
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Pricing</a></li>
+      <li><a href="#" class="nav-cta">Join Waitlist</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="eyebrow">Now in Beta</div>
+      <h1>Love built on <em>real standards.</em></h1>
+      <p>BlackRooted is the dating app for Black men and women who know what they want — and won't settle for less. Verified values. Serious connections.</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn-primary">Join the Waitlist</a>
+        <a href="#" class="btn-secondary">See How It Works</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <!-- Phone 1: Profile Card -->
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="screen-profile">
+          <div class="profile-photo"></div>
+          <div class="profile-name">Zuri, 26</div>
+          <div class="profile-meta">Atlanta, GA · 4 miles away</div>
+          <div class="profile-tag">✓ Values Verified</div>
+          <div class="profile-bio">"Family first. I cook, I pray, I grow. Looking for a man with direction and God in his life."</div>
+          <div class="swipe-btns">
+            <div class="swipe-btn swipe-pass">✕</div>
+            <div class="swipe-btn swipe-star">★</div>
+            <div class="swipe-btn swipe-like">♥</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone 2: Messages -->
+      <div class="phone phone-2">
+        <div class="phone-notch"></div>
+        <div class="screen-messages">
+          <div class="msg-header">
+            <div class="msg-header-title" style="color:white;font-family:Arial;font-size:13px;font-weight:bold;margin-bottom:10px;">Your Matches</div>
+            <div class="msg-matches">
+              <div class="match-avatar">👩🏾</div>
+              <div class="match-avatar">👩🏿</div>
+              <div class="match-avatar">👩🏽</div>
+              <div class="match-avatar">👩🏾</div>
+            </div>
+          </div>
+          <div class="msg-list">
+            <div class="msg-item msg-unread">
+              <div class="msg-avatar">👩🏾</div>
+              <div class="msg-info">
+                <div class="msg-name">Zuri</div>
+                <div class="msg-preview">I'd love to hear more about—</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                <div class="msg-time">2m</div>
+                <div class="unread-dot"></div>
+              </div>
+            </div>
+            <div class="msg-item">
+              <div class="msg-avatar">👩🏿</div>
+              <div class="msg-info">
+                <div class="msg-name">Amara</div>
+                <div class="msg-preview">That's exactly how I feel too</div>
+              </div>
+              <div class="msg-time">1h</div>
+            </div>
+            <div class="msg-item">
+              <div class="msg-avatar">👩🏽</div>
+              <div class="msg-info">
+                <div class="msg-name">Kezia</div>
+                <div class="msg-preview">Sunday dinner at my grandma's 😄</div>
+              </div>
+              <div class="msg-time">3h</div>
+            </div>
+            <div class="msg-item">
+              <div class="msg-avatar">👩🏾</div>
+              <div class="msg-info">
+                <div class="msg-name">Naomi</div>
+                <div class="msg-preview">Are you going to the event this—</div>
+              </div>
+              <div class="msg-time">1d</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-bar">
+    <div class="stat">
+      <span class="stat-number">12K+</span>
+      <span class="stat-label">Waitlist Members</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">94%</span>
+      <span class="stat-label">Values Match Rate</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">3-Step</span>
+      <span class="stat-label">Verification</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">Free</span>
+      <span class="stat-label">To Get Started</span>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how">
+    <div class="section-label">The Process</div>
+    <h2 class="section-title">How BlackRooted works</h2>
+    <p class="section-sub">No bots. No timewasters. Everyone on this platform passed the same standard you hold yourself to.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-icon">📋</div>
+        <div class="step-num">Step 01</div>
+        <h3>Answer the questionnaire</h3>
+        <p>Share your values, lifestyle, and what you're looking for. Our AI evaluates fit — not just photos.</p>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">✓</div>
+        <div class="step-num">Step 02</div>
+        <h3>Get verified</h3>
+        <p>Profiles are reviewed for authenticity and values alignment before going live on the platform.</p>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-icon">♥</div>
+        <div class="step-num">Step 03</div>
+        <h3>Connect with intention</h3>
+        <p>Browse curated matches, send sparks, and start real conversations with people who share your standards.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="features-inner">
+      <div style="text-align:center;">
+        <div class="section-label">Built Different</div>
+        <h2 class="section-title">What sets us apart</h2>
+        <p class="section-sub">Every feature was designed for people who are serious about finding the right one.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Values Verification</h3>
+          <p>Every profile passes a values questionnaire reviewed by AI before they can match with anyone.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌿</div>
+          <h3>Natural Profiles</h3>
+          <p>We encourage authentic photos and honest bios. No filters. No performance. Just you.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>Intent-Based Matching</h3>
+          <p>Match on goals, not just looks. See compatibility across family, faith, and lifestyle before you swipe.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Private by Default</h3>
+          <p>Your profile is only visible to verified members. No screenshot mode. Full privacy controls.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h3>Spark — Super Like</h3>
+          <p>Send a Spark to tell someone they stood out. Recipients are notified immediately — no guessing.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3>Profile Boost</h3>
+          <p>Push your profile to the top of your area for one hour. More visibility. More quality matches.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing">
+    <div class="section-label">Simple Pricing</div>
+    <h2 class="section-title">Start free. Go deeper when you're ready.</h2>
+    <p class="section-sub">Credits let you move at your own pace. No surprise charges.</p>
+
+    <div class="pricing-cards">
+      <!-- Free -->
+      <div class="price-card">
+        <div class="price-tier">Free</div>
+        <div class="price-amount">$0</div>
+        <div class="price-period">forever</div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> 10 swipes per day</li>
+          <li><span class="check">✓</span> 3 messages to matches</li>
+          <li><span class="check">✓</span> Values-verified profile</li>
+          <li><span class="check">✓</span> See who liked you (blurred)</li>
+        </ul>
+        <button class="price-btn">Get Started</button>
+      </div>
+
+      <!-- Credits -->
+      <div class="price-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="price-tier">Credits</div>
+        <div class="price-amount" style="color:var(--gold);">$4.99+</div>
+        <div class="price-period">pay as you go</div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> Extra swipes (5 credits each)</li>
+          <li><span class="check">✓</span> Unlock who liked you (20 cr)</li>
+          <li><span class="check">✓</span> Rooted Boost — 1hr (50 cr)</li>
+          <li><span class="check">✓</span> Spark — Super Like (10 cr)</li>
+          <li><span class="check">✓</span> No commitment needed</li>
+        </ul>
+        <button class="price-btn">Buy Credits</button>
+      </div>
+
+      <!-- Membership -->
+      <div class="price-card">
+        <div class="price-tier">Rooted Member</div>
+        <div class="price-amount">$14.99</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features">
+          <li><span class="check">✓</span> Unlimited swipes</li>
+          <li><span class="check">✓</span> See all who liked you</li>
+          <li><span class="check">✓</span> 1 free Boost per week</li>
+          <li><span class="check">✓</span> Priority profile placement</li>
+          <li><span class="check">✓</span> Read receipts on messages</li>
+        </ul>
+        <button class="price-btn">Go Rooted</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>You have <em>standards.</em><br>This is your app.</h2>
+    <p>Join the waitlist. Be first when we launch.</p>
+    <a href="#" class="btn-primary" style="font-size:16px; padding:18px 48px;">Join the Waitlist →</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Black<span>Rooted</span></div>
+    <p>© 2026 BlackRooted. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+</body>
+</html>
