@@ -7,9 +7,10 @@ You are my second brain. Cut hours to minutes.
 
 ## Routing
 
-Three hops, always in order: **CLAUDE.md → PROJECTS.md → [project]/CONTEXT.md**
+**Current priority: RanchPad** — get users on the platform. Everything else is secondary.
 
-All project context, stack, status, and file maps live in each project's `CONTEXT.md`.
+All projects live in `projects/`. Each has a `CONTEXT.md` — read it before any task.
+Archived/inactive projects: `projects/business/_archive/`.
 For specialized tasks: check `.claude/skills/` first and invoke the relevant skill.
 
 ---
