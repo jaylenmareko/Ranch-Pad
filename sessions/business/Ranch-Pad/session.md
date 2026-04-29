@@ -1,14 +1,18 @@
-# Session — RanchPad
-Last updated: 2026-04-29
+# Session Log — RanchPad
+Append only. Never overwrite. Add a new dated entry each session.
 
-## Current Focus
-Get users on the platform.
+---
 
-## Outstanding Tasks
-- Push Landing.tsx hero headline to Replit: *"Never lose a record. Never miss a medication. Never lose an animal to preventable disease."*
-- DM creator targets on IG: @veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life
-- Monitor FFA batch — 1,473 emails sent 2026-04-27
-- Monitor 3 creator emails (oceanofgrassfilm, americanimplement, legacybrokergroup)
+## 2026-04-29
 
-## Where We Left Off
-Outreach batch sent. Monitoring for replies. No new dev work in progress.
+**Focus:** Outreach monitoring, Landing.tsx headline pending.
+
+**Done:**
+- 1,473 FFA batch emails sent 2026-04-27 — monitoring for replies
+- 3 creator emails sent (oceanofgrassfilm, americanimplement, legacybrokergroup) — monitoring
+
+**Left off:**
+- Landing.tsx hero not yet pushed to Replit: *"Never lose a record. Never miss a medication. Never lose an animal to preventable disease."*
+- IG DMs not yet sent: @veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life
+
+**Next:** Push headline → send IG DMs → monitor replies

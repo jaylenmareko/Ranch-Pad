@@ -38,7 +38,7 @@ Status tags: `draft` `final` `sent`
 - Short. Blunt. Bullets. No fluff.
 - **Emails:** Concise, precise, short. Subject: clear and direct. Body: 3-5 lines max. No filler. Every sentence earns its place.
 - At the start of every session read the relevant `sessions/[type]/[project]/session.md` — mirrors `projects/` exactly (e.g. `sessions/business/Ranch-Pad/session.md`)
-- At the end of every session update that session file with what was worked on, where we left off, and next steps
+- At the end of every session **append** a new dated entry to that session file — never overwrite
 - **Automation radar:** Passively spot automatable workflows during every session and at end-of-session — follow `.claude/skills/spot-automations/SKILL.md` for criteria and output format
 
 ---
