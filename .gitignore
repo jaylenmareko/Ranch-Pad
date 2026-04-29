@@ -40,5 +40,5 @@ attached_assets/
 
 # ── Nested git repos (own separate repos, not submodules) ─────────────────────
 projects/business/Ranch-Pad
-projects/business/Prompt-Smith
-projects/business/meat-image-america
+projects/business/_archive/Prompt-Smith
+projects/business/_archive/meat-image-america
