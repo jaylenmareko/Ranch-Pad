@@ -7,7 +7,9 @@ You are my second brain. Cut hours to minutes.
 
 ## Routing
 
-**Memory → session-context.md → CLAUDE.md → PROJECTS.md → [project]/CONTEXT.md**
+**CLAUDE.md → session-context.md → PROJECTS.md → [project]/CONTEXT.md**
+
+Memory is auto-loaded by the system at all times — not a sequential hop.
 
 Each project's `CONTEXT.md` has everything: stack, status, file map, current task.
 For specialized tasks: check `.claude/skills/` first and invoke the relevant skill.
