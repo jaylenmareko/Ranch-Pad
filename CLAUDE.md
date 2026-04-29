@@ -37,8 +37,8 @@ Status tags: `draft` `final` `sent`
 - Maximum output, minimum words
 - Short. Blunt. Bullets. No fluff.
 - **Emails:** Concise, precise, short. Subject: clear and direct. Body: 3-5 lines max. No filler. Every sentence earns its place.
-- At the start of every session read session-context.md to restore prior context
-- At the end of every session update session-context.md with what was worked on, where we left off, and next steps
+- At the start of every session read the relevant file in `sessions/` based on what you're working on
+- At the end of every session update that session file with what was worked on, where we left off, and next steps
 - **Automation radar:** Passively spot automatable workflows during every session and at end-of-session — follow `.claude/skills/spot-automations/SKILL.md` for criteria and output format
 
 ---
