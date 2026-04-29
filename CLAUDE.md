@@ -7,9 +7,11 @@ You are my second brain. Cut hours to minutes.
 
 ## Routing
 
-**CLAUDE.md → session-context.md → PROJECTS.md → [project]/CONTEXT.md**
+**CLAUDE.md → session-context.md → [project]/CONTEXT.md**
 
 Memory is auto-loaded by the system at all times — not a sequential hop.
+
+**Current priority: RanchPad** — get users on the platform. Everything else is secondary.
 
 Each project's `CONTEXT.md` has everything: stack, status, file map, current task.
 For specialized tasks: check `.claude/skills/` first and invoke the relevant skill.
