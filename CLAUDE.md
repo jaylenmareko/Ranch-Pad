@@ -5,28 +5,12 @@ You are my second brain. Cut hours to minutes.
 
 ---
 
-## Workspaces
-
-| Workspace | Folder | What happens here |
-|---|---|---|
-| Building | `projects/business/[project-name]/` | Web app dev, Replit/Base44/Claude generations |
-| RanchPad Marketing | `projects/business/Ranch-Pad/outreach/` | Copy, outreach, research for RanchPad |
-| School | `projects/school/sophia-learning/` | Sophia courses, assignments, touchstones |
-
----
-
 ## Routing
 
 Three hops, always in order: **CLAUDE.md → PROJECTS.md → [project]/CONTEXT.md**
 
-| Task | Go to | Read |
-|---|---|---|
-| RanchPad feature or bug | `projects/business/Ranch-Pad/` | `CONTEXT.md` |
-| RanchPad marketing / outreach | `projects/business/Ranch-Pad/outreach/` | `CONTEXT.md` → outreach subfolder |
-| School task (Sophia) | `projects/school/sophia-learning/` | `CONTEXT.md` |
-| Any other business project | `projects/business/[project-name]/` | `CONTEXT.md` |
-| Any specialized task | `.claude/skills/` | Relevant skill only |
-| API / integration reference | `_reference/` | Relevant API doc |
+All project context, stack, status, and file maps live in each project's `CONTEXT.md`.
+For specialized tasks: check `.claude/skills/` first and invoke the relevant skill.
 
 ---
 
