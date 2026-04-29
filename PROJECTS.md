@@ -29,11 +29,10 @@ Everything else is secondary. If a task doesn't move toward this goal, ask Jay: 
 
 | Project | Folder | Notes |
 |---|---|---|
-| TopicLaunch | external | Fan-to-creator marketplace. On hold. |
-| Meat Image America | `projects/business/meat-image-america/` | Beef marbling grading app. On hold. |
-| PromptSmith | `projects/business/Prompt-Smith/` | AI prompt tool. On hold. |
-| Cutman AI | `projects/business/Cutman-AI/` | AI boxing tool. On hold. |
-| Cornerai | `projects/business/Cornerai/` | TBD. On hold. |
+| TopicLaunch | `projects/business/TopicLaunch/` | Fan-to-creator marketplace. On hold. |
+| Meat Image America | `projects/business/_archive/meat-image-america/` | Beef marbling grading app. Archived. |
+| PromptSmith | `projects/business/_archive/Prompt-Smith/` | AI prompt tool. Archived. |
+| BlackRooted | `projects/business/_archive/BlackRooted/` | Archived. |
 
 ---
 
