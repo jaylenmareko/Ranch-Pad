@@ -2,6 +2,18 @@
 
 ## Last Session: 2026-04-29
 
+### ICM Workspace Reorganization — COMPLETED
+- Routing system: Memory → session-context.md → CLAUDE.md → PROJECTS.md → [project]/CONTEXT.md
+- Created CONTEXT.md for Ranch-Pad, sophia-learning, TopicLaunch
+- Moved Sophia snapshots, scripts, deliverables to proper subfolders
+- Deleted: `_reference/`, `workflows/`, `node_modules/` (orphaned), `attached_assets/` (Replit artifacts), `.playwright-mcp/` clutter
+- Updated `.gitignore` + added `.gitattributes`
+- Root now contains only: `CLAUDE.md PROJECTS.md session-context.md projects/`
+- Committed: 98d06ea, b537eb5, 0a52ede
+- Open decision: archive inactive projects (meat-image-america, Prompt-Smith, BlackRooted) into `projects/business/_archive/`?
+
+---
+
 ### Sophia Course Status
 - Business Law: ✅ Done
 - Business Communication: ✅ Done
