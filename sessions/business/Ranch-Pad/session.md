@@ -16,3 +16,20 @@ Append only. Never overwrite. Add a new dated entry each session.
 - IG DMs not yet sent: @veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life
 
 **Next:** Push headline → send IG DMs → monitor replies
+
+---
+
+## 2026-05-05
+
+**Focus:** NEFB outreach
+
+**Done:**
+- 6 NEFB regional managers emailed (nickh, jasonk, kellyd, chases, heidip, leanne @nefb.org)
+- Copy: free for first 50 users, 3-min demo link
+- Script: outreach/farm-bureau/nefb/scripts/send_nefb.mjs
+
+**Still pending:**
+- IG DMs: @veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life
+- Landing.tsx hero headline not yet pushed to Replit
+
+**Next:** Monitor NEFB replies → send IG DMs

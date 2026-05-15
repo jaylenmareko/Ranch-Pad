@@ -31,9 +31,15 @@ Student: Jay Davis, Southwestern College, Winfield KS
 - Challenge 2.1: ✅ 8/8 | Challenge 2.2: ✅ 9/9
 - Milestone 1: ✅ 15/15 | Milestone 2: ✅ 17/17
 - Challenge 3.1: ✅ 8/8 | Challenge 3.2: ✅ 9/9
-- Milestone 3: ❌ Not started (unlocked) | Challenges 4.1–4.3: ❌ | Milestone 4: ❌
+- Milestone 3: ✅ 17/17
+- Challenge 4.1: ✅ 7/7 | Challenge 4.2: ✅ 5/6 | Challenge 4.3: ✅ 7/8
+- Milestone 4: ✅ 21/21 (100%)
 
-**PRIORITY: Take Financial Accounting Milestone 3.**
+- Final Milestone: ✅ 24/25 (96%)
+
+**Financial Accounting: ✅ CERTIFIED**
+
+**PRIORITY: Personal Finance — complete remaining assessments.**
 
 ---
 

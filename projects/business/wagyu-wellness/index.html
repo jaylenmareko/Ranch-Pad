@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wagyu Wellness Co. — The Golden Grade</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --white:  #FFFFFF;
+      --cream:  #F7F4EB;
+      --dark:   #111111;
+      --body:   #2B241C;
+      --mid:    #5C4A38;
+      --muted:  #888880;
+      --earth:  #D4C4A8;
+      --gold:   #C9A96E;
+      --sage:   #6B8B5A;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--white);
+      color:var(--body);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── ANNOUNCE BAR ──────────────────────────────────────── */
+    .announce {
+      background:var(--body);
+      padding:.55rem 0;
+      overflow:hidden;
+      white-space:nowrap;
+    }
+    .announce-track {
+      display:inline-flex;
+      animation:ticker 40s linear infinite;
+    }
+    .announce-track:hover { animation-play-state:paused; }
+    .announce-item {
+      display:inline-block;
+      font-size:.6rem;
+      font-weight:600;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:var(--gold);
+      margin:0 2rem;
+    }
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ── NAV ────────────────────────────────────────────────── */
+    nav {
+      position:sticky; top:0; z-index:200;
+      background:rgba(255,255,255,.97);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(0,0,0,.08);
+      padding:0 5vw; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .nav-logo {
+      font-family:'Playfair Display',serif;
+      font-size:1rem; letter-spacing:.04em;
+      color:var(--body); text-decoration:none; font-weight:700;
+    }
+    .nav-links { display:flex; gap:2.5rem; list-style:none; }
+    .nav-links a {
+      font-size:.72rem; font-weight:600; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--body);
+      text-decoration:none; transition:opacity .15s;
+    }
+    .nav-links a:hover { opacity:.5; }
+    .nav-right { display:flex; gap:1.2rem; align-items:center; }
+    .nav-cart {
+      font-size:.72rem; font-weight:600; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--body); text-decoration:none; transition:opacity .15s;
+    }
+    .nav-cart:hover { opacity:.5; }
+    .nav-cta {
+      background:var(--body); color:var(--white);
+      padding:.55rem 1.4rem; font-size:.68rem; font-weight:700;
+      letter-spacing:.12em; text-transform:uppercase;
+      text-decoration:none; transition:background .15s;
+    }
+    .nav-cta:hover { background:var(--mid); }
+
+    /* ── SHARED ─────────────────────────────────────────────── */
+    .eyebrow {
+      display:block; font-size:.6rem; font-weight:700;
+      letter-spacing:.24em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:1rem;
+    }
+    .btn-dark {
+      display:inline-block; background:var(--body); color:var(--white);
+      padding:.9rem 2.2rem; font-size:.72rem; font-weight:700;
+      letter-spacing:.12em; text-transform:uppercase;
+      text-decoration:none; transition:background .15s;
+    }
+    .btn-dark:hover { background:var(--mid); }
+    .btn-outline {
+      display:inline-block; border:2px solid var(--body); color:var(--body);
+      padding:.85rem 2.2rem; font-size:.72rem; font-weight:700;
+      letter-spacing:.12em; text-transform:uppercase;
+      text-decoration:none; transition:all .15s;
+    }
+    .btn-outline:hover { background:var(--body); color:var(--white); }
+    .btn-gold {
+      display:inline-block; background:var(--gold); color:var(--body);
+      padding:.9rem 2.2rem; font-size:.72rem; font-weight:800;
+      letter-spacing:.12em; text-transform:uppercase;
+      text-decoration:none; transition:opacity .15s;
+    }
+    .btn-gold:hover { opacity:.85; }
+    .btn-white {
+      display:inline-block; background:var(--white); color:var(--body);
+      padding:.9rem 2.5rem; font-size:.72rem; font-weight:800;
+      letter-spacing:.12em; text-transform:uppercase;
+      text-decoration:none; transition:opacity .15s;
+    }
+    .btn-white:hover { opacity:.88; }
+
+    /* ── HERO ───────────────────────────────────────────────── */
+    .hero {
+      display:grid; grid-template-columns:1fr 1fr;
+      min-height:calc(100vh - 64px);
+    }
+    .hero-content {
+      display:flex; flex-direction:column; justify-content:center;
+      padding:5rem 5vw 5rem 7vw; background:var(--cream);
+    }
+    .hero h1 {
+      font-size:clamp(3.2rem,6vw,5.5rem);
+      font-weight:900; line-height:.95;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--dark); margin-bottom:2rem;
+    }
+    .hero h1 em {
+      display:block; font-family:'Playfair Display',serif;
+      font-style:italic; font-weight:400; letter-spacing:0;
+      text-transform:none; font-size:.65em;
+      color:var(--mid); margin-top:.3rem;
+    }
+    .hero-sub {
+      font-size:.95rem; line-height:1.7; color:var(--mid);
+      max-width:400px; margin-bottom:2.5rem; font-weight:400;
+    }
+    .hero-ctas { display:flex; gap:.8rem; flex-wrap:wrap; margin-bottom:2.5rem; }
+    .hero-proof {
+      display:flex; gap:2rem; flex-wrap:wrap;
+      border-top:1px solid rgba(0,0,0,.1); padding-top:1.5rem;
+    }
+    .hero-proof-item { font-size:.7rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .hero-visual { position:relative; overflow:hidden; }
+    .hero-visual img { width:100%; height:100%; object-fit:cover; display:block; }
+    .hero-tag {
+      position:absolute; bottom:0; left:0; right:0;
+      background:rgba(17,17,17,.82); backdrop-filter:blur(8px);
+      padding:1.1rem 2rem;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .hero-tag span {
+      font-size:.62rem; font-weight:700; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--gold);
+    }
+    .hero-tag p {
+      font-family:'Playfair Display',serif; font-style:italic;
+      font-size:.95rem; color:var(--white);
+    }
+
+    /* ── TRUST BAR ──────────────────────────────────────────── */
+    .trust-bar {
+      background:var(--sage); padding:.95rem 5vw;
+      display:flex; justify-content:center;
+      gap:clamp(1.5rem,3vw,4rem); flex-wrap:wrap;
+    }
+    .trust-item {
+      color:rgba(255,255,255,.9); font-size:.62rem; font-weight:700;
+      letter-spacing:.16em; text-transform:uppercase;
+    }
+
+    /* ── STATEMENT ──────────────────────────────────────────── */
+    .statement { padding:7rem 5vw; text-align:center; background:var(--white); }
+    .statement h2 {
+      font-size:clamp(2.2rem,5vw,4.5rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--dark); max-width:900px; margin:0 auto 2rem; line-height:1;
+    }
+    .statement h2 em {
+      font-family:'Playfair Display',serif; font-style:italic;
+      font-weight:400; text-transform:none; letter-spacing:0;
+      font-size:.85em; color:var(--mid);
+    }
+    .statement p {
+      font-size:1rem; line-height:1.8; color:var(--mid);
+      max-width:600px; margin:0 auto; font-weight:400;
+    }
+    .statement-divider { width:40px; height:2px; background:var(--gold); margin:2rem auto 0; }
+
+    /* ── PRODUCTS ───────────────────────────────────────────── */
+    .products { padding:5rem 5vw 6rem; background:var(--cream); }
+    .sec-header { text-align:center; margin-bottom:3.5rem; }
+    .sec-header h2 {
+      font-size:clamp(2rem,4vw,3.5rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--dark); line-height:1;
+    }
+    .products-grid {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:1.5rem; max-width:1200px; margin:0 auto 1.5rem;
+    }
+    .product-card { background:var(--white); overflow:hidden; transition:transform .2s; }
+    .product-card:hover { transform:translateY(-3px); }
+    .product-img { aspect-ratio:4/5; position:relative; overflow:hidden; }
+    .product-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s; }
+    .product-card:hover .product-img img { transform:scale(1.04); }
+    .ph { width:100%; height:100%; min-height:220px; display:flex; align-items:center; justify-content:center; }
+    .ph-1 { background:linear-gradient(150deg,#EDE4D8 0%,#C9A96E 100%); }
+    .ph-2 { background:linear-gradient(150deg,#DDE3D6 0%,#6B8B5A 100%); }
+    .ph-3 { background:linear-gradient(150deg,#EDE4DC 0%,#B89A72 100%); }
+    .ph-4 { background:linear-gradient(150deg,#E4DDD5 0%,#8B6B47 100%); }
+    .ph-5 { background:linear-gradient(150deg,#EAE0D8 0%,#C4857A 100%); }
+    .ph-label { font-size:.56rem; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:600; }
+    .badge {
+      position:absolute; top:.9rem; left:.9rem; z-index:2;
+      background:var(--dark); color:var(--white);
+      font-size:.55rem; font-weight:700; letter-spacing:.16em;
+      text-transform:uppercase; padding:.28rem .7rem;
+    }
+    .product-info { padding:1.3rem 1.4rem 1.6rem; }
+    .product-name {
+      font-size:.88rem; font-weight:800; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--dark); margin-bottom:.3rem;
+    }
+    .product-ing {
+      font-size:.62rem; font-weight:500; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:1rem;
+    }
+    .product-bottom { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .product-price { font-size:1rem; font-weight:800; color:var(--dark); }
+    .product-cta {
+      display:block; text-align:center; background:var(--dark); color:var(--white);
+      padding:.8rem; font-size:.65rem; font-weight:700;
+      letter-spacing:.14em; text-transform:uppercase;
+      text-decoration:none; transition:background .15s;
+    }
+    .product-cta:hover { background:var(--mid); }
+
+    /* bundle */
+    .bundle-row {
+      display:grid; grid-template-columns:1fr 1fr;
+      max-width:1200px; margin:0 auto; background:var(--dark); overflow:hidden;
+    }
+    .bundle-img { overflow:hidden; min-height:280px; }
+    .bundle-img img { width:100%; height:100%; object-fit:cover; display:block; }
+    .bundle-content { padding:3rem 3.5rem; display:flex; flex-direction:column; justify-content:center; }
+    .bundle-ey {
+      font-size:.58rem; font-weight:700; letter-spacing:.22em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:.8rem;
+    }
+    .bundle-name {
+      font-size:2.4rem; font-weight:900; text-transform:uppercase;
+      letter-spacing:-.02em; color:var(--white); line-height:1; margin-bottom:.6rem;
+    }
+    .bundle-desc { font-size:.85rem; color:var(--earth); margin-bottom:1.5rem; font-weight:400; line-height:1.6; }
+    .bundle-price { font-size:1.8rem; font-weight:900; color:var(--white); margin-bottom:1.8rem; }
+
+    /* ── INGREDIENTS ────────────────────────────────────────── */
+    .ingredients { padding:6rem 5vw; background:var(--dark); text-align:center; }
+    .ingredients .eyebrow { color:var(--gold); }
+    .ingredients h2 {
+      font-size:clamp(2rem,4vw,3.5rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--white); margin-bottom:1rem; line-height:1;
+    }
+    .ingredients > p {
+      color:var(--earth); font-size:.93rem; max-width:520px;
+      margin:0 auto 3.5rem; font-weight:400; line-height:1.75;
+    }
+    .ing-grid {
+      display:flex; justify-content:center; gap:1.2rem;
+      flex-wrap:wrap; max-width:1000px; margin:0 auto;
+    }
+    .ing-card {
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+      padding:2rem 1.8rem; text-align:center; min-width:155px; transition:background .2s;
+    }
+    .ing-card:hover { background:rgba(255,255,255,.12); }
+    .ing-sym {
+      font-size:1.8rem; font-weight:900; color:var(--gold);
+      display:block; margin-bottom:.5rem; letter-spacing:-.02em;
+    }
+    .ing-name { font-size:.75rem; font-weight:700; color:var(--white); display:block; margin-bottom:.25rem; letter-spacing:.06em; text-transform:uppercase; }
+    .ing-sub { font-size:.6rem; color:var(--earth); letter-spacing:.12em; text-transform:uppercase; font-weight:500; }
+
+    /* ── PROCESS ────────────────────────────────────────────── */
+    .process { padding:6rem 5vw; background:var(--white); }
+    .process .sec-header h2 { text-align:center; }
+    .process-steps {
+      display:grid; grid-template-columns:repeat(4,1fr);
+      gap:2rem; max-width:1100px; margin:3rem auto 0; position:relative;
+    }
+    .process-steps::before {
+      content:''; position:absolute; top:26px; left:12.5%; right:12.5%;
+      height:1px; background:rgba(0,0,0,.1);
+    }
+    .process-step { text-align:center; position:relative; }
+    .step-num {
+      width:52px; height:52px; border:2px solid var(--earth);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 1.2rem;
+      font-size:.95rem; font-weight:900; color:var(--dark);
+      background:var(--white); position:relative; z-index:1;
+    }
+    .step-title {
+      font-size:.8rem; font-weight:800; text-transform:uppercase;
+      letter-spacing:.1em; color:var(--dark); margin-bottom:.5rem;
+    }
+    .step-desc { font-size:.8rem; color:var(--mid); line-height:1.65; font-weight:400; }
+
+    /* ── SPLIT ──────────────────────────────────────────────── */
+    .split { display:grid; grid-template-columns:1fr 1fr; }
+    .split-img { overflow:hidden; min-height:560px; }
+    .split-img img { width:100%; height:100%; object-fit:cover; display:block; }
+    .split-content {
+      padding:5.5rem 6vw; background:var(--cream);
+      display:flex; flex-direction:column; justify-content:center;
+    }
+    .split-content h2 {
+      font-size:clamp(2rem,3.5vw,3rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--dark); margin-bottom:1.5rem; line-height:1;
+    }
+    .split-content h2 em {
+      display:block; font-family:'Playfair Display',serif;
+      font-style:italic; font-weight:400; text-transform:none;
+      letter-spacing:0; font-size:.75em; color:var(--mid); margin-top:.4rem;
+    }
+    .split-content p {
+      font-size:.93rem; line-height:1.82; color:var(--mid);
+      margin-bottom:1.1rem; font-weight:400;
+    }
+    .split-tag {
+      display:inline-block; margin-top:1.2rem;
+      font-size:.58rem; font-weight:700; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--muted);
+      border:1.5px solid var(--earth); padding:.45rem 1rem;
+    }
+
+    /* ── RANCH ──────────────────────────────────────────────── */
+    .ranch-section { background:var(--dark); }
+    .ranch-hero { position:relative; height:480px; overflow:hidden; }
+    .ranch-hero img { width:100%; height:100%; object-fit:cover; display:block; opacity:.65; }
+    .ranch-hero::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(to bottom,transparent 35%,rgba(17,17,17,.95) 100%);
+    }
+    .ranch-hero-text {
+      position:absolute; bottom:2.5rem; left:5vw; right:5vw; z-index:2;
+      display:flex; justify-content:space-between; align-items:flex-end;
+    }
+    .ranch-hero-text h2 {
+      font-size:clamp(2.5rem,5vw,4.5rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--white); line-height:1;
+    }
+    .ranch-hero-sub {
+      font-size:.6rem; font-weight:700; letter-spacing:.22em;
+      text-transform:uppercase; color:var(--gold);
+    }
+    .ranch-cards { display:grid; grid-template-columns:repeat(3,1fr); }
+    .ranch-card {
+      padding:2.8rem 4vw;
+      border-right:1px solid rgba(255,255,255,.08);
+    }
+    .ranch-card:last-child { border-right:none; }
+    .ranch-card-title {
+      font-size:.62rem; font-weight:800; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:.9rem;
+    }
+    .ranch-card p { font-size:.88rem; line-height:1.72; color:var(--earth); font-weight:400; }
+
+    /* ── FOUNDER ────────────────────────────────────────────── */
+    .founder-section { display:grid; grid-template-columns:1fr 1fr; }
+    .founder-content {
+      padding:6rem 6vw; background:var(--white);
+      display:flex; flex-direction:column; justify-content:center;
+    }
+    .founder-content h2 {
+      font-size:clamp(2rem,3.5vw,3rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--dark); margin-bottom:.5rem; line-height:1;
+    }
+    .founder-name {
+      font-family:'Playfair Display',serif; font-style:italic;
+      font-size:1.3rem; color:var(--mid); margin-bottom:.35rem;
+    }
+    .founder-sub {
+      font-size:.75rem; font-weight:600; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:2rem;
+    }
+    .founder-content p { font-size:.93rem; line-height:1.82; color:var(--mid); margin-bottom:1.1rem; }
+    .founder-tag {
+      display:block; margin-top:1rem; font-size:.58rem; font-weight:700;
+      letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+      border-top:1px solid var(--earth); padding-top:1rem;
+    }
+    .founder-img { overflow:hidden; min-height:560px; }
+    .founder-img img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+
+    /* ── FAQ ────────────────────────────────────────────────── */
+    .faq { padding:6rem 5vw; background:var(--cream); }
+    .faq-header { text-align:center; margin-bottom:3rem; }
+    .faq-header h2 {
+      font-size:clamp(2rem,4vw,3.5rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em; color:var(--dark); line-height:1;
+    }
+    .faq-list { max-width:760px; margin:0 auto; }
+    .faq-item { border-bottom:1px solid rgba(0,0,0,.12); }
+    .faq-q {
+      width:100%; background:none; border:none; text-align:left;
+      padding:1.4rem 0; font-family:'Inter',sans-serif;
+      font-size:.9rem; font-weight:600; color:var(--dark);
+      cursor:pointer; display:flex; justify-content:space-between;
+      align-items:center; letter-spacing:.02em; transition:opacity .15s;
+    }
+    .faq-q:hover { opacity:.6; }
+    .faq-icon { font-size:1.3rem; color:var(--gold); flex-shrink:0; margin-left:1rem; transition:transform .25s; font-weight:300; }
+    .faq-icon.open { transform:rotate(45deg); }
+    .faq-a { max-height:0; overflow:hidden; transition:max-height .35s ease,padding .25s; }
+    .faq-a.open { max-height:300px; padding-bottom:1.4rem; }
+    .faq-a p { font-size:.87rem; line-height:1.75; color:var(--mid); font-weight:400; }
+
+    /* ── CTA BANNER ─────────────────────────────────────────── */
+    .cta-banner {
+      padding:7rem 5vw; background:var(--sage); text-align:center; position:relative; overflow:hidden;
+    }
+    .cta-banner::before {
+      content:''; position:absolute; inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .cta-banner .eyebrow { color:rgba(255,255,255,.6); }
+    .cta-banner h2 {
+      font-size:clamp(2.5rem,5vw,4.5rem); font-weight:900;
+      text-transform:uppercase; letter-spacing:-.02em;
+      color:var(--white); margin-bottom:1rem; line-height:1; position:relative;
+    }
+    .cta-banner p { color:rgba(255,255,255,.75); font-size:.95rem; margin-bottom:2.8rem; font-weight:400; position:relative; }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer { background:var(--dark); padding:5rem 5vw 2.5rem; }
+    .footer-top { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:3.5rem; margin-bottom:4rem; }
+    .footer-brand h3 {
+      font-family:'Playfair Display',serif; font-size:1.15rem;
+      color:var(--white); margin-bottom:1rem;
+    }
+    .footer-brand p { font-size:.82rem; line-height:1.75; color:var(--earth); font-weight:400; max-width:260px; margin-bottom:1.2rem; }
+    .footer-email { font-size:.78rem; color:var(--gold); text-decoration:none; font-weight:500; }
+    .footer-social { display:flex; gap:.7rem; margin-top:1.2rem; }
+    .footer-social a {
+      font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--earth); text-decoration:none;
+      border:1px solid rgba(255,255,255,.15); padding:.38rem .75rem; transition:all .15s;
+    }
+    .footer-social a:hover { border-color:var(--earth); color:var(--white); }
+    .footer-col h4 {
+      font-size:.6rem; font-weight:800; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--white); margin-bottom:1.4rem;
+    }
+    .footer-col ul { list-style:none; }
+    .footer-col ul li { margin-bottom:.65rem; }
+    .footer-col ul li a { font-size:.82rem; color:var(--earth); text-decoration:none; font-weight:400; transition:color .15s; }
+    .footer-col ul li a:hover { color:var(--white); }
+    .footer-bottom {
+      border-top:1px solid rgba(255,255,255,.08); padding-top:1.8rem;
+      display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;
+    }
+    .footer-bottom p { font-size:.7rem; color:rgba(255,255,255,.25); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width:1024px) {
+      .footer-top { grid-template-columns:1fr 1fr; }
+      .process-steps { grid-template-columns:repeat(2,1fr); }
+      .process-steps::before { display:none; }
+    }
+    @media (max-width:820px) {
+      .hero, .split, .founder-section { grid-template-columns:1fr; }
+      .split-img, .founder-img { min-height:340px; }
+      .products-grid { grid-template-columns:repeat(2,1fr); }
+      .bundle-row { grid-template-columns:1fr; }
+      .ranch-cards { grid-template-columns:1fr; }
+      .ranch-card { border-right:none; border-bottom:1px solid rgba(255,255,255,.08); }
+      .ranch-hero-text { flex-direction:column; align-items:flex-start; gap:.5rem; }
+    }
+    @media (max-width:600px) {
+      .nav-links, .nav-cta { display:none; }
+      .products-grid { grid-template-columns:1fr; max-width:380px; margin-inline:auto; }
+      .hero-content, .split-content, .founder-content { padding:3.5rem 5vw; }
+      .footer-top { grid-template-columns:1fr; }
+      .trust-bar { gap:.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ANNOUNCE BAR -->
+  <div class="announce">
+    <div class="announce-track">
+      <span class="announce-item">✦ Hand-Rendered Wagyu Tallow</span>
+      <span class="announce-item">✦ Family Ranch · Est. 2024 · Kansas</span>
+      <span class="announce-item">✦ No Synthetic Fillers</span>
+      <span class="announce-item">✦ Rich in Vitamins A, D, E & K</span>
+      <span class="announce-item">✦ Small Batch · Made in America</span>
+      <span class="announce-item">✦ No Petrochemicals</span>
+      <span class="announce-item">✦ Pasture-Raised Herd</span>
+      <span class="announce-item">✦ Hand-Rendered Wagyu Tallow</span>
+      <span class="announce-item">✦ Family Ranch · Est. 2024 · Kansas</span>
+      <span class="announce-item">✦ No Synthetic Fillers</span>
+      <span class="announce-item">✦ Rich in Vitamins A, D, E & K</span>
+      <span class="announce-item">✦ Small Batch · Made in America</span>
+      <span class="announce-item">✦ No Petrochemicals</span>
+      <span class="announce-item">✦ Pasture-Raised Herd</span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">Wagyu Wellness Co.</a>
+    <ul class="nav-links">
+      <li><a href="#shop">Shop Our Fat</a></li>
+      <li><a href="#ranch">Our Ranch</a></li>
+      <li><a href="#founder">Our Story</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="#" class="nav-cart">Cart (0)</a>
+      <a href="#shop" class="nav-cta">Shop Now</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="eyebrow">From Our Family's Wagyu Ranch · Kansas</span>
+      <h1>The<br>Golden<br><em>Grade.</em></h1>
+      <p class="hero-sub">Hand-rendered Wagyu beef tallow skincare. No petrochemicals. No synthetics. Ranch to jar.</p>
+      <div class="hero-ctas">
+        <a href="#shop" class="btn-dark">Shop Our Fat</a>
+        <a href="#founder" class="btn-outline">Our Story</a>
+      </div>
+      <div class="hero-proof">
+        <span class="hero-proof-item">100% Wagyu Tallow</span>
+        <span class="hero-proof-item">Ranch to Jar</span>
+        <span class="hero-proof-item">Est. 2024</span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="imgs/hero.jpeg" alt="Wagyu tallow products in a trough with the herd behind" />
+      <div class="hero-tag">
+        <span>Small Batch · Hand Rendered</span>
+        <p>Kansas Heritage Wagyu</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR -->
+  <div class="trust-bar">
+    <span class="trust-item">✦ 100% Wagyu Tallow</span>
+    <span class="trust-item">✦ No Petrochemicals</span>
+    <span class="trust-item">✦ Pasture-Raised Herd</span>
+    <span class="trust-item">✦ Handmade in America</span>
+    <span class="trust-item">✦ Est. 2024 · Kansas</span>
+  </div>
+
+  <!-- STATEMENT -->
+  <section class="statement">
+    <span class="eyebrow" style="text-align:center;">Science · Biology · Ancestral Wisdom</span>
+    <h2>Your Skin Evolved to Recognize This. <em><span style="white-space:nowrap">Big skincare</span> doesn't want you to know that.</em></h2>
+    <p>Big skincare swapped effective animal fats for petroleum derivatives and synthetic preservatives — then marked it up. Wagyu tallow's fatty acid profile is nearly identical to human sebaceous lipids. It doesn't sit on your skin — it works with it.</p>
+    <div class="statement-divider"></div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="products" id="shop">
+    <div class="sec-header">
+      <span class="eyebrow">Small Batch · Hand Rendered</span>
+      <h2>The Fat Store</h2>
+    </div>
+
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-img">
+          <img src="imgs/balm.jpeg" alt="Tallow Balm" />
+          <span class="badge">Best Seller</span>
+        </div>
+        <div class="product-info">
+          <div class="product-name">Tallow Balm</div>
+          <div class="product-ing">Wagyu Tallow</div>
+          <div class="product-bottom"><span class="product-price">$25.00</span></div>
+          <a href="#" class="product-cta">Add to Cart</a>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="imgs/lotion.jpeg" alt="Tallow Lotion" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Tallow Lotion</div>
+          <div class="product-ing">Wagyu Tallow</div>
+          <div class="product-bottom"><span class="product-price">$25.00</span></div>
+          <a href="#" class="product-cta">Add to Cart</a>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="imgs/fatty.jpeg" alt="The Fatty" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">The Fatty</div>
+          <div class="product-ing">Wagyu Tallow · Beeswax</div>
+          <div class="product-bottom"><span class="product-price">$15.00</span></div>
+          <a href="#" class="product-cta">Add to Cart</a>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="imgs/soap.jpeg" alt="Tallow Soap" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Tallow Soap</div>
+          <div class="product-ing">Wagyu Tallow · Lye</div>
+          <div class="product-bottom"><span class="product-price">$10.00</span></div>
+          <a href="#" class="product-cta">Add to Cart</a>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          <img src="imgs/chapstick.jpeg" alt="Tallow Chapstick" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Tallow Chapstick</div>
+          <div class="product-ing">Wagyu Tallow · Beeswax</div>
+          <div class="product-bottom"><span class="product-price">$5.00</span></div>
+          <a href="#" class="product-cta">Add to Cart</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="bundle-row">
+      <div class="bundle-img">
+        <img src="imgs/bundle.jpeg" alt="All in One Bundle" />
+      </div>
+      <div class="bundle-content">
+        <span class="bundle-ey">Best Value · Save When You Bundle</span>
+        <div class="bundle-name">All in One</div>
+        <p class="bundle-desc">1 Lotion · 1 Fatty · 1 Chapstick · 1 Soap Bar<br>Everything you need. Nothing you don't.</p>
+        <div class="bundle-price">$50.00</div>
+        <a href="#" class="btn-gold">Add Bundle to Cart</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- INGREDIENTS -->
+  <section class="ingredients">
+    <span class="eyebrow">What's Inside</span>
+    <h2>The Ingredient List Is Short. On Purpose.</h2>
+    <p>Zero parabens, phthalates, or petrochemicals. Just ancestral fat — packed with the compounds your skin actually absorbs.</p>
+    <div class="ing-grid">
+      <div class="ing-card">
+        <span class="ing-sym">A</span>
+        <span class="ing-name">Vitamin A</span>
+        <span class="ing-sub">Cell Turnover</span>
+      </div>
+      <div class="ing-card">
+        <span class="ing-sym">D3</span>
+        <span class="ing-name">Vitamin D3</span>
+        <span class="ing-sub">Barrier Repair</span>
+      </div>
+      <div class="ing-card">
+        <span class="ing-sym">E</span>
+        <span class="ing-name">Vitamin E</span>
+        <span class="ing-sub">Antioxidant</span>
+      </div>
+      <div class="ing-card">
+        <span class="ing-sym">K2</span>
+        <span class="ing-name">Vitamin K2</span>
+        <span class="ing-sub">Healing</span>
+      </div>
+      <div class="ing-card">
+        <span class="ing-sym">CLA</span>
+        <span class="ing-name">Linoleic Acid</span>
+        <span class="ing-sub">Anti-Inflammatory</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="process">
+    <div class="sec-header">
+      <span class="eyebrow">From Ranch to Remedy</span>
+      <h2>The Ritual: Slow-Rendered. Never Rushed.</h2>
+    </div>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Raise</div>
+        <p class="step-desc">Full-blood Japanese Wagyu, DNA-verified, pasture-raised on our Kansas ranch.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-title">Harvest</div>
+        <p class="step-desc">We source only the highest-grade fat — cleanest, most nutrient-dense cut.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Render</div>
+        <p class="step-desc">Low and slow to preserve every vitamin and fatty acid. No chemicals. No shortcuts.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Craft</div>
+        <p class="step-desc">Each jar hand-filled and labeled by our family in small batches for freshness.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAST IRON SPLIT -->
+  <section class="split">
+    <div class="split-img">
+      <img src="imgs/ritual.jpeg" alt="Wagyu tallow jar on fence rail at sunset with cattle" />
+    </div>
+    <div class="split-content">
+      <span class="eyebrow">No Chemicals. No Shortcuts.</span>
+      <h2>Centuries of Tradition. <em>The highest grade tallow on earth.</em></h2>
+      <p>Pure Wagyu fat from our pasture-raised herd, rendered low and slow to preserve every vitamin and fatty acid.</p>
+      <p>What you put on your skin should be as clean and real as what you put in your body.</p>
+      <span class="split-tag">Rich in Vitamins A · D · E · K</span>
+    </div>
+  </section>
+
+  <!-- RANCH -->
+  <section class="ranch-section" id="ranch">
+    <div class="ranch-hero">
+      <img src="imgs/ranch.jpeg" alt="Wagyu cattle silhouetted at golden hour" />
+      <div class="ranch-hero-text">
+        <h2>The Ranch</h2>
+        <span class="ranch-hero-sub">Kansas · Heritage Wagyu</span>
+      </div>
+    </div>
+    <div class="ranch-cards">
+      <div class="ranch-card">
+        <div class="ranch-card-title">Heritage Herd</div>
+        <p>Our Wagyu are raised the way they were meant to be — on open pasture with room to roam.</p>
+      </div>
+      <div class="ranch-card">
+        <div class="ranch-card-title">Small Batch</div>
+        <p>Each product is crafted by hand in limited quantities to ensure the highest quality.</p>
+      </div>
+      <div class="ranch-card">
+        <div class="ranch-card-title">Family Made</div>
+        <p>From rendering to packaging, every step is done by our family on the ranch.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOUNDER -->
+  <section class="founder-section" id="founder">
+    <div class="founder-content">
+      <span class="eyebrow">The Woman Behind the Fat</span>
+      <h2>Meet the Founder</h2>
+      <div class="founder-name">Emma Garrison</div>
+      <div class="founder-sub">Raised on the land. Built from scratch.</div>
+      <p>Wagyu Wellness Co. started on our family's Kansas ranch — born out of a simple belief that what you put on your skin should be as clean and real as what you put in your body.</p>
+      <p>Every product is made by hand, from our herd to your home. No shortcuts, no compromises — just ancestral fat and the work that goes into doing things right.</p>
+      <span class="founder-tag">Kansas Ranch · Family Owned · Handmade</span>
+    </div>
+    <div class="founder-img">
+      <img src="imgs/founder.jpeg" alt="Emma Garrison, founder of Wagyu Wellness Co." />
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <div class="faq-header">
+      <span class="eyebrow" style="text-align:center;">Got Questions?</span>
+      <h2>FAQ</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What exactly is wagyu tallow? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Wagyu tallow is rendered fat from Wagyu cattle — slow-cooked to separate pure fat from impurities. Wagyu's high intramuscular fat content produces a tallow richer in oleic acid and fat-soluble vitamins than conventional beef tallow.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is it safe for sensitive or acne-prone skin? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Yes. Tallow's fatty acid profile closely mirrors human sebum, making it one of the most biocompatible moisturizers available. Many customers with eczema, rosacea, and acne-prone skin report significant improvement.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Does it smell like beef? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Properly rendered tallow has a mild, neutral scent — not beefy. Our process produces a clean, light scent. Products with beeswax add a faint natural warmth.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What's the difference between the balm and the lotion? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>The balm is denser — ideal for dry areas, hands, and feet. The lotion is lighter for all-over body use and faster absorption.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Are your products 100% natural? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>Yes. Every ingredient is listed on the label — and the list is intentionally short. No synthetic preservatives, no petrochemicals, no fillers.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Where are your cattle raised? <span class="faq-icon">+</span></button>
+        <div class="faq-a"><p>On our family's ranch in Kansas. Full-blood Japanese Wagyu, DNA-verified, pasture-raised. The same herd behind every jar.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-banner">
+    <span class="eyebrow">Small Batch · Limited Availability</span>
+    <h2>Ranch to Jar.<br>Nothing In Between.</h2>
+    <p>When the batch is gone, it's gone. We don't rush the process for volume.</p>
+    <a href="#shop" class="btn-white">Shop Current Batch</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <h3>Wagyu Wellness Co.</h3>
+        <p>Hand-rendered, small-batch Wagyu beef tallow skincare, crafted on our family ranch in Kansas.</p>
+        <a href="mailto:wagyuwellnessco@gmail.com" class="footer-email">wagyuwellnessco@gmail.com</a>
+        <div class="footer-social">
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#">Tallow Balm</a></li>
+          <li><a href="#">Tallow Lotion</a></li>
+          <li><a href="#">The Fatty</a></li>
+          <li><a href="#">Tallow Soap</a></li>
+          <li><a href="#">Tallow Chapstick</a></li>
+          <li><a href="#">All in One Bundle</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>The Ranch</h4>
+        <ul>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Meet the Founder</a></li>
+          <li><a href="#">Our Process</a></li>
+          <li><a href="#">Wagyu Beef</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <ul>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Returns</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Wagyu Wellness Co. All rights reserved.</p>
+      <p>Photo credits: Claire Norton</p>
+    </div>
+  </footer>
+
+  <script>
+    function toggleFaq(btn) {
+      const a = btn.nextElementSibling, ic = btn.querySelector('.faq-icon');
+      const open = a.classList.contains('open');
+      document.querySelectorAll('.faq-a.open').forEach(x => x.classList.remove('open'));
+      document.querySelectorAll('.faq-icon.open').forEach(x => x.classList.remove('open'));
+      if (!open) { a.classList.add('open'); ic.classList.add('open'); }
+    }
+  </script>
+</body>
+</html>
