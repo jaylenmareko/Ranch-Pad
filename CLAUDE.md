@@ -28,7 +28,7 @@ Status tags: `draft` `final` `sent`
 
 ## Rules
 
-- Check `PROJECTS.md` first to know current priority
+- Check each project's `CONTEXT.md` for current priority — that is the source of truth
 - Before executing any marketing, outreach, dev, or specialized task — check available skills first and invoke the relevant one
 - **New business projects:** always create an `outreach/` subfolder at setup
 - Never save outputs to root

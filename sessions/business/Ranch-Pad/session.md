@@ -33,3 +33,25 @@ Append only. Never overwrite. Add a new dated entry each session.
 - Landing.tsx hero headline not yet pushed to Replit
 
 **Next:** Monitor NEFB replies → send IG DMs
+
+---
+
+## 2026-05-15 19:14 [AUTO]
+
+Reading context + session log...
+
+**Highest-leverage action: Push the Landing.tsx hero headline to Replit.**
+
+This has been pending for 2 sessions. Every visitor hitting ranchpad.app right now is seeing the old copy. Fix it first.
+
+---
+
+**The copy:**
+
+```
+"Never lose a record. Never miss a medication. Never lose an animal to preventable disease."
+```
+
+---
+
+**To execute:** Show me the current `Landing.tsx` hero section and I'll give you the exact diff to paste in — or push it directly if you share the file path on Replit.
