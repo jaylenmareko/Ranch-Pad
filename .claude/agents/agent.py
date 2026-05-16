@@ -113,6 +113,10 @@ def run(project: str, task: str | None, approve: bool, force_scout: bool = False
     sections.append(briefing_world)
     print(briefing_world)
 
+    # 65s pause so the world briefing's token usage clears the per-minute rate limit window
+    print("\n[rate] Waiting 65s for rate limit window to reset...")
+    time.sleep(65)
+
     # ── Phase 2: Market research ──────────────────────────────────────────────
     print("\n[2/5] Market research...")
     intel = get_market_intel(project, client)
