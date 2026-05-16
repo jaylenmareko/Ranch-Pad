@@ -1,0 +1,6 @@
+name,tag_number,species,breed,sex,date_of_birth,health_event_description,health_event_date,health_event_severity,medication_name,dosage,date_given,next_due_date
+Clyde,T-101,Sheep,Rambouillet,Male,2022-03-15,Pale gums noted during routine check — possible anemia,2026-03-10,medium,Ivermectin,2ml per 50lbs,2026-03-10,2026-06-10
+Bella,T-102,Goat,Boer,Female,2021-08-20,Weight loss observed over past 2 weeks — reduced feed intake,2026-03-18,medium,Fenbendazole,1 tablet per 10kg,2026-03-18,
+Rex,T-103,Sheep,Merino,Male,2023-01-05,Labored breathing after cold snap — monitored overnight,2026-03-22,high,Penicillin G,3ml IM,2026-03-22,2026-03-29
+Dolly,T-104,Sheep,Suffolk,Female,2020-11-30,Repeated coughing fits — nasal discharge present,2026-03-25,high,Oxytetracycline,5ml per 100lbs,2026-03-25,2026-04-01
+Mae,T-105,Goat,Nubian,Female,2022-06-10,Lethargy and bottle jaw — suspected high worm burden,2026-03-28,high,Levamisole,1ml per 5kg,2026-03-28,

@@ -1,0 +1,47 @@
+You are a senior full-stack software engineer with 10+ years of experience building multi-tenant SaaS applications. You write clean, scalable, production-ready code and always think about user experience before writing a single line. You never break existing functionality when adding new features. You think in systems — you understand how roles, permissions, and data relationships work together before touching the codebase.
+Goal:
+Add a role-based access and multi-ranch system to RanchPad that allows one user to own their personal ranch while also being a ranch hand or viewer on someone else's ranch. The sidebar must make it immediately clear which ranch the user is in and who they are logged in as. Zero confusion between a user's personal ranch and ranches they work on. Do not change any existing functionality — this is purely additive.
+Three roles: Owner, Ranch Hand, Viewer.
+
+Owner — no changes to current experience.
+
+Add a profile/name box at the bottom of the left sidebar so the owner always knows they are in their own account.
+Only the owner can update ranch info and location in settings.
+
+
+Ranch Hand experience:
+When a ranch hand signs up via invite link and logs in they see two folders in the left sidebar:
+
+"[Owner's Name]'s Ranch" — the operation they work on. Expands to show Dashboard, Animals, Alerts. No Settings — ranch hands cannot touch the owner's ranch settings.
+"My Ranch" — their own personal ranch. First time they click it a popup appears asking them to enter their ranch name and location. After setup My Ranch expands to show their own Dashboard, Animals, Alerts, and Settings. They are the Owner of their own ranch.
+
+
+Ranch hands can add animals and add/edit records in both ranches.
+Delete in the owner's ranch sends an approval request to the owner instead of deleting directly.
+Delete in their own ranch works normally.
+Add a profile/name box at the bottom of the left sidebar.
+
+
+Viewer experience:
+When a viewer signs up via invite link and logs in they see two folders in the left sidebar:
+
+"[Owner's Name]'s Ranch" — read only. They can only see animals the owner has assigned to them. No adding, editing, or deleting.
+"My Ranch" — same popup flow as ranch hand. After setup they become the Owner of their own personal ranch with full access.
+
+
+Add a profile/name box at the bottom of the left sidebar.
+
+
+Invite flow:
+
+Owner generates a role-specific invite link from the Team page.
+Person clicks link, signs up, and is automatically assigned that role under the owner's ranch.
+After signup they land on the sidebar described above for their role.
+
+
+Design:
+
+Match the existing dark green sidebar and card style exactly — everything should look like it was always part of the app.
+Use show/hide logic based on role — do not build separate layouts.
+
+Store all role, invite, and team member data in the Replit database.

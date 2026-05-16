@@ -1,0 +1,163 @@
+import { Router, type IRouter } from "express";
+import { db, famachaScoresTable, animalsTable, animalAssignmentsTable } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
+import { z } from "zod";
+import { upsertAlert, makeKey } from "./alerts.js";
+
+const router: IRouter = Router();
+
+const createFamachaSchema = z.object({
+  score: z.number().int().min(1).max(5),
+  recordedDate: z.string().min(1),
+});
+
+function parseId(param: string | string[]): number {
+  return parseInt(Array.isArray(param) ? param[0] : param, 10);
+}
+
+async function verifyAnimalOwnership(animalId: number, ranchId: number) {
+  const [animal] = await db
+    .select()
+    .from(animalsTable)
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
+    .limit(1);
+  return animal;
+}
+
+router.get("/animals/:animalId/famacha", requireAuth, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
+  const animalId = parseId(req.params.animalId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  if (role === "viewer") {
+    const [assignment] = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId), eq(animalAssignmentsTable.animalId, animalId)))
+      .limit(1);
+    if (!assignment) { res.status(403).json({ error: true, message: "Access denied" }); return; }
+  }
+
+  const scores = await db
+    .select()
+    .from(famachaScoresTable)
+    .where(eq(famachaScoresTable.animalId, animalId))
+    .orderBy(famachaScoresTable.recordedDate);
+
+  res.json(scores);
+});
+
+router.post("/animals/:animalId/famacha", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const parsed = createFamachaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const [score] = await db
+    .insert(famachaScoresTable)
+    .values({ ...parsed.data, animalId, ranchId })
+    .returning();
+
+  // Check for two consecutive declining FAMACHA scores (3 readings, each worse than the last)
+  const allScores = await db
+    .select()
+    .from(famachaScoresTable)
+    .where(eq(famachaScoresTable.animalId, animalId))
+    .orderBy(famachaScoresTable.recordedDate);
+
+  if (allScores.length >= 3) {
+    const last3 = allScores.slice(-3);
+    if (last3[0].score < last3[1].score && last3[1].score < last3[2].score) {
+      const alertKey = makeKey("famacha_decline", animalId, last3[2].id);
+      await upsertAlert({
+        ranchId,
+        animalId,
+        alertType: "record",
+        alertKey,
+        message: `${animal.name}'s FAMACHA score has declined two readings in a row (${last3.map(s => s.score).join(" → ")}). Barber pole worm burden may be increasing — consider anthelmintic treatment.`,
+        severity: "high",
+      });
+    }
+  }
+
+  res.status(201).json(score);
+});
+
+const updateFamachaSchema = z.object({
+  score: z.number().int().min(1).max(5).optional(),
+  recordedDate: z.string().min(1).optional(),
+});
+
+router.patch("/animals/:animalId/famacha/:famachaId", requireAuth, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+  const famachaId = parseId(req.params.famachaId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const parsed = updateFamachaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const [updated] = await db
+    .update(famachaScoresTable)
+    .set(parsed.data)
+    .where(and(eq(famachaScoresTable.id, famachaId), eq(famachaScoresTable.animalId, animalId)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: true, message: "FAMACHA score not found" });
+    return;
+  }
+
+  res.json(updated);
+});
+
+router.delete("/animals/:animalId/famacha/:famachaId", requireAuth, requireOwner, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+  const famachaId = parseId(req.params.famachaId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const [deleted] = await db
+    .delete(famachaScoresTable)
+    .where(and(eq(famachaScoresTable.id, famachaId), eq(famachaScoresTable.animalId, animalId)))
+    .returning();
+
+  if (!deleted) {
+    res.status(404).json({ error: true, message: "FAMACHA score not found" });
+    return;
+  }
+
+  res.sendStatus(204);
+});
+
+export default router;

@@ -1,0 +1,26 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "URuYs0jkO-DE7lOjvQqae"
+uri = "file://.local/ranchpad-qr.png"
+type = "image"
+title = "RanchPad — Scan to open on your phone"
+
+[[outputs]]
+id = "DB3bw4KI_tfP4e34ZVFll"
+uri = "file://artifacts/ranchpad/public/test-herd.csv"
+type = "table"
+title = "test-herd.csv — Winfield KS weather-optimized"
+
+[[outputs]]
+id = "W4GpeFIlMgudz8aQNpCyc"
+uri = "file://test-data/ranchpad-test-5-animals.csv"
+type = "table"
+title = "RanchPad Test Animals (5 animals)"
+
+[[outputs]]
+id = "FyJO5e-fzNjKcBORexatr"
+uri = "file://exports/gardo-court-herd.csv"
+type = "table"
+title = "Gardo Court Herd — 10 Animals"

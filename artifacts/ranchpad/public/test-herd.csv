@@ -1,0 +1,21 @@
+name,tag_number,species,breed,sex,date_of_birth,health_event_description,health_event_date,health_event_severity,medication_name,dosage,date_given,next_due_date
+Hank,KSC-001,Cattle,Angus,Bull,2019-04-10,BRD — severe coughing and nasal discharge following 25-degree overnight temperature drop,2026-03-18,high,Draxxin,2.5ml,2026-03-18,2026-03-25
+Lady Bird,KSC-002,Cattle,Hereford,Heifer,2023-02-14,Pinkeye — right eye — wind and debris exposure suspected cause,2026-03-22,high,LA-200 Oxytetracycline,4.5ml,2026-03-22,2026-03-29
+Duke,KSC-003,Cattle,Simmental,Bull,2020-08-30,BRD — relapse after initial treatment — temp dropped from 72F to 38F overnight,2026-03-25,high,Enrofloxacin,5ml,2026-03-25,2026-04-01
+Magnolia,KSC-004,Cattle,Angus,Heifer,2024-01-20,Navel ill — newborn calf — treated promptly — monitoring closely,2026-03-10,high,Penicillin,3ml,2026-03-10,2026-03-24
+Ranger,KSC-005,Cattle,Hereford,Male,2024-03-05,Scours — watery diarrhea — young calf — weather stress after cold rain,2026-03-28,high,Oral electrolytes + Draxxin,per label,2026-03-28,2026-04-04
+Dixie,KSC-006,Cattle,Angus,Heifer,2022-06-11,Annual vaccinations — BVD IBR PI3 — healthy — spring booster due,2026-03-01,low,Pyramid 5,2ml,2026-03-01,2026-04-05
+Rosie,KSC-007,Cattle,Limousin,Heifer,2023-05-18,Pinkeye — left eye — recurring — second case this season — wind-blown grass seed,2026-03-20,high,Vetericyn eye spray + LA-200,applied topically,2026-03-20,2026-04-03
+Clover,KSC-008,Cattle,Angus,Heifer,2024-02-28,Healthy newborn — born during warm spell — monitor if cold front returns,2026-03-15,low,Inforce 3 intranasal,1 dose,2026-03-15,2026-04-06
+Pepper,KSG-001,Goat,Boer,Female,2022-09-15,FAMACHA score 4 — bottle jaw beginning — barber pole worm burden — treated,2026-03-19,high,Cydectin,4ml,2026-03-19,2026-04-16
+Huckleberry,KSG-002,Goat,Nubian,Male,2021-05-01,FAMACHA score 3 — borderline — preventive anthelmintic given — recheck in 21 days,2026-03-28,medium,SafeGuard,5ml,2026-03-28,2026-03-28
+Pebbles,KSG-003,Goat,Kiko,Female,2023-01-10,Respiratory symptoms — coughing after spring storm brought sustained rain and 40F temps,2026-03-21,high,Excenel,2ml,2026-03-21,2026-04-04
+Clementine,KSG-004,Goat,LaMancha,Female,2022-03-18,FAMACHA score 4 — worm pressure confirmed — spring warmth and moisture elevating risk,2026-03-24,high,Levamisole,6ml,2026-03-24,2026-04-07
+Woolsworth,KSS-001,Sheep,Dorper,Wether,2021-09-18,FAMACHA score 5 — severe bottle jaw — emergency anthelmintic — spring parasite surge,2026-03-21,high,Levamisole,8ml,2026-03-21,2026-03-28
+Buttercup,KSS-002,Sheep,Katahdin,Female,2022-04-10,Foot scald — both front hooves — wet pasture after extended spring rain,2026-03-19,high,Zinc sulfate footbath + Penicillin,3ml,2026-03-19,2026-04-02
+Magnolia,KSS-003,Sheep,Merino,Female,2023-06-20,Pneumonia — labored breathing after overnight low dropped to 34F following a warm 68F day,2026-03-22,high,Draxxin,1.5ml,2026-03-22,2026-04-05
+Clyde,KSS-004,Sheep,Rambouillet,Male,2020-11-08,Foot rot — right rear hoof — foul odor — interdigital tissue affected — wet spring ground,2026-03-25,high,Penicillin,4ml,2026-03-25,2026-04-01
+Sprout,KSS-005,Sheep,Dorper,Female,2025-01-22,Spring FAMACHA check — score 2 — healthy — recheck scheduled after first warm rain,2026-03-15,low,SafeGuard,3ml,2026-03-15,2026-09-15
+Fern,KSS-006,Sheep,Katahdin,Female,2024-04-05,Healthy lamb — recently weaned — no issues — monitor in spring storm season,2026-03-10,low,CDT vaccine,1ml,2026-03-10,2026-04-07
+Thunder,KSH-001,Horse,Quarter Horse,Male,2018-11-03,Mud fever — active lesions on both pasterns — sustained wet ground from spring rain,2026-03-25,high,Penicillin + Nolvasan scrub,10ml,2026-03-25,2026-04-01
+Luna,KSH-002,Horse,Paint,Female,2015-06-22,Rain rot — lesions on back and hindquarters — sustained humidity and warm temps accelerated,2026-03-27,medium,Nolvasan scrub,applied topically,2026-03-27,2026-04-03

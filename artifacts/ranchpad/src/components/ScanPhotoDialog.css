@@ -1,0 +1,360 @@
+/* ── Species grid ─────────────────────────────────────────────────────── */
+
+.scan-species-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 4px 0 8px;
+}
+
+.scan-species-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-radius: 14px;
+  border: 1.5px solid #C8DAD2;
+  background: #F9F6F0;
+  padding: 18px 8px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.scan-species-btn:hover {
+  border-color: #2D6A4F;
+  background: #EEF5F0;
+}
+
+.scan-species-emoji {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.scan-species-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A3628;
+}
+
+/* ── Photo pick step ──────────────────────────────────────────────────── */
+
+.scan-pick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.scan-pick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 2px dashed #C8DAD2;
+  background: #F9F6F0;
+  padding: 28px 12px 22px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.scan-pick-btn:hover {
+  border-color: #2D6A4F;
+  background: #EEF5F0;
+}
+
+.scan-pick-icon {
+  color: #5A7A6A;
+}
+
+.scan-pick-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A3628;
+  text-align: center;
+}
+
+.scan-pick-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+  text-align: center;
+  margin-top: -4px;
+}
+
+.scan-pick-hint {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #A8BAB2;
+  text-align: center;
+  padding: 4px 0 6px;
+}
+
+/* ── Error banner ─────────────────────────────────────────────────────── */
+
+.scan-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #FEF3F2;
+  border: 1.5px solid #FECACA;
+}
+
+.scan-error-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #991B1B;
+  flex: 1;
+}
+
+/* ── Scanning / Adding loaders ────────────────────────────────────────── */
+
+.scan-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 48px 16px;
+}
+
+.scan-loading-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A3628;
+  text-align: center;
+}
+
+.scan-loading-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8FA393;
+  text-align: center;
+  margin-top: -6px;
+}
+
+/* ── Review: found count ──────────────────────────────────────────────── */
+
+.scan-found-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #5A7A6A;
+  padding-bottom: 4px;
+}
+
+.scan-found-count strong {
+  color: #1A3628;
+  font-weight: 700;
+}
+
+/* ── Animal review card ───────────────────────────────────────────────── */
+
+.scan-animal-card {
+  border-radius: 12px;
+  border: 1.5px solid #C8DAD2;
+  background: #fff;
+  overflow: hidden;
+  transition: opacity 0.15s;
+}
+
+.scan-animal-card.deselected {
+  opacity: 0.45;
+  background: #F5F1EA;
+}
+
+.scan-animal-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+}
+
+/* Checkbox */
+.scan-check-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #C8DAD2;
+  background: #F5F1EA;
+  flex-shrink: 0;
+  margin-top: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+}
+.scan-check-btn.checked {
+  background: #1A3628;
+  border-color: #1A3628;
+}
+
+.scan-animal-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.scan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scan-field-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8FA393;
+}
+
+.scan-field-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #D8E8DF;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  padding: 2px 0 3px;
+  transition: border-color 0.12s;
+}
+.scan-field-input:focus { border-bottom-color: #2D6A4F; }
+.scan-field-input:disabled { cursor: not-allowed; color: #A8BAB2; }
+.scan-field-input::placeholder { color: #C8DAD2; }
+
+.scan-field-select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #D8E8DF;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  padding: 2px 0 3px;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.scan-field-select:focus { border-bottom-color: #2D6A4F; }
+.scan-field-select:disabled { cursor: not-allowed; color: #A8BAB2; }
+
+.scan-animal-notes {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+  font-style: italic;
+  padding: 0 12px 12px 44px;
+  line-height: 1.5;
+}
+
+/* ── Done state ───────────────────────────────────────────────────────── */
+
+.scan-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.scan-done-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1A3628;
+}
+
+.scan-done-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8FA393;
+  margin-top: -4px;
+}
+
+/* ── Review footer ────────────────────────────────────────────────────── */
+
+.scan-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 0 0;
+  margin-top: 6px;
+  border-top: 1px solid #EEF5F0;
+}
+
+.scan-footer-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8FA393;
+  flex-shrink: 0;
+}
+
+.scan-footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.scan-btn-outline {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: #F5F1EA;
+  color: #5A7A6A;
+  border: 1.5px solid #C8DAD2;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.scan-btn-outline:hover { background: #EBF2EE; }
+
+.scan-btn-primary {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: #1A3628;
+  color: #fff;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.scan-btn-primary:hover { background: #22463A; }
+.scan-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.scan-done-btn {
+  height: 44px;
+  padding: 0 28px;
+  border-radius: 11px;
+  background: #1A3628;
+  color: #fff;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+  margin-top: 4px;
+}
+.scan-done-btn:hover { background: #22463A; }

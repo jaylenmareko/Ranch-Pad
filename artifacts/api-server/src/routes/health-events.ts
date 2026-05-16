@@ -1,0 +1,136 @@
+import { Router, type IRouter } from "express";
+import { db, healthEventsTable, animalsTable, animalAssignmentsTable } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
+import { requireAuth, requireOwner, requireNotViewer } from "../middlewares/auth.js";
+import { z } from "zod";
+
+const router: IRouter = Router();
+
+const createHealthEventSchema = z.object({
+  description: z.string().min(1),
+  eventDate: z.string().min(1),
+  severity: z.enum(["low", "medium", "high"]),
+});
+
+function parseId(param: string | string[]): number {
+  return parseInt(Array.isArray(param) ? param[0] : param, 10);
+}
+
+async function verifyAnimalOwnership(animalId: number, ranchId: number) {
+  const [animal] = await db
+    .select()
+    .from(animalsTable)
+    .where(and(eq(animalsTable.id, animalId), eq(animalsTable.ranchId, ranchId)))
+    .limit(1);
+  return animal;
+}
+
+router.get("/animals/:animalId/health-events", requireAuth, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const { userId, role } = req.user!;
+  const animalId = parseId(req.params.animalId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  if (role === "viewer") {
+    const [assignment] = await db
+      .select({ animalId: animalAssignmentsTable.animalId })
+      .from(animalAssignmentsTable)
+      .where(and(eq(animalAssignmentsTable.ranchId, ranchId), eq(animalAssignmentsTable.viewerUserId, userId), eq(animalAssignmentsTable.animalId, animalId)))
+      .limit(1);
+    if (!assignment) { res.status(403).json({ error: true, message: "Access denied" }); return; }
+  }
+
+  const events = await db
+    .select()
+    .from(healthEventsTable)
+    .where(eq(healthEventsTable.animalId, animalId))
+    .orderBy(healthEventsTable.eventDate);
+
+  res.json(events);
+});
+
+router.post("/animals/:animalId/health-events", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const parsed = createHealthEventSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const [event] = await db
+    .insert(healthEventsTable)
+    .values({ ...parsed.data, animalId, ranchId })
+    .returning();
+
+  res.status(201).json(event);
+});
+
+router.put("/animals/:animalId/health-events/:healthEventId", requireAuth, requireNotViewer, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+  const healthEventId = parseId(req.params.healthEventId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const parsed = createHealthEventSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: true, message: parsed.error.message });
+    return;
+  }
+
+  const [event] = await db
+    .update(healthEventsTable)
+    .set(parsed.data)
+    .where(and(eq(healthEventsTable.id, healthEventId), eq(healthEventsTable.animalId, animalId)))
+    .returning();
+
+  if (!event) {
+    res.status(404).json({ error: true, message: "Health event not found" });
+    return;
+  }
+
+  res.json(event);
+});
+
+router.delete("/animals/:animalId/health-events/:healthEventId", requireAuth, requireOwner, async (req, res): Promise<void> => {
+  const ranchId = req.user!.ranchId;
+  const animalId = parseId(req.params.animalId);
+  const healthEventId = parseId(req.params.healthEventId);
+
+  const animal = await verifyAnimalOwnership(animalId, ranchId);
+  if (!animal) {
+    res.status(404).json({ error: true, message: "Animal not found" });
+    return;
+  }
+
+  const [deleted] = await db
+    .delete(healthEventsTable)
+    .where(and(eq(healthEventsTable.id, healthEventId), eq(healthEventsTable.animalId, animalId)))
+    .returning();
+
+  if (!deleted) {
+    res.status(404).json({ error: true, message: "Health event not found" });
+    return;
+  }
+
+  res.sendStatus(204);
+});
+
+export default router;

@@ -1,0 +1,24 @@
+/* ── RanchPad Logo — Shared Component ────────────────────────────────── */
+
+.rp-logo {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.rp-logo-pad {
+  color: #F0A845;
+}
+
+/* ── Color variants ──────────────────────────────────────────────────── */
+
+.rp-logo--light { color: #1A3628; }
+.rp-logo--dark  { color: #ffffff; }
+
+/* ── Sizes ───────────────────────────────────────────────────────────── */
+
+.rp-logo--sm { font-size: 16px; }
+.rp-logo--md { font-size: 20px; }
+.rp-logo--lg { font-size: 26px; }

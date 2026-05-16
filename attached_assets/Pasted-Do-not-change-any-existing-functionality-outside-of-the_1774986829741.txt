@@ -1,0 +1,20 @@
+Do not change any existing functionality outside of the generateWeatherAlerts() function and the alert display on the dashboard. This is purely an upgrade to the existing Claude prompt and the data passed into it.
+Goal:
+Make the AI-generated disease risk alerts hyper-specific — both at the herd level and at the individual animal level. No new data sources, no new architecture. Everything stays inside generateWeatherAlerts().
+Three upgrades to the Claude prompt:
+1. Pass real weather trend data, not just a snapshot
+Instead of passing only today's weather, pass the last 5 days of weather data from OpenWeatherMap including temperature highs and lows for each day, humidity, precipitation, and wind. Claude should detect meaningful trends — a 28°F drop over 48 hours is far more dangerous than sustained cold. Pass the exact numbers so Claude can reference them specifically in the alert text. Example alert output: "Temperature in Winfield, KS dropped 31°F over the last 48 hours (from 78°F to 47°F) with humidity at 86% and rain forecast through Thursday."
+2. Pass every animal's individual health data to Claude
+For each animal in the herd pass the following to Claude:
+
+Name and tag number
+Species and breed
+Recent health events (last 30 days) with dates and severity
+Current medications and dosages
+FAMACHA score history and trend direction
+Expected due date if applicable
+
+Claude should cross-reference this individual data against the weather conditions to identify animals at elevated personal risk beyond the general herd warning. Example: "Tag #A-112 (Daisy) is at Critical risk — she was treated for respiratory illness 21 days ago and her FAMACHA score declined from 2 to 4 over the last two readings. Check her first."
+3. Severity ranking with individual animal callouts
+Every alert should be classified as Low, Moderate, High, or Critical. If specific animals are at elevated individual risk, call them out by name and tag number with the exact reason why. Sort alerts by severity — Critical first, Low last.
+Do not change the upsertAlert() pattern, the idempotency logic, or any other part of the alerts system outside of the Claude prompt and the data passed into generateWeatherAlerts(). Show me exactly which lines you are changing before making any edits.

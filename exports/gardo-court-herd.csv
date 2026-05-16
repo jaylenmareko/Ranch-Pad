@@ -1,0 +1,11 @@
+name,tag_number,species,breed,sex,date_of_birth,health_event_description,health_event_date,health_event_severity,medication_name,dosage,date_given,next_due_date
+Bessie,GC-001,Cattle,Black Angus,Female,2022-03-15,BRD — coughing heavy nasal discharge labored breathing — temp 104.2F,2026-04-03,high,Draxxin (tulathromycin),2.5 ml per 100 lbs,2026-04-03,
+Duke,GC-002,Cattle,Hereford,Male,2020-07-22,Severe foot rot — right front leg swollen foul odor — limping badly,2026-03-28,high,LA-200 (oxytetracycline),5 ml per 100 lbs,2026-03-28,2026-04-03
+Rosie,GC-003,Cattle,Black Angus,Female,2021-05-10,Pneumonia — fever 105.1F lethargy not eating — suspected after cold night,2026-04-04,high,Nuflor (florfenicol),6 ml per 100 lbs,2026-04-04,2026-04-11
+Chester,GC-004,Cattle,Hereford,Male,2019-11-30,BRD relapse — third respiratory episode in 30 days — wheezing and eye discharge,2026-03-31,high,Enrofloxacin,5 ml per 100 lbs,2026-03-31,2026-04-01
+Bella,GC-005,Cattle,Black Angus,Female,2020-02-14,Pinkeye — right eye weeping tearing excessive — wind and debris exposure,2026-04-02,medium,Terramycin Ophthalmic Ointment,1g tube per eye,2026-03-30,2026-04-02
+Cotton,GC-006,Sheep,Merino,Female,2021-09-18,FAMACHA score 4 — pale gums bottle jaw forming — heavy barber pole worm load,2026-04-01,high,Cydectin (moxidectin),0.4 ml per 10 lbs,2026-04-01,2026-04-28
+Pepper,GC-007,Sheep,Dorper,Female,2022-01-05,Foot scald — limping both rear feet — interdigital tissue red and inflamed,2026-03-30,high,Zinc Sulfate Foot Bath,hoof soak treatment,2026-03-30,2026-04-06
+Dolly,GC-008,Sheep,Suffolk,Female,2020-08-12,Respiratory distress — coughing labored breathing — temp 104.8F,2026-03-25,high,Biomycin 200 (oxytetracycline),4 ml per 100 lbs,2026-03-25,2026-04-01
+Nanny,GC-009,Goat,Boer,Female,2022-04-22,Heavy internal parasite burden — bottle jaw forming weight loss — FAMACHA 4,2026-04-02,high,Ivomec (ivermectin),0.5 ml per 10 lbs,2026-04-02,2026-04-30
+Billy,GC-010,Goat,Boer,Male,2021-12-08,Severe bloat — left flank distended — found off feed lying down,2026-03-29,high,Therabloat (poloxalene),30 ml oral drench,2026-03-29,2026-04-05

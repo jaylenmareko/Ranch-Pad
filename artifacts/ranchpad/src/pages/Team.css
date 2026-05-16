@@ -1,0 +1,723 @@
+/* ── Team Page — Cream Design System ────────────────────────────────────── */
+
+/* Page shell */
+.team-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #F5F1EA;
+  padding-bottom: 88px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.team-header {
+  background: #1A3628;
+  padding: 20px 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.team-header-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1.1;
+}
+
+.team-header-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #A8C5B0;
+  margin-top: 2px;
+}
+
+/* Invite / Cancel button in header */
+.team-invite-btn,
+.team-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none;
+  transition: background 0.12s;
+}
+
+.team-invite-btn {
+  background: #2D6A4F;
+  color: #FFFFFF;
+}
+.team-invite-btn:hover { background: #255C43; }
+
+.team-cancel-btn {
+  background: rgba(255,255,255,0.12);
+  color: #FFFFFF;
+}
+.team-cancel-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+
+.team-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+
+.team-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1.5px solid #C8DAD2;
+  overflow: hidden;
+}
+
+.team-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #D8E8DF;
+  background: #F9F6F0;
+}
+
+.team-card-header-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #5A7A6A;
+  flex: 1;
+}
+
+.team-card-header-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8FA393;
+}
+
+/* ── Invite Panel ────────────────────────────────────────────────────────── */
+
+.team-invite-panel {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1.5px solid #C8DAD2;
+  overflow: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.team-invite-role-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #5A7A6A;
+}
+
+.team-role-toggles {
+  display: flex;
+  gap: 8px;
+}
+
+.team-role-toggle {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #C8DAD2;
+  background: #F9F6F0;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.team-role-toggle:hover { background: #EEF5F0; }
+.team-role-toggle--active {
+  border-color: #2D6A4F;
+  background: #EEF5F0;
+}
+
+.team-role-toggle-icon {
+  margin-top: 1px;
+  color: #8FA393;
+  flex-shrink: 0;
+}
+.team-role-toggle--active .team-role-toggle-icon { color: #2D6A4F; }
+
+.team-role-toggle-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+}
+
+.team-role-toggle-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8FA393;
+  margin-top: 1px;
+}
+
+.team-generate-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+  background: #1A3628;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.team-generate-btn:hover:not(:disabled) { background: #15302A; }
+.team-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.team-invite-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #F9F6F0;
+  border: 1px solid #C8DAD2;
+}
+
+.team-invite-url-text {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #444;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-copy-btn {
+  flex-shrink: 0;
+  padding: 5px;
+  border-radius: 7px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #5A7A6A;
+  transition: background 0.1s;
+}
+.team-copy-btn:hover { background: #EEF5F0; }
+
+.team-invite-expire-note {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8FA393;
+}
+
+/* ── Deletion Requests ───────────────────────────────────────────────────── */
+
+.team-delete-requests {
+  background: #FFFBF2;
+  border-radius: 16px;
+  border: 1.5px solid #E8D5A0;
+  overflow: hidden;
+}
+
+.team-delete-requests-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-bottom: 1px solid #E8D5A0;
+  background: #FEF9EE;
+}
+
+.team-delete-requests-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #B8860B;
+  flex: 1;
+}
+
+.team-delete-count-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  background: #F5E09A;
+  color: #8A6200;
+  padding: 1px 8px;
+  border-radius: 20px;
+}
+
+.team-delete-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid #F0E8CC;
+}
+.team-delete-row:last-child { border-bottom: none; }
+
+.team-delete-row-body { flex: 1; min-width: 0; }
+
+.team-delete-resource-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-delete-resource-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8A6200;
+  margin-top: 1px;
+}
+
+.team-delete-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.team-approve-btn,
+.team-deny-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition: background 0.1s;
+}
+
+.team-approve-btn {
+  color: #2D6A4F;
+  background: #EEF5F0;
+  border-color: #C8DAD2;
+}
+.team-approve-btn:hover { background: #D8EDDF; }
+
+.team-deny-btn {
+  color: #B03A2E;
+  background: #FDF0EE;
+  border-color: #F0C5BF;
+}
+.team-deny-btn:hover { background: #F8DDD9; }
+
+/* ── Member rows ─────────────────────────────────────────────────────────── */
+
+.team-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.team-empty-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.team-empty-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #5A7A6A;
+}
+
+.team-empty-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+  margin-top: 3px;
+}
+
+.team-member-list { list-style: none; margin: 0; padding: 0; }
+
+.team-member-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid #D8E8DF;
+}
+.team-member-row:last-child { border-bottom: none; }
+
+.team-member-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #EEF5F0;
+  border: 1.5px solid #C8DAD2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.team-member-avatar-initial {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #2D6A4F;
+}
+
+.team-member-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Role badge (read-only, for owner) */
+.team-role-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.team-role-badge--owner      { background: #EEF5F0; color: #2D6A4F; border: 1px solid #C8DAD2; }
+.team-role-badge--ranch_hand { background: #FEF3E2; color: #C97D20; border: 1px solid #F0D5A0; }
+.team-role-badge--viewer     { background: #F0F0F0; color: #666;    border: 1px solid #DCDCDC; }
+
+/* Role select (dropdown for non-owners) */
+.team-role-select {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A3628;
+  background: #F5F1EA;
+  border: 1.5px solid #C8DAD2;
+  border-radius: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  flex-shrink: 0;
+}
+.team-role-select:focus { border-color: #2D6A4F; }
+
+/* Remove member button */
+.team-remove-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #B03A2E;
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+.team-remove-btn:hover { background: #FDF0EE; }
+
+/* ── Pending Invites (sub-section) ───────────────────────────────────────── */
+
+.team-pending-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #F9F6F0;
+  border-top: 1px solid #D8E8DF;
+  border-bottom: 1px solid #D8E8DF;
+}
+
+.team-invite-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid #D8E8DF;
+}
+.team-invite-row:last-child { border-bottom: none; }
+
+.team-invite-token {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100px;
+}
+
+.team-invite-expire {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8FA393;
+  margin-top: 2px;
+}
+
+.team-invite-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #C8DAD2;
+  background: #F5F1EA;
+  color: #5A7A6A;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+.team-invite-copy-btn:hover { background: #EEF5F0; }
+.team-invite-copy-btn--copied { color: #2D6A4F; border-color: #2D6A4F; background: #EEF5F0; }
+
+.team-revoke-btn {
+  padding: 5px;
+  border-radius: 7px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #B03A2E;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+.team-revoke-btn:hover { background: #FDF0EE; }
+
+/* ── Viewer Animal Access ─────────────────────────────────────────────────── */
+
+.team-viewer-list {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.team-viewer-note {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8FA393;
+}
+
+.team-viewer-row {
+  padding: 12px;
+  border-radius: 12px;
+  background: #F9F6F0;
+  border: 1px solid #D8E8DF;
+}
+
+.team-viewer-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.team-viewer-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  flex: 1;
+}
+
+.team-viewer-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8FA393;
+}
+
+.team-animal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.team-animal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px 2px 10px;
+  border-radius: 20px;
+  background: #EEF5F0;
+  color: #2D6A4F;
+  border: 1px solid #C8DAD2;
+}
+
+.team-animal-tag-remove {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #5A7A6A;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+}
+.team-animal-tag-remove:hover { opacity: 1; }
+
+.team-assign-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #C8DAD2;
+  background: #F5F1EA;
+  color: #1A3628;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.team-assign-open-btn:hover { background: #EEF5F0; border-color: #2D6A4F; }
+
+.team-animal-picker {
+  border-radius: 10px;
+  border: 1px solid #C8DAD2;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.team-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #F9F6F0;
+  border-bottom: 1px solid #D8E8DF;
+}
+
+.team-picker-header-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+}
+
+.team-picker-select-all {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2D6A4F;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.team-picker-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: #5A7A6A;
+}
+
+.team-picker-list {
+  max-height: 180px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.team-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.team-picker-item:hover { background: #F9F6F0; }
+
+.team-picker-item-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #111;
+  flex: 1;
+}
+
+.team-picker-item-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #8FA393;
+}
+
+.team-picker-footer {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid #D8E8DF;
+  background: #F9F6F0;
+}
+
+.team-picker-confirm-btn {
+  flex: 1;
+  height: 36px;
+  border-radius: 8px;
+  background: #1A3628;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.team-picker-confirm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.team-picker-confirm-btn:hover:not(:disabled) { background: #15302A; }
+
+.team-picker-cancel-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #F5F1EA;
+  color: #1A3628;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid #C8DAD2;
+  cursor: pointer;
+}
+.team-picker-cancel-btn:hover { background: #EEF5F0; }

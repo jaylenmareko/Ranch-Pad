@@ -1,0 +1,71 @@
+# RanchPad - Livestock Management Platform
+
+## Overview
+A full-stack livestock management app for modern ranches. Features include animal tracking, health events, famacha scores, medication records, weather, AI-powered alerts, and ranch/user authentication.
+
+## Architecture
+
+### Monorepo Structure (pnpm workspaces)
+- **`artifacts/ranchpad/`** — React + Vite frontend (port 24400, previewPath `/`)
+- **`artifacts/api-server/`** — Express + TypeScript REST API backend (port 8080)
+- **`lib/db/`** — Drizzle ORM schema + PostgreSQL client (`@workspace/db`)
+- **`lib/api-client-react/`** — Generated React Query hooks from OpenAPI spec (`@workspace/api-client-react`)
+
+### Frontend (`artifacts/ranchpad`)
+- React 19 + Vite + TypeScript
+- Tailwind CSS v4 with **Refined B dark teal theme**: BG `#162E2A`, Sidebar `#112622`, Card `#1C3C37`, Border `#2B5550`, Green `#42A96E`, Red `#D64B3A`; all driven by CSS variables in `index.css`
+- Fonts: Inter (body, `--app-font-sans`) + Fraunces (brand/display, `--app-font-display`)
+- Brand logo: "Ranch" (white) + "Pad" (amber #F0A845) in Fraunces on landing page top bar
+- Navigation: **bottom tab bar** (5 fixed tabs: Home, Herd, Alerts, Data, Settings); no sidebar, no hamburger
+- Bottom nav active state: dark green top-pill indicator + bold dark green label; inactive: `#8FA393` gray
+- Routing: `wouter` with base path from `import.meta.env.BASE_URL`
+- State: `@tanstack/react-query` via generated hooks
+- Auth: JWT token stored in `localStorage` as `ranchpad_token`
+- Auth hook: `artifacts/ranchpad/src/hooks/use-auth.tsx` — `AuthProvider` wraps app, `AuthGuard` protects routes
+- Fetch interceptor: `artifacts/ranchpad/src/lib/fetch-interceptor.ts` — handles 401s globally by dispatching `auth-expired` event
+
+### Backend (`artifacts/api-server`)
+- Express + TypeScript (ESM, tsx)
+- JWT auth middleware: `artifacts/api-server/src/middleware/auth.ts`
+- Routes: auth, animals, alerts, famacha, field-notes, health-events, medications, ranch, weather, billing
+- Startup: checks DB connectivity, generates initial alerts for all ranches
+- Requires env vars: `PORT`, `JWT_SECRET`, `DATABASE_URL`
+- Optional Stripe env vars: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
+- Billing routes: `artifacts/api-server/src/routes/billing.ts`
+  - `GET /api/billing/status` — returns BillingStatus (trialing/active/past_due/canceled/expired, hasAccess)
+  - `POST /api/billing/checkout` — creates Stripe checkout session, returns redirect URL
+  - `POST /api/billing/portal` — creates Stripe billing portal session, returns redirect URL
+  - `POST /api/billing/webhook` — processes Stripe webhook events (checkout.session.completed, customer.subscription.updated/deleted)
+
+### Database (`lib/db`)
+- PostgreSQL via Drizzle ORM
+- Tables: users, ranches, ranch_users, animals, alerts, famacha_scores, field_notes, health_events, medication_records
+- ranches table has billing columns: trial_ends_at, stripe_customer_id, stripe_subscription_id, subscription_status
+- Push schema: `pnpm --filter @workspace/db run push`
+
+### API Client (`lib/api-client-react`)
+- Auto-generated from OpenAPI spec at `lib/api-client-react/src/openapi.yaml`
+- Provides type-safe React Query hooks for all endpoints
+
+## Key Bugs Fixed
+- **Login redirect bug**: After login/signup, users were getting redirected back to the landing page. Root cause: `use-auth.tsx` had a `useEffect` that cleared the token on ANY `useGetRanch` query error (network errors, 500s, etc.). The fetch-interceptor already handles true 401s via the `auth-expired` event. Fix: removed the erroneous `useEffect` and changed `isAuthenticated` from `!!token && !isError` to just `!!token`.
+
+## Environment Variables
+- `JWT_SECRET` — Secret for signing/verifying JWTs (auto-generated, stored as shared env var)
+- `DATABASE_URL` — PostgreSQL connection string (managed by Replit)
+- `PORT` — Port for each service (auto-assigned by Replit per workflow)
+
+## Development
+- Install: `pnpm install`
+- Push DB schema: `pnpm --filter @workspace/db run push`
+- Frontend workflow: `artifacts/ranchpad: web`
+- API workflow: `artifacts/api-server: API Server`
+
+## Notes
+- `bcrypt` is listed in `pnpm-workspace.yaml` `onlyBuiltDependencies` to allow its native build
+- The api-client-react package uses `.js` extensions in imports for ESM compatibility
+
+## Future Features (Deferred)
+- **Field Notes tab on Animal Detail** — API fully built (`GET/POST/PATCH/DELETE /api/animals/:id/notes`), just needs a fourth tab on the detail page UI, styled like the Ranch Journal dialog
+- **Cull Note on Animal Detail** — DB column (`cull_note`) and endpoint (`PATCH /api/animals/:id/cull-note`) exist; needs a view/edit field shown only when `isCull=true`
+- **FAMACHA PDF scale fix** — PDF export renders FAMACHA labels inverted (5 appears as healthy, 1 as critical); alert engine and UI use the correct scale (1=healthy, 5=critical). Fix is in the PDF generation utility.
