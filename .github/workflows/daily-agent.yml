@@ -23,7 +23,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install anthropic requests
+        run: |
+          pip install anthropic requests
+          npm install -g pnpm
 
       - name: Run agent — Ranch-Pad
         env:
@@ -35,6 +37,9 @@ jobs:
           cd ".claude/agents"
           python agent.py --project Ranch-Pad
         continue-on-error: true
+
+      - name: Wait for rate limit window to reset
+        run: sleep 90
 
       - name: Run agent — pjroutes
         env:
