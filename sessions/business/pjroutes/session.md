@@ -110,3 +110,69 @@
 - Enable Stripe bank transfer instruction emails (Stripe → Settings → Customer emails)
 - Delete all test data from Supabase before any operator onreach
 - Start Part 135 outreach — 402 contacts ready in `outreach/tier1-operators-enriched.csv`; FAA list just refreshed April 27 for cross-reference
+
+---
+
+## 2026-05-19 08:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets:**
+- S&P 500: 7,403.05 (-0.07%)
+- Nasdaq: 26,090.73 (-0.51%)
+- Dow Jones: 49,686.12 (+0.32%)
+- Bitcoin: $76,429.98 (-2.03%)
+
+**Top 3 Aviation/Business Headlines:**
+1. Air Charter Service Q1 2026: revenue +37% ($380M), charter flights +19% YoY — strongest demand in years
+2. Private jet flight activity up ~5% globally YoY; ARGUS TRAQPak projects +2.1% into May
+3. Private jet charter market on track to $25B+ by 2031 — real-time pricing algorithms and jet-card growth cited as key drivers
+
+**New AI/Routing Dev Tools (last 7 days):**
+- No specific new tool launched this week; broader landscape dominated by NextBillion.ai (enterprise AI routing APIs), Onfleet, and DispatchTrack
+- AI-driven GIS framework for aircraft route classification published (MDPI, May 2026) — academic but applicable to charter routing logic
+- Leon Software Marketplace (launched Dec 2025) gaining operator adoption in 2026 — note as competitor surface to watch
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA restored accurate public Part 135 operator list (data April 27, 2026) after Feb errors that omitted NetJets, FlyExclusive, and others — list is now reliable for outreach targeting
+- 14 CFR Part 135 last amended May 8, 2026 — specifics not public yet; worth checking FAA eCFR for changes
+- Regulatory pressure on gray charter increasing — FAA running ~24 active enforcement cases
+
+**Market Trends:**
+- Charter demand still hot despite geopolitical uncertainty (Iran situation flagged as risk by industry leaders)
+- Operator-direct booking models gaining ground over broker-heavy platforms — pjroutes positioning is right
+- Sustainability becoming table stakes: corporate clients requesting emissions data + SAF options — future feature consideration
+- Crew shortages persisting; smaller fleets mean fewer available aircraft → supply constraint = pricing pressure upward
+
+**Competitors:**
+- Aeriel: AI-feature cloud OS for business aviation operators — gaining traction
+- Leon Software: flight management SaaS with marketplace module — operator-side workflow tool
+- Lido Labs: structured flight ops (preflight, dispatch, checklists) — workflow focus, not booking
+- No new Part 135-specific charter booking SaaS launched this week
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is not cloned in this environment; GitHub MCP access scoped to `ranch-pad` only. Scan based on prior session state.
+
+**Unresolved bugs (carried from 2026-05-15):**
+- `depart_start`/`depart_end` React state not updating when set via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER for operator listings**
+- Stripe test keys still live in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not toggled on (manual: Stripe dashboard → Settings → Customer emails)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo not accessible. Clone locally or add pjroutes- to GitHub MCP scope.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — operator listing is broken until this is resolved
+- Swap Stripe test → live keys in Vercel before any outreach goes out
+- Enable Stripe bank transfer instruction emails (manual toggle, 2 minutes)
+- Purge all test data from Supabase before going live
+- Start Part 135 outreach — 402 contacts in `outreach/tier1-operators-enriched.csv`; cross-reference against refreshed FAA list (April 27 data)
