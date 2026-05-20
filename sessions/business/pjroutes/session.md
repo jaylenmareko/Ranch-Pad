@@ -176,3 +176,70 @@
 - Enable Stripe bank transfer instruction emails (manual toggle, 2 minutes)
 - Purge all test data from Supabase before going live
 - Start Part 135 outreach — 402 contacts in `outreach/tier1-operators-enriched.csv`; cross-reference against refreshed FAA list (April 27 data)
+
+---
+
+## 2026-05-20 09:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 20, 2026):**
+- S&P 500: 7,391.76 (-0.15%)
+- Dow Jones: 49,586.88 (-0.20%)
+- Nasdaq: 26,030.91 (-0.23%)
+- Bitcoin: $76,948.94 (+0.41%)
+
+**Top 3 Aviation/Business Headlines:**
+1. SMS mandate expanded — all Part 135 charter operators must implement Part 5-compliant Safety Management Systems by **May 2027** — new compliance burden for operators
+2. Private jet charter market projected $25B–$45B by 2031 (CAGR 7.86–13.5%) — on-demand and real-time pricing tech cited as primary growth drivers
+3. FAA Safe Air Charter site now has fully searchable certified Part 135 operator list — verifiability easier for passengers and brokers post-April 27 data restore
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **Google Maps Platform MCP server** — standardized LLM interface for geocoding, routing, place search — directly applicable to pjroutes routing features
+- **NextBillion.ai** — enterprise AI routing APIs with deep logistics customization; gaining ground in aviation logistics
+- **Leon Marketplace** (Dec 2025 launch, gaining 2026 traction) — operator-side flight management module; watch as competitive surface
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA Part 135 operator list fully restored (April 27 data) — now reliable for outreach targeting after Feb 2026 errors omitting NetJets, FlyExclusive
+- 14 CFR Part 135 last amended May 8, 2026 — specifics not yet public; worth checking FAA eCFR
+- **New SMS mandate:** all Part 135 operators must have Part 5-compliant Safety Management System by May 2027 — potential operator pain point; pjroutes can reference this in outreach messaging
+- Gray charter enforcement continuing — ~24 active FAA cases; regulatory pressure favors licensed operators on a verified platform like pjroutes
+
+**Market Trends:**
+- On-demand charter becoming the default for short/mid-range trips — subscription/jet-card growing 9.63% CAGR
+- Corporate clients demanding SAF data and carbon compliance — sustainability becoming table stakes
+- Broker consolidation accelerating (Gama/Hunt & Palmer) — operator-direct model increasingly well-timed
+- Crew shortages + supply constraints pushing charter prices upward — good for operator revenue on platform
+
+**Competitors / SaaS Landscape:**
+- **Aeriel** — cloud OS for business aviation operators (workflow focus, not booking)
+- **Leon Software** — flight management + marketplace module (operator-side)
+- **ForeFlight** — flight planning/dispatch (crew tool, not charter booking)
+- No new Part 135-specific charter booking SaaS launched this week — window remains open
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) not accessible in this environment — GitHub MCP is scoped to `ranch-pad` only. Scan based on known state from prior session logs.
+
+**Unresolved bugs (carried from 2026-05-15 — still blocking):**
+- `depart_start`/`depart_end` React state not updating when set via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still live in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo not accessible in this session.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — platform is non-functional for operators until resolved
+- Swap Stripe test → live keys in Vercel before any outreach lands
+- Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard)
+- Purge all test data from Supabase before going live
+- SMS mandate angle: add one line to outreach email — pjroutes helps operators manage bookings as they prep for May 2027 SMS compliance
