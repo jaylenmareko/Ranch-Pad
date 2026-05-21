@@ -1,7 +1,17 @@
 {
-  "meta": { "project": "pjroutes", "last_scrape": null, "last_send": null },
+  "meta": {
+    "project": "pjroutes",
+    "last_scrape": null,
+    "last_send": null
+  },
   "queue": [],
   "in_flight": [],
   "sent": [],
-  "stats": { "total_sent": 0, "opens": 0, "replies": 0, "open_rate": 0.0, "reply_rate": 0.0 }
+  "stats": {
+    "total_sent": 0,
+    "opens": 0,
+    "replies": 0,
+    "open_rate": 0.0,
+    "reply_rate": 0.0
+  }
 }

@@ -4,8 +4,87 @@
     "last_scrape": null,
     "last_send": "2026-05-21T15:39:17.611451+00:00"
   },
-  "queue": [],
-  "in_flight": [],
+  "queue": [
+    {
+      "email": "jasonk@nefb.org",
+      "name": "",
+      "org": "",
+      "source": "nefb",
+      "state": "",
+      "id": "33dafac4-f38e-46e8-b306-040e5433047a"
+    },
+    {
+      "email": "kellyd@nefb.org",
+      "name": "",
+      "org": "",
+      "source": "nefb",
+      "state": "",
+      "id": "da742eba-490b-4cfd-8b69-4d4a431a6886"
+    },
+    {
+      "email": "chases@nefb.org",
+      "name": "",
+      "org": "",
+      "source": "nefb",
+      "state": "",
+      "id": "0d788c9e-fc11-496a-9abb-629da0acb190"
+    },
+    {
+      "email": "heidip@nefb.org",
+      "name": "",
+      "org": "",
+      "source": "nefb",
+      "state": "",
+      "id": "883705ac-01e3-4f36-92e2-13beb7135cdd"
+    },
+    {
+      "email": "leanne@nefb.org",
+      "name": "",
+      "org": "",
+      "source": "nefb",
+      "state": "",
+      "id": "1f4c1e0e-3284-407c-8b8b-2f6abd3dc736"
+    },
+    {
+      "email": "info@oceanofgrassfilm.com",
+      "name": "Ocean of Grass Movie",
+      "org": "",
+      "source": "creators_csv",
+      "id": "2b1fa123-d947-4400-82f7-3efe4ff337cd"
+    },
+    {
+      "email": "info@americanimplement.com",
+      "name": "American Implement \ud83c\uddfa\ud83c\uddf8",
+      "org": "",
+      "source": "creators_csv",
+      "id": "a3b9d2ad-381c-42b3-a88c-533912dfe4fa"
+    },
+    {
+      "email": "lisa@legacybrokergroup.com",
+      "name": "Legacy Broker Group",
+      "org": "",
+      "source": "creators_csv",
+      "id": "00a0980a-15cd-4563-8897-470d908d6ad4"
+    },
+    {
+      "email": "j7beatss@gmail.com",
+      "name": "Jaylen",
+      "org": "Test Ranch",
+      "source": "test",
+      "state": "KS",
+      "id": "d2684434-1e7a-4406-9bd9-f5ec225c0f1e"
+    }
+  ],
+  "in_flight": [
+    {
+      "email": "nickh@nefb.org",
+      "name": "",
+      "org": "",
+      "source": "nefb",
+      "state": "",
+      "id": "fc562c4e-d4cb-4c41-b4d4-16e507ce3d54"
+    }
+  ],
   "sent": [
     {
       "id": "161505c9-cbff-4a52-8a98-eb7223e36d6c",
