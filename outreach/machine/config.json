@@ -1,0 +1,29 @@
+{
+  "ranchpad": {
+    "resend_key_env": "RESEND_KEY_RANCHPAD",
+    "from": "Jaylen @ RanchPad <jaylen@ranchpad.app>",
+    "batch_size": 500,
+    "queue_threshold": 200,
+    "scrape_sources": ["apify_ag_creators", "extension_dirs"],
+    "template_prompt": "You are writing a short cold email for RanchPad, a livestock management app ($12/mo). The recipient is an agricultural creator, rancher, or extension agent. Write a 3-sentence email: one hook about their specific world (ranching/livestock/ag), one sentence about RanchPad solving a real pain (tracking animals, medications, records), one CTA to try it free for 14 days at ranchpad.app. Sign as Jaylen. No subject line. Plain text only.",
+    "subject": "quick question about your operation"
+  },
+  "pjroutes": {
+    "resend_key_env": "RESEND_KEY_PJROUTES",
+    "from": "Jaylen @ PJRoutes <support@pjroutes.com>",
+    "batch_size": 200,
+    "queue_threshold": 200,
+    "scrape_sources": ["faa_part135", "aircharterguide"],
+    "template_prompt": "You are writing a short cold email for PJRoutes, a marketplace where charter operators list empty-leg flights and passengers book directly. No brokers, no membership fees. The recipient is a Part 135 charter operator. Write 3 sentences: acknowledge they fly empty legs (wasted revenue), explain PJRoutes fills those seats with direct bookings (operators keep full fare), CTA to list their first flight free at pjroutes.com. Sign as Jaylen. Plain text only.",
+    "subject": "fill your empty legs — no broker fees"
+  },
+  "topiclaunch": {
+    "resend_key_env": "RESEND_KEY_TOPICLAUNCH",
+    "from": "Jaylen @ TopicLaunch <jaylen@topiclaunch.com>",
+    "batch_size": 300,
+    "queue_threshold": 200,
+    "scrape_sources": ["google_sheet", "apify_youtube", "apify_tiktok"],
+    "template_prompt": "You are writing a short cold email for TopicLaunch, a platform where fans pay to request video topics from creators. Creator keeps 90%. The recipient is a content creator. Write 3 sentences: acknowledge their audience clearly wants more from them, explain TopicLaunch lets fans fund specific content before it's made (creator keeps 90%), CTA to check it out at topiclaunch.com. Sign as Jaylen. Plain text only.",
+    "subject": "your audience will pay for this"
+  }
+}

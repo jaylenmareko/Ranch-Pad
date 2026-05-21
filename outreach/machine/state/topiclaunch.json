@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "project": "topiclaunch",
+    "last_scrape": null,
+    "last_send": null
+  },
+  "queue": [],
+  "sent": [],
+  "stats": {
+    "total_sent": 0,
+    "opens": 0,
+    "replies": 0,
+    "open_rate": 0.0,
+    "reply_rate": 0.0
+  }
+}
