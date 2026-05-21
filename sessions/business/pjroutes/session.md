@@ -243,3 +243,69 @@
 - Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard)
 - Purge all test data from Supabase before going live
 - SMS mandate angle: add one line to outreach email — pjroutes helps operators manage bookings as they prep for May 2027 SMS compliance
+
+---
+
+## 2026-05-21 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 21, 2026):**
+- S&P 500: 7,418.40 (+0.88%)
+- Dow Jones: 49,922.31 (+1.13%)
+- Nasdaq: 26,201.68 (+1.28%)
+- Bitcoin: $77,321.03 (+0.77%) — recovering from $77k dip
+
+**Top 3 Aviation/Business Headlines:**
+1. Air Charter Service posts record Q1 2026 — charters up 19%, revenue up 37% ($380M) — demand is real and accelerating
+2. FIFA World Cup 2026 charter demand forecast: +200–300% on host-city routes during peak match periods — operators booking multi-leg itineraries months out
+3. SMS mandate confirmed: all Part 135 operators must have Part 5-compliant Safety Management Systems by **May 2027** — compliance burden growing
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **NextBillion.ai** — AI routing APIs with time windows, vehicle attributes, traffic logic; gaining aviation logistics traction
+- **Airspace** — patented AI routing + auto-booking for time-critical logistics and Next Flight Out; direct aviation relevance
+- **Onfleet 2026 update** — complex delivery routing with multi-stop, continuous rerouting, real-time fleet visibility; patterns applicable to multi-leg charter routing UX
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA restored Part 135 certified operator list (May 2, 2026) — now updated daily for operator details, weekly for aircraft — outreach list is reliable again
+- 14 CFR Part 135 last amended May 8, 2026 — specifics not yet detailed publicly; worth checking eCFR for exact changes
+- Gray charter enforcement ongoing — FAA crackdown on Part 91 operators advertising charter; legitimate Part 135 operators are the beneficiaries — messaging angle for pjroutes
+- SMS mandate (Part 5 compliance by May 2027) — growing compliance overhead for operators; pjroutes as streamlined ops tool is well-timed
+
+**Market Trends:**
+- On-demand and real-time pricing tech cited by analysts as primary growth driver for $25–45B charter market
+- World Cup 2026 demand surge coming — operators need routing and booking tools that handle multi-leg, multi-city itineraries
+- SAF and sustainability mandates becoming table stakes — data tracking will be expected by corporate clients
+- Broker consolidation continuing — operator-direct platforms gaining strategic advantage
+
+**Competitors / SaaS:**
+- **Portside Horizon** (launched March 2026) — cloud-based modular platform for larger flight departments, fractional programs, jet card operators; advanced reporting + API — closest new competitive surface
+- **Leon Software** — flight management + marketplace module; operator-side tool
+- No new Part 135-specific charter booking SaaS launched this week — window still open
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) not in scope for this environment's GitHub MCP. Scan reflects known state from prior sessions.
+
+**Unresolved — still blocking:**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails)
+- Test data not purged from Supabase
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo not accessible in this session environment.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — nothing else matters until operators can list flights
+- Swap Stripe test → live keys in Vercel env vars before first outreach wave
+- Enable Stripe bank transfer instruction emails (2-minute manual fix)
+- Purge Supabase test data before going live
+- World Cup angle: add multi-leg/multi-city routing capability to roadmap — 200–300% demand spikes incoming on host-city routes
