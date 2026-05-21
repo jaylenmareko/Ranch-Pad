@@ -2,12 +2,25 @@
   "meta": {
     "project": "ranchpad",
     "last_scrape": null,
-    "last_send": null
+    "last_send": "2026-05-21T15:39:17.611451+00:00"
   },
   "queue": [],
-  "sent": [],
+  "in_flight": [],
+  "sent": [
+    {
+      "id": "161505c9-cbff-4a52-8a98-eb7223e36d6c",
+      "email": "test@example.com",
+      "name": "Test",
+      "org": "",
+      "resend_id": "test_resend_id_123",
+      "sent_at": "2026-05-21T15:39:17.611451+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    }
+  ],
   "stats": {
-    "total_sent": 0,
+    "total_sent": 1,
     "opens": 0,
     "replies": 0,
     "open_rate": 0.0,

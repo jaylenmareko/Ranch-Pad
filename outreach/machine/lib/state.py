@@ -1,4 +1,4 @@
-import json, os, uuid
+import json, uuid
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -7,10 +7,14 @@ STATE_DIR = BASE / "state"
 
 def load(project: str) -> dict:
     path = STATE_DIR / f"{project}.json"
-    with open(path) as f:
-        return json.load(f)
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"State file not found for project: {project} (expected: {path})")
 
 def save(project: str, data: dict):
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
     path = STATE_DIR / f"{project}.json"
     tmp = path.with_suffix(".tmp")
     with open(tmp, "w") as f:
@@ -19,9 +23,10 @@ def save(project: str, data: dict):
 
 def get_seen_emails(project: str) -> set:
     data = load(project)
-    sent = {r["email"].lower() for r in data["sent"]}
-    queued = {r["email"].lower() for r in data["queue"]}
-    return sent | queued
+    sent = {r.get("email", "").lower() for r in data["sent"]}
+    queued = {r.get("email", "").lower() for r in data["queue"]}
+    in_flight = {r.get("email", "").lower() for r in data.get("in_flight", [])}
+    return sent | queued | in_flight
 
 def enqueue(project: str, leads: list) -> int:
     data = load(project)
@@ -43,14 +48,19 @@ def pop_batch(project: str, n: int) -> list:
     data = load(project)
     batch = data["queue"][:n]
     data["queue"] = data["queue"][n:]
+    data.setdefault("in_flight", []).extend(batch)
     save(project, data)
     return batch
 
 def mark_sent(project: str, lead: dict, resend_id: str):
     data = load(project)
+    email = lead.get("email", "")
+    if not email:
+        return
+    data["in_flight"] = [r for r in data.get("in_flight", []) if r.get("id") != lead.get("id")]
     data["sent"].append({
         "id": lead.get("id", str(uuid.uuid4())),
-        "email": lead["email"],
+        "email": email,
         "name": lead.get("name", ""),
         "org": lead.get("org", ""),
         "resend_id": resend_id,
@@ -65,6 +75,7 @@ def mark_sent(project: str, lead: dict, resend_id: str):
 
 def update_status(project: str, resend_id: str, status: str, timestamp: str):
     data = load(project)
+    matched = False
     for record in data["sent"]:
         if record.get("resend_id") == resend_id:
             record["status"] = status
@@ -74,8 +85,12 @@ def update_status(project: str, resend_id: str, status: str, timestamp: str):
             elif status == "replied" and not record.get("replied_at"):
                 record["replied_at"] = timestamp
                 data["stats"]["replies"] = data["stats"].get("replies", 0) + 1
+            matched = True
             break
-    total = data["stats"].get("total_sent", 1)
-    data["stats"]["open_rate"] = round(data["stats"].get("opens", 0) / max(total, 1), 4)
-    data["stats"]["reply_rate"] = round(data["stats"].get("replies", 0) / max(total, 1), 4)
+    if not matched:
+        print(f"[update_status] WARNING: resend_id {resend_id} not found in {project}")
+        return
+    total = max(data["stats"].get("total_sent", 1), 1)
+    data["stats"]["open_rate"] = round(data["stats"].get("opens", 0) / total, 4)
+    data["stats"]["reply_rate"] = round(data["stats"].get("replies", 0) / total, 4)
     save(project, data)
