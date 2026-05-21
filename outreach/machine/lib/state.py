@@ -73,6 +73,15 @@ def mark_sent(project: str, lead: dict, resend_id: str):
     data["meta"]["last_send"] = datetime.now(timezone.utc).isoformat()
     save(project, data)
 
+def release_from_inflight(project: str, lead_ids: list):
+    """Remove leads from in_flight without marking as sent (used on send failure)."""
+    if not lead_ids:
+        return
+    id_set = set(lead_ids)
+    data = load(project)
+    data["in_flight"] = [r for r in data.get("in_flight", []) if r.get("id") not in id_set]
+    save(project, data)
+
 def update_status(project: str, resend_id: str, status: str, timestamp: str):
     data = load(project)
     matched = False

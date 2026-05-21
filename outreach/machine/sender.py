@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 sys.path.insert(0, str(Path(__file__).parent))
 
-from lib.state import load, pop_batch, mark_sent, enqueue
+from lib.state import load, pop_batch, mark_sent, enqueue, release_from_inflight
 from lib.resend import send_email
 import anthropic
 import subprocess
@@ -111,6 +111,8 @@ def run_project(project: str, cfg: dict) -> int:
 
     # Re-enqueue failed leads
     if failed_leads:
+        failed_ids = [lead.get("id") for lead in failed_leads]
+        release_from_inflight(project, failed_ids)  # clear from in_flight first
         re_added = enqueue(project, failed_leads)
         print(f"  [{project}] re-queued {re_added} failed leads")
 
