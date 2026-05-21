@@ -46,13 +46,13 @@ def build_ranchpad():
 
     # NEFB regional managers
     nefb_dir = PROJECTS_BASE / "Ranch-Pad/outreach/farm-bureau/nefb/data"
-    for csv_path in nefb_dir.glob("*.csv"):
+    for csv_path in (nefb_dir.glob("*.csv") if nefb_dir.is_dir() else []):
         for row in _read_csv(csv_path):
             email = _norm(row, "Email", "email")
             if email:
                 leads.append({
                     "email": email,
-                    "name": f"{_norm(row,'First Name','first_name')} {_norm(row,'Last Name','last_name')}".strip(),
+                    "name": " ".join(filter(None, [_norm(row,'First Name','first_name'), _norm(row,'Last Name','last_name')])),
                     "org": _norm(row, "Organization", "org", "Company"),
                     "source": "nefb",
                     "state": _norm(row, "State", "state"),
@@ -65,7 +65,7 @@ def build_ranchpad():
         if email:
             leads.append({
                 "email": email,
-                "name": _norm(row, "Name", "name", "Creator"),
+                "name": " ".join(filter(None, [_norm(row,'First Name','first_name'), _norm(row,'Last Name','last_name')])) or _norm(row, "Name", "name", "Creator"),
                 "org": _norm(row, "Platform", "platform", "Channel"),
                 "source": "creators_csv",
             })
@@ -118,19 +118,26 @@ def build_pjroutes():
     Supplement with Apify aircharterguide if queue low.
     """
     leads = []
+    skipped = 0
     phone_log = ROOT / ".claude/agents/phone_log.csv"
     for row in _read_csv(phone_log):
-        if row.get("Project", "").strip().lower() != "pjroutes":
+        proj = row.get("Project", "").strip().lower()
+        if proj != "pjroutes":
+            if proj:  # has a project tag but it's not pjroutes
+                skipped += 1
             continue
         email = _norm(row, "Email", "email")
         if not email:
             continue
         leads.append({
             "email": email,
-            "name": f"{_norm(row,'First Name')} {_norm(row,'Last Name')}".strip(),
+            "name": " ".join(filter(None, [_norm(row,'First Name','first_name'), _norm(row,'Last Name','last_name')])),
             "org": _norm(row, "Company", "company"),
             "source": "faa_phone_log",
         })
+
+    if skipped:
+        print(f"  [pjroutes] {skipped} rows skipped (wrong project tag — check capitalization)")
 
     added = enqueue("pjroutes", leads)
     state = load("pjroutes")
@@ -143,45 +150,14 @@ def build_pjroutes():
     return added
 
 def _apify_operators():
-    import requests
-    try:
-        resp = requests.post(
-            "https://api.apify.com/v2/acts/apify~web-scraper/run-sync-get-dataset-items",
-            params={"token": APIFY_KEY, "timeout": 120},
-            json={
-                "startUrls": [{"url": "https://www.aircharterguide.com/operators/united-states"}],
-                "maxPagesPerCrawl": 30,
-                "pageFunction": """
-async function pageFunction(context) {
-    const { $ } = context;
-    const results = [];
-    $('a[href*=\"/operator/\"]').each((i, el) => {
-        const href = $(el).attr('href') || '';
-        if (href.includes('/operator/')) {
-            results.push({ url: 'https://www.aircharterguide.com' + href });
-        }
-    });
-    return results;
-}""",
-            },
-            timeout=180,
-        )
-        if resp.ok:
-            items = resp.json()
-            leads = []
-            for item in items:
-                email = item.get("email", "").strip()
-                if email:
-                    leads.append({
-                        "email": email,
-                        "name": item.get("name", ""),
-                        "org": item.get("company", item.get("operatorName", "")),
-                        "source": "aircharterguide",
-                    })
-            added = enqueue("pjroutes", leads)
-            print(f"[pjroutes] Apify added {added} operator contacts")
-    except Exception as e:
-        print(f"  [warn] Apify operator scrape failed: {e}")
+    """
+    TODO: Implement two-pass Apify scrape:
+    Pass 1 — collect operator detail page URLs from listing pages
+    Pass 2 — visit each detail page and extract email/name/company
+    For now, log clearly that this needs implementation.
+    """
+    print("[pjroutes] WARNING: Apify operator scrape not yet implemented — add APIFY key + implement two-pass scrape")
+    print("[pjroutes] For now, add operator contacts manually to state/pjroutes.json queue[]")
 
 # ─── TopicLaunch ─────────────────────────────────────────────────────────────
 
