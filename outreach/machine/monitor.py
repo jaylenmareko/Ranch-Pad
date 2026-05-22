@@ -18,7 +18,7 @@ from lib.resend import get_email_status
 import json
 CONFIG_PATH = Path(__file__).parent / "config.json"
 PROJECTS = ["ranchpad", "pjroutes", "topiclaunch"]
-LOG_PATH = Path(__file__).parent / "state" / "monitor_log.txt"
+LOG_PATH = Path.home() / "AppData" / "Local" / "outreach-machine" / "state" / "monitor_log.txt"
 
 def load_config() -> dict:
     with open(CONFIG_PATH) as f:

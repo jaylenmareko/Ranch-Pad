@@ -16,10 +16,11 @@ from lib.resend import send_email
 import anthropic
 import subprocess
 
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
 CONFIG_PATH = Path(__file__).parent / "config.json"
 PROJECTS = ["ranchpad", "pjroutes", "topiclaunch"]
-LOG_PATH = Path(__file__).parent / "state" / "sender_log.txt"
+# Log lives with state — outside OneDrive
+LOG_PATH = Path.home() / "AppData" / "Local" / "outreach-machine" / "state" / "sender_log.txt"
 
 def load_config() -> dict:
     with open(CONFIG_PATH) as f:

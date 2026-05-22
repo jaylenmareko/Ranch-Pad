@@ -2,8 +2,8 @@ import json, uuid
 from pathlib import Path
 from datetime import datetime, timezone
 
-BASE = Path(__file__).parent.parent
-STATE_DIR = BASE / "state"
+# State lives outside OneDrive to avoid file-locking during sync
+STATE_DIR = Path.home() / "AppData" / "Local" / "outreach-machine" / "state"
 
 def load(project: str) -> dict:
     path = STATE_DIR / f"{project}.json"

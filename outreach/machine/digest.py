@@ -104,7 +104,7 @@ if __name__ == "__main__":
     if DIGEST_FROM_KEY:
         try:
             resend_id = send_email(DIGEST_FROM_KEY, DIGEST_FROM, DIGEST_TO, subject, body)
-            print(f"Digest sent → {DIGEST_TO} (id: {resend_id})")
+            print(f"Digest sent to {DIGEST_TO} (id: {resend_id})")
         except Exception as e:
             print(f"Send failed: {e}")
             print("(Domain may not be verified — digest printed above)")
