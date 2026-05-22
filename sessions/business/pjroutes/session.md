@@ -309,3 +309,72 @@
 - Enable Stripe bank transfer instruction emails (2-minute manual fix)
 - Purge Supabase test data before going live
 - World Cup angle: add multi-leg/multi-city routing capability to roadmap — 200–300% demand spikes incoming on host-city routes
+
+---
+
+## 2026-05-22 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 22, 2026):**
+- S&P 500: 7,445.72 (+0.17%)
+- Dow Jones: 50,285.66 (+0.55%)
+- Nasdaq: 26,293.10 (+0.09%)
+- Bitcoin: $77,539.67 (+0.15%)
+- Markets green across the board; Dow crossed 50,000 — macro sentiment recovering
+
+**Top 3 Aviation/Business Headlines:**
+1. Air Charter Service Q1 2026: revenue $380M (+37%), charter flights +19% YoY — demand accelerating into spring
+2. Private jet flight activity: 80,126 flights week of May 17 (+4% YoY); US fractional/charter up **11% YoY** — strongest segment
+3. FIFA World Cup 2026 charter surge: round-trip host-city charters forecast $15K–$60K depending on aircraft; +200–300% demand on peak match routes
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **Google Maps Platform MCP server** — LLM-native interface for geocoding, routing, place search; directly integrable into pjroutes routing layer
+- **NextBillion.ai** — enterprise AI routing APIs; time windows, vehicle attributes, traffic logic; aviation logistics traction building
+- No aviation-specific routing SaaS launched this week — window still open
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA restored public Part 135 operator list (April 27 data, updated daily for operators, weekly for aircraft) — reliable for outreach again after Feb errors
+- FAA Safe Air Charter website now fully searchable with certified Part 135 operators — verifiability easier for passengers and brokers
+- SMS mandate (14 CFR Part 5): all Part 135 operators must have Safety Management Systems live by **May 28, 2027** — growing compliance overhead
+- Gray charter enforcement ongoing (~24 active FAA cases) — legitimate Part 135 operators want verified platform exposure
+
+**Market Trends:**
+- Charter demand remains hot; Q1 2026 record results despite geopolitical uncertainty (Iran conflict flagged as H2 risk)
+- US fractional/charter +11% YoY — sharpest growth segment in private aviation right now
+- Operator-direct booking gaining ground vs. broker platforms — pjroutes positioning is right
+- World Cup 2026 multi-city demand incoming — multi-leg routing is a near-term product gap
+- Private aviation market projected at $41.38B by 2030
+
+**Competitors / SaaS:**
+- **Avi-Go** — AI charter marketplace, NBAA/EBAA/AsBAA-backed — closest direct competitor; real-time quoting + flight tracking
+- **Portside Horizon** (March 2026) — cloud platform for larger flight departments and fractional programs
+- **Leon Software** — flight management + marketplace module; operator-side workflow tool
+- No new Part 135-specific charter booking SaaS launched this week — window still open
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Scan reflects known state from prior session logs.
+
+**Unresolved — still blocking (carried since 2026-05-15):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo not accessible in this environment. Clone locally or add `pjroutes-` to GitHub MCP scope to enable live code scans.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — this is the #1 blocker; platform is non-functional for operators until resolved
+- Swap Stripe test → live keys in Vercel env vars before first outreach email lands
+- Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard)
+- Purge all test data from Supabase before going live
+- Launch Part 135 outreach wave — 402 contacts in `outreach/tier1-operators-enriched.csv`; cross-reference against FAA's refreshed April 27 list; use SMS compliance angle in messaging
