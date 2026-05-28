@@ -725,3 +725,76 @@
 - Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard)
 - Purge all test data from Supabase before going live
 - Launch Part 135 outreach today — 402 contacts ready; SMS mandate deadline (May 28, 2027 = exactly 1 year) is the hook; pair with FAA Safe Air Charter verifiability as trust signal
+
+---
+
+## 2026-05-28 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 27–28, 2026):**
+- S&P 500: 7,520.36 (+0.0%) — record high
+- Nasdaq: 26,674.73 (+0.1%) — record high
+- Dow Jones: 50,644.28 (+0.36%)
+- Bitcoin: $75,884.41 (-1.57%) — retreating while equities at records
+- Rally driven by lower oil, easing Treasury yields, strong earnings; Dow crossed 50,600
+
+**Top 3 Aviation/Business Headlines:**
+1. Air Charter Service Q1 2026: revenue $380M (+37%), charter flights +19% YoY — record demand confirmed, not slowing
+2. FAA SMS Compliance Review Act of 2026 advancing in Senate post-DCA midair collision — Part 135 SMS scrutiny at all-time high; **TODAY (May 28) is exactly 1 year before the May 28, 2027 compliance deadline**
+3. Private aviation +4% YoY globally (80,126 flights week of May 17); US fractional/charter +11% YoY — sharpest growth segment in the market
+
+**New AI/Routing Dev Tools (last 7 days):**
+- No aviation-specific routing SaaS launched specifically this week
+- Dominant platforms: NextBillion.ai (enterprise AI routing APIs), Onfleet (multi-stop), Locus (enterprise logistics)
+- Trend: autonomous AI dispatch engines chaining complex multi-stop routing without human input — directly applicable to pjroutes multi-leg charter roadmap
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA Part 135 certified operator list restored May 2, 2026 — updated daily for operators, weekly for aircraft; reliable for outreach cross-reference
+- FAA Safe Air Charter website: fully searchable certified Part 135 operator list — strong trust signal for outreach copy
+- 14 CFR Part 135 Amdt. 135-149 (May 8, 2026) — flight data recorder requirements for multi-engine turbine-powered airplanes and rotorcraft
+- **SMS mandate: TODAY (May 28, 2026) is exactly 1 year until the May 28, 2027 Part 5 SMS compliance deadline** — Senate SMS Compliance Review Act advancing; regulatory pressure intensifying post-DCA
+- Gray charter enforcement ongoing (~24 active FAA cases) — legitimate Part 135 operators want verified platform exposure
+- FAA crackdown on Part 91 operators advertising charter — Part 135 legitimacy is a differentiator
+
+**Market Trends:**
+- Air Charter Service Q1 2026: charters +19%, revenue +37% ($380M) — record results; demand accelerating
+- US fractional/charter +11% YoY; North America +5% YoY; global private jet activity +4% YoY
+- On-demand direct booking accelerating; broker-heavy platforms losing ground — pjroutes operator-direct model is right
+- World Cup 2026 demand surge incoming — operators need multi-leg, multi-city booking tools; product gap on pjroutes roadmap
+- Geopolitical uncertainty (Iran) flagged as H2 2026 risk by operators; near-term demand remains strong
+- Private aircraft market → $41.38B by 2030; airline routing software market → $9.04B in 2026 (8.1% CAGR)
+
+**Competitors / SaaS:**
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; real-time quoting, flight tracking — closest direct competitor
+- **Portside Horizon** (March 2026) — cloud platform for larger flight departments and fractional programs
+- **Schedaero** — all-in-one charter sales, flight ops, maintenance, accounting, crew; integrated payments
+- **Leon Software** — flight management + marketplace module; operator-side workflow tool
+- No new Part 135-specific charter booking SaaS launched this week — window still open
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `/projects/business/pjroutes/` does not exist in this clone. Scan reflects known state from prior session logs.
+
+**Unresolved — still blocking (carried since 2026-05-15 — 13 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Clone locally or add `pjroutes-` to GitHub MCP scope to enable live code scans.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 13 days unresolved; operators cannot list flights; nothing else matters until this is done
+- Swap Stripe test → live keys in Vercel env vars before any outreach email lands
+- Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard)
+- Purge all test data from Supabase before going live
+- Launch Part 135 outreach TODAY — 402 contacts ready; **May 28 = exactly 1 year until SMS mandate deadline** — strongest possible hook; pair with FAA Safe Air Charter verifiability as trust signal
