@@ -1022,3 +1022,99 @@ This has been pending for 2 sessions. Every visitor hitting ranchpad.app right n
 - Send 5 IG DMs (@veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life)
 
 ---
+
+## 2026-05-29 [AUTO]
+
+### PHASE 1 — WORLD BRIEFING
+
+**Markets (May 29, 2026)**
+- S&P 500: 7,563.63 | +0.58% — new ATH territory; equities grinding higher
+- Nasdaq: 26,917.47 | +0.91% — tech leading; strongest index today
+- Dow Jones: 50,668.97 | +0.05% — flat; holding above 50K
+- Bitcoin: $73,690.45 | -2.11% — only red; ETF outflows + geopolitical tension triggering liquidations
+
+**Top 5 Headlines**
+1. **International fintech push into US** — Revolut, Nubank, Wise all competing for US dollars; world's biggest market being contested; signals fintech margin compression incoming for US players
+2. **Spirit Airlines collapse confirmed** — budget airline lost its profit engine; badly timed merger bid; consolidation in travel; logistics sector reshaping
+3. **Barnes & Noble turnaround complete** — CEO Daunt liberated stores from corporate playbook; local autonomy + curation wins; story for founder-led product differentiation
+4. **India-US trade deal advancing** — Rubio confirmed; ag input supply chain implications for US ranchers; watch for input cost shifts
+5. **B2B ad spend -8-10% Q2** — geopolitical holdback; ad costs softening = cheaper paid outreach window for Ranch-Pad right now
+
+**LinkedIn Founder Pulse**
+- Carousels: 45.85% engagement rate — top format
+- Polls: 200%+ reach — fastest distribution lever
+- US founder count +70% YoY; 69% say starting a business has never been more accessible
+- Personal profiles 2.6x better than company pages — post as Jaylen, not Ranch-Pad brand
+- LinkedIn is now the #1 B2B distribution channel of 2026; organic founder content still driving pipeline at near-zero cost
+- YC founders top tools: Taplio (AI content), Shield (analytics), Sales Navigator (outbound)
+
+**New AI Tools (last 7 days)**
+- **HeyGen Avatar V** — 15-sec phone clip → full AI avatar model; generate unlimited Ranch-Pad demo videos for IG/LinkedIn without being on camera; free/paid tiers; use immediately
+- **Apollo.io** — 210M+ contacts, multi-step sequences, A/B testing built in; free tier; highest-value outreach tool for Ranch-Pad; replaces manual email scripts
+- **Lindy** — drag-and-drop no-code AI outreach workflow builder; no coding required; free tier; test for Ranch-Pad sequence automation
+- **Sendr** — lead gen + data enrichment + personalized video outreach in one platform; pricing TBD; evaluate for Ranch-Pad pipeline
+
+**3 Founder Opportunities (30–90 days)**
+1. **Livestock auction house digitization** — ~50 auction houses in TX/KS/OK still producing paper weekly market reports; no SaaS layer exists; who pays = auction houses; $200–500/mo = $120K–300K ARR potential; directly adjacent to Ranch-Pad ICP; 30-day MVP possible
+2. **"Best ranch software" SEO listing arbitrage** — cattly.io, gitnux, wifitalents, G2 actively ranking tools in 2026; Ranch-Pad absent for 12 sessions; 1–2 hrs to submit; zero cost; buyer-intent traffic from people already searching to buy; window closing as competitors claim remaining spots
+3. **LinkedIn build-in-public as Jaylen** — 3-4x/week carousel posts as Jaylen (not Ranch-Pad page); use record cattle prices + drought stress as hook; zero cost; 60-day compound effect; founder count up 70% YoY means LinkedIn algo is rewarding founder content right now
+
+---
+
+### PHASE 2 — RANCH-PAD MARKET INTEL
+
+**Competitors**
+- CattleMax, AgriWebb, Herdwatch, HerdBoss, Feedlync, Beef Tracker — no new launches this week
+- **Cattler** ($2M raised May 1, Homegrown Capital + Grit Road): global beef OS, 8 countries, $1M revenue 2025, hiring +50% — direct competitor; accelerating fast
+- **Farmbrite** — rising in G2 Ranch Manager Open alternative roundups; gaining SEO visibility
+- **Ranch Vision** — positioning as "only software forecasting ranch future"; financial modeling angle
+- **Herdwatch + VetDrive** (Jan 2026 acquisition): vertically integrating into animal health; overlaps Ranch-Pad lane
+- Ranch-Pad absent from cattly.io, gitnux, wifitalents, G2 roundup articles — **12 consecutive sessions unaddressed; this is the #1 free growth lever sitting on the table**
+
+**AgTech Funding**
+- $1.4B raised YTD 2026 through May 7; on pace with 2025's $4.4B; deal count down sharply
+- **Halter $220M Series E** (March 2026, $2B valuation, Founders Fund-backed): 1M+ cattle on GPS smart collars; expanding into health + reproduction monitoring (US beta); data moat compounding
+- Animal Health Technologies: $415.9M in last 12 months — top investor category
+- No new cattle SaaS rounds in May; bootstrapped vertical SaaS window still open
+
+**USDA/Cattle Market (bullish)**
+- Cattle on feed May 1: 11.6M head (+2% YoY) — first YoY increase in 18 months; herd rebuilding confirmed
+- April placements: 1.70M head (+6% YoY); April marketings: -10% YoY — feedlots holding
+- 2026 beef production forecast: 25.547B lbs (lowered); prices projected to new highs
+- Oil falling 10% from peak — ag input costs easing; Fed patient on rates; ranch margins improving
+- Summer BBQ demand peak active — Memorial Day through 4th of July is the sales window
+- **Signal: Record cattle prices + easing input costs + summer demand = ranchers profitable with improving margins. Best Ranch-Pad sales environment of 2026. Act now.**
+
+**Adjacent Opportunities**
+- **Precision livestock market**: $2.7B (2025) → $8.01B (2030); software/analytics fastest-growing segment; Ranch-Pad in the right lane
+- **OpenET/NASA satellite water data**: quarter-acre resolution; free government layer Ranch-Pad could surface as a feature
+- **Halter integration path**: Ranch-Pad + collar health/location data = premium data tier without building hardware; 1M+ animals already on platform
+- **AI precision feeding**: feed = 60–70% of cattle op cost; AI optimization SaaS layer underdeveloped; high-ROI target
+
+---
+
+### PHASE 3 — OUTREACH QUEUE
+
+**Ranch-Pad outreach directory `projects/business/Ranch-Pad/outreach/` — DOES NOT EXIST**
+- No CSV tracker, no email queue, no structured pipeline
+- **12 consecutive sessions flagged — structural liability costing pipeline visibility**
+
+**TopicLaunch outreach directory** (`projects/business/TopicLaunch/outreach/`) — exists, Ranch-Pad unrelated
+- Files present: `email-outreach.md`, `linkedin-outreach.md`, `resend.md`, `send-emails.mjs`
+- TopicLaunch campaign has 2,464 contacts in Google Sheet; these are creator-focused emails, not ranch outreach
+
+**Pending / Overdue — Ranch-Pad (flagging only — do not send)**
+- IG DMs UNSENT: @veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life — **30 days overdue**
+- Landing.tsx hero headline: NOT live on Replit — pending since 2026-04-29 (**30 days overdue; costing conversions every single day**)
+- NEFB follow-up: 6 emails sent 2026-05-05 — **24 days elapsed; no follow-up done; window likely closing or closed**
+
+---
+
+**Action Items**
+- Submit Ranch-Pad to cattly.io, gitnux, wifitalents roundup lists — 12 sessions overdue; 1 hr; zero cost; buyer-intent traffic
+- NEFB follow-up email — 24 days elapsed; use herd rebuild +2% YoY + $240/cwt USDA forecast + easing input costs; this may be last viable window
+- Push Landing.tsx hero headline to Replit — 30 days overdue; 5-minute fix; highest-leverage action available
+- Create `projects/business/Ranch-Pad/outreach/` + CSV tracker — 12 sessions of invisible pipeline is a real leak, not a to-do
+- Send 5 IG DMs (@veaterranch, @jamesbigleyranches, @cowhorsegallery, @twobabesonebarn, @rancher.life)
+
+---
