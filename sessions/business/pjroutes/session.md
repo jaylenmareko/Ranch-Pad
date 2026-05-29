@@ -798,3 +798,70 @@
 - Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard)
 - Purge all test data from Supabase before going live
 - Launch Part 135 outreach TODAY — 402 contacts ready; **May 28 = exactly 1 year until SMS mandate deadline** — strongest possible hook; pair with FAA Safe Air Charter verifiability as trust signal
+
+---
+
+## 2026-05-29 08:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 29, 2026):**
+- S&P 500: 7,563.63 (+0.58%)
+- Nasdaq: 26,917.47 (+0.91%)
+- Dow Jones: 50,668.97 (+0.05%)
+- Bitcoin: $73,690.45 — retreating from recent highs while equities grind higher
+
+**Top 3 Aviation/Business Headlines:**
+1. **FlyHouse acquires Sun Air Jets** (CMA Camarillo, CA) — nearly doubles managed fleet; charter consolidation continues; fewer independent operators = more urgency for pjroutes operator acquisition
+2. **Cessna Citation CJ4 Gen3 enters service** — Garmin Emergency Autoland standard; new midsize fleet entering charter market in 2026; operators upgrading = active fleet churn = outreach window
+3. **Private jet flight activity +10% YoY** in US (WingX Week 21 data) — 30,470 Part 91K/135 departures; demand not softening; on-demand segment leading growth
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **Autonomous AI dispatch agents** — chain complex multi-stop routing without human input; applicable to pjroutes multi-leg/World Cup 2026 roadmap
+- **AI-GIS airport routing frameworks** — intelligent route-level classification for airport networks (MDPI research); usable for FBO/waypoint intelligence layer
+- **NextBillion.ai** — gaining traction in aviation logistics; enterprise routing APIs (time windows, traffic, vehicle attributes, runway constraints)
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- **Real ID enforcement active as of May 7, 2026** — applies to all air transportation including Part 135 charter; operators need to verify passenger ID compliance; potential friction point pjroutes can address in booking flow
+- **FAA Safe Air Charter** — fully searchable certified Part 135 operator list, updated daily; strong trust anchor for outreach copy and operator onboarding
+- FAA Part 135 list restored May 2 (was pulled after errors in Feb) — now reliable for outreach list cross-referencing
+- SMS mandate: **May 28, 2027 deadline = 364 days out** — Senate SMS Compliance Review Act advancing; pressure building; still the sharpest urgency hook in outreach
+
+**Market Trends:**
+- FlyHouse/Sun Air Jets acquisition: consolidation narrative accelerating — independent operators watching closely; pjroutes platform = survival tool for independents
+- US fractional/charter +11% YoY; global +4% YoY — demand not slowing
+- On-demand direct booking accelerating; broker-heavy platforms losing ground — operator-direct model remains right positioning
+- World Cup 2026 demand surge still incoming — multi-leg charter gap on product roadmap
+
+**Competitors / SaaS:**
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; closest direct competitor; real-time quoting + tracking
+- **Aerotalon** — Part 135-specific ops platform; 80K+ waypoints; focused on operations not marketplace
+- **Portside** — enterprise/fractional focus; not direct threat to indie operator segment
+- No new Part 135 charter booking SaaS launched this week — window still open
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 14 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (Stripe → Settings → Customer emails — manual 2-min toggle)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Add `pjroutes-` to GitHub MCP scope or scan locally to enable live code health checks.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 14 days unresolved; single blocker between product and first real operator listing
+- Swap Stripe test → live keys in Vercel env vars; nothing ships without this
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
+- Purge test data from Supabase before any outreach lands on pjroutes.vercel.app
+- Launch Part 135 outreach — 402 contacts, SMS mandate urgency (364 days), FAA Safe Air Charter trust anchor; Real ID (May 7) adds fresh operator friction angle
