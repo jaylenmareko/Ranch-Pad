@@ -865,3 +865,75 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
 - Purge test data from Supabase before any outreach lands on pjroutes.vercel.app
 - Launch Part 135 outreach — 402 contacts, SMS mandate urgency (364 days), FAA Safe Air Charter trust anchor; Real ID (May 7) adds fresh operator friction angle
+
+---
+
+## 2026-05-30 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 30, 2026):**
+- S&P 500: 7,580.06 (+0.22%) — ninth consecutive weekly gain
+- Nasdaq: 26,972.62 (+0.20%)
+- Dow Jones: 51,032.46 (+0.72%) — crossed 51K
+- Bitcoin: $73,515.11 (+0.20%) — recovering modestly; still off recent highs
+- Driver: Dell earnings + peace talk optimism + Memorial Day reopening lift
+
+**Top 3 Aviation/Business Headlines:**
+1. **Premier Air Charter Holdings** receives FAA approval for 10+ passenger charter flights (Gulfstream fleet); service entry July 2026 — larger cabin market opening; new Part 135 entrant
+2. **Private jet activity Week 20:** 80,126 flights globally (+4% YoY); US charter/fractional +11% YoY — demand not slowing
+3. **JETBAY relaunches** as fixed-price private aviation OTA — new direct competitor in the on-demand charter marketplace space; watch closely
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **NextBillion.ai** — enterprise AI routing APIs (time windows, traffic, vehicle attributes); gaining aviation logistics traction; directly applicable to pjroutes routing layer
+- **Autonomous AI dispatch agents** — chain complex multi-stop routing without human input; applicable to pjroutes multi-leg/World Cup 2026 roadmap
+- **AI-GIS airport routing frameworks** — intelligent route-level classification for airport networks; usable for FBO/waypoint intelligence layer
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA Part 135 certified operator list restored May 2, 2026 — updated daily for operators, weekly for aircraft; reliable for outreach cross-reference
+- **14 CFR Part 135 Amdt. 135-149 (May 8, 2026)** — flight data recorder requirements for multi-engine turbine-powered airplanes and rotorcraft; new compliance burden for operators
+- **SMS mandate: 363 days to May 28, 2027 deadline** — Senate SMS Compliance Review Act advancing post-DCA midair collision; regulatory scrutiny at all-time high; sharpest urgency hook in outreach
+- Gray charter enforcement ongoing (~24 active FAA cases) — legitimate Part 135 operators motivated to gain verified platform exposure
+- Real ID enforcement active since May 7 — passenger ID compliance friction; potential pjroutes booking-flow differentiator
+
+**Market Trends:**
+- Air Charter Service Q1 2026: +19% charter flights, +37% revenue ($380M) — record; demand accelerating
+- US fractional/charter +11% YoY; global +4% YoY — on-demand segment leading growth
+- JETBAY relaunch as fixed-price OTA — validates direct-booking model; but adds a real competitor; move fast
+- Charter consolidation (Volato + FlyExclusive closing Q2, FlyHouse/Sun Air Jets) — fewer indie brokers; independents need a platform
+- World Cup 2026 demand surge incoming — operators need multi-leg, multi-city booking tools; gap still on pjroutes roadmap
+- Airline route planning software market: $9.04B in 2026 (8.1% CAGR → $12.27B by 2030)
+
+**Competitors / SaaS:**
+- **JETBAY** (relaunched) — fixed-price private aviation OTA; most relevant new entrant this week; direct threat
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; real-time quoting + tracking; closest prior competitor
+- **Schedaero** — all-in-one charter ops + marketplace; operator-side tool
+- **Leon Software** — flight management + marketplace module; operator workflow
+- No other new Part 135-specific booking SaaS this week — window tightening; JETBAY relaunch is a signal to move faster
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 15 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (Stripe → Settings → Customer emails — manual 2-min toggle)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Add `pjroutes-` to GitHub MCP scope or scan locally for live code health.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 15 days unresolved; JETBAY just relaunched; every day this stays broken is market share given away
+- Swap Stripe test → live keys in Vercel env vars before outreach lands
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
+- Purge test data from Supabase; go live-ready today
+- Launch Part 135 outreach — 402 contacts, SMS mandate urgency (363 days out), JETBAY relaunch adds competitive urgency to the hook
