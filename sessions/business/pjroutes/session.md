@@ -937,3 +937,72 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
 - Purge test data from Supabase; go live-ready today
 - Launch Part 135 outreach — 402 contacts, SMS mandate urgency (363 days out), JETBAY relaunch adds competitive urgency to the hook
+
+---
+
+## 2026-05-31 08:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (May 31, 2026):**
+- S&P 500: **7,580.06** (+0.22%)
+- Nasdaq: **26,972.62** (+0.20%)
+- Dow Jones: **51,032.46** (+0.72%) — above 51K
+- Bitcoin: **$74,033** (+1.97% 24hr) — recovering; equities holding near highs
+
+**Top 3 Aviation/Business Headlines:**
+1. **Premier Air Charter Holdings** receives FAA approval for 10+ passenger charter flights on Gulfstream fleet — service entry July 2026; new larger-cabin Part 135 entrant
+2. **Air Charter Service Q1 2026:** charter flights +19%, revenue +37% ($380M) — record demand, not slowing into summer
+3. **Amazon Supply Chain Services** expanding third-party logistics via new division (P&G, 3M, Lands' End as early adopters) — logistics tech investment signal relevant to routing infra plays
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **Google Maps Agentic UI Toolkit** (Experimental, May 19) — AI agents get interactive map layer for real-time geospatial visualization; directly integrable into pjroutes routing UX
+- **Grounding with Google Maps** — now GA in Firebase AI Logic SDK; anchors AI apps to real-world location data (Android, iOS, web, Unity); strong fit for FBO/airport intelligence
+- **Maps Grounding Lite (MCP)** — portable MCP tool grounding LLMs in Google Maps data (300M+ places); designed for rapid AI agent prototyping; directly applicable to pjroutes routing layer
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA restored public Part 135 operator list (April 27 data) — updated daily for operators, weekly for aircraft; reliable for outreach cross-reference
+- FAA Safe Air Charter website: fully searchable certified Part 135 operator list — trust anchor for outreach copy
+- SMS mandate: **362 days to May 28, 2027 Part 5 deadline** — Senate SMS Compliance Review Act advancing post-DCA; urgency sharpening
+- Gray charter enforcement ongoing (~24 active FAA cases) — legitimate Part 135 operators motivated by verified platform exposure
+- **NBAA Member Rewards program** launched May 21 — cost-reduction push for operators; NBAA engagement signals operator pain around operating costs
+
+**Market Trends:**
+- Private jet charter market: **$27.38B in 2026 → $45.43B by 2030** (13.5% CAGR) — large and accelerating
+- Week 20: 80,126 flights globally (+4% YoY); YTD global +4%; North America +5% YoY; US charter/fractional +11% YoY
+- On-demand charter cementing as default for short/mid-range private flying
+- Jet fuel costs down 8%+ YoY — operator margins improving; reduces their cost objection to platform fees
+
+**Competitors / SaaS:**
+- **Flight Science** raised $7M (seed, Root Ventures) — real-time AI altitude/speed/route recommendations to pilots in-flight; validates AI routing market appetite in aviation
+- **JETBAY** relaunched as fixed-price private aviation OTA (April 27) — no membership fees, all-inclusive charter packages on high-demand US city pairs; direct competitive threat; validates direct-booking model
+- **FLYR** — $392M total raised; revenue intelligence + dynamic pricing for aviation; institutional signal on routing/pricing tech value
+- Airline route planning software market: $9.04B in 2026 (8.1% CAGR → $12.27B by 2030)
+- No new Part 135-specific charter booking SaaS launched this week — window tightening with JETBAY; move faster
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 16 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (Stripe → Settings → Customer emails — 2-min manual toggle)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Clone locally or add `pjroutes-` to GitHub MCP scope for live code health checks.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 16 days unresolved; JETBAY is live; every day this is broken is ground ceded to competitors
+- Swap Stripe test → live keys in Vercel env vars before outreach lands
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
+- Purge test data from Supabase; go live-ready today
+- Integrate Google Maps Grounding Lite (MCP) into pjroutes routing layer — it's purpose-built for this use case and now GA
