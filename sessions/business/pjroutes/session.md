@@ -1006,3 +1006,73 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
 - Purge test data from Supabase; go live-ready today
 - Integrate Google Maps Grounding Lite (MCP) into pjroutes routing layer — it's purpose-built for this use case and now GA
+
+---
+
+## 2026-06-01 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 1, 2026):**
+- S&P 500: 7,580.06 (+0.22%)
+- Nasdaq: 26,972.62 (+0.20%)
+- Dow Jones: 51,032.46 (+0.72%) — holding above 51K
+- Bitcoin: ~$73,400 (-0.66%) — retreating while equities green
+- Driver: Nvidia new PC chip launch leading tech; Dow futures up 260 pts pre-market; markets opening June on May momentum
+
+**Top 3 Aviation/Business Headlines:**
+1. **Premier Air Charter Holdings** receives FAA approval to operate 10+ passenger charter flights (Gulfstream fleet) — service entry July 2026; signals fleet buildout ahead of World Cup demand
+2. **NBAA launches ATC modernization tracker** (May 29) — public site tracks US ATC infrastructure upgrade progress; relevant to routing, airspace planning, and ATC data feeds in routing software
+3. **Nvidia leads markets higher** on new PC chip — Dow futures +260 pts; tech sector driving June open; aviation AI/tech spend cycle follows
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **Google Maps Agentic UI Toolkit** (GA May 19) — LLMs get interactive geospatial map layer; converts unstructured text to real-time maps; directly embeddable via SDK into routing apps
+- **Google Maps MCP Server ("Grounding Lite")** — geocoding, routing, isochrones, matrix routing, 300M+ POIs as LLM-callable tools; purpose-built for AI agent routing; now available
+- **CARTO Agentic Tools** (open-source TypeScript) — agents create/style data layers, run spatial analytics, navigate maps from natural language; one `npm install`; relevant for pjroutes route viz layer
+- **Mapbox MCP Server** — geocoding, routing, isochrones, matrix routing as LLM-callable tools; solid complement/alternative to Google for aviation route planning
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA Part 135 certified operator list restored April 27, 2026 — updated daily for operators, weekly for aircraft; was pulled in Feb due to data errors (omitting NetJets, FlyExclusive); now reliable
+- FAA Safe Air Charter website upgraded — fully searchable certified Part 135 operator list live; strong trust anchor for outreach copy
+- **SMS compliance deadline: May 28, 2027** — all Part 135 operators must implement Part 5 Safety Management System and submit declaration of compliance; Senate SMS Compliance Review Act advancing post-DCA; 361 days out
+- Gray charter crackdown ongoing — FAA + NBAA enforcing against Part 91 operators advertising Part 135 services; ~24 active enforcement cases; verified platform exposure = value prop for legit operators
+
+**Market Trends:**
+- Charter activity: Jan +1.3%, Feb +5.3%, Apr +3.6% YoY — sustained demand curve, not softening
+- **FIFA World Cup 2026 demand surge: June 11–July 19** (US/Canada/Mexico) — 73,000+ private jet flights forecast on match days; $274M in additional charter/fractional revenue expected; FAA slot reservation systems activated at host airports — operators need booking/routing tools NOW
+- Jet-A fuel up 30% since March 1; charter prices up 15–20% overall — pricing pressure on operators; cost-reduction messaging resonates
+- Private jet charter market: $27.38B in 2026 → $45.43B by 2030 (13.5% CAGR)
+- Vista/VistaJet ordered 40 Bombardier Challenger 3500s; Jet OUT scaling to 17-aircraft CJ4 Gen2 fleet by end of 2026 — fleet expansion in progress
+
+**Competitors / SaaS:**
+- **JETBAY** relaunched as private aviation OTA (April 27) — fixed-price, all-inclusive charter packages on select US/international city pairs; no membership fees; direct competitive threat; validates direct-booking model
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; real-time quoting, tracking, analytics — closest ongoing competitor
+- Airline route planning software market: $9.04B in 2026 (8.1% CAGR); flight route optimization market → $17B by 2034 — institutional money following this space
+- No new Part 135-specific charter booking SaaS launched this week — window tightening; JETBAY is live and moving
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 17 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails — 2-min fix)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Clone locally or add `pjroutes-` to GitHub MCP scope for live code health checks.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 17 days; World Cup starts June 11; operators need to be listing flights before that window opens
+- Swap Stripe test → live keys in Vercel env vars before any outreach email lands
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
+- Purge test data from Supabase; go live-ready today
+- Integrate Google Maps Grounding Lite (MCP) or Agentic UI Toolkit — both now GA; purpose-built for pjroutes routing layer; one-sprint integration
