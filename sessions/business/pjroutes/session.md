@@ -1076,3 +1076,70 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
 - Purge test data from Supabase; go live-ready today
 - Integrate Google Maps Grounding Lite (MCP) or Agentic UI Toolkit — both now GA; purpose-built for pjroutes routing layer; one-sprint integration
+
+---
+
+## 2026-06-02 09:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 2, 2026):**
+- S&P 500: 7,599.96 (+0.26%) — new all-time high
+- Nasdaq: 27,086.81 (+0.42%) — new all-time high
+- Dow Jones: 51,078.88 (+0.09%) — new all-time high
+- Bitcoin: $71,695.30 (-2.80%) — ETF outflows 10 days straight; pulling toward $70K floor
+
+**Top 3 Aviation/Business Headlines:**
+1. **JETBAY full OTA relaunch live** — fixed-price private jet charter on select US/international routes; no membership fee; direct-booking model validated in market; competitive pressure real
+2. **Private aircraft market $31.9B in 2026** (6.8% CAGR) — business travel now #1 driver of private aviation demand; ALTOUR report confirms corporate demand overtook leisure
+3. **FlyUSA acquired TRYP Air Charter (May 2025)** — consolidation continues; smaller operators getting absorbed; mid-tier operators looking for tools to stay independent
+
+**New AI/Dev Tools (last 7 days):**
+- **CargoTech 2026 roadmap** — 9 new AI-embedded products; AgentAI functionalities + Rotate Data Services; air cargo routing intelligence layer expanding
+- **American Airlines gate AI** (Azure) — real-time flight data → dynamic gate assignment; 870K gallons/yr fuel savings at DFW; pattern directly applicable to charter FBO/ramp routing
+- NextBillion.ai AI Route Optimization — logistics-grade routing APIs; time windows, vehicle attributes, traffic — potential data layer for pjroutes pricing/ETA engine
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- FAA Part 135 certified operator list: restored April 27, active — updated daily for operators, weekly for aircraft; reliable for operator verification/trust signals
+- **SMS compliance deadline: May 28, 2027** — all Part 135 operators must implement Part 5 SMS and submit declaration of compliance; 361 days out; affects all pjroutes operator customers; potential compliance feature angle
+- Gray charter enforcement ongoing — FAA + NBAA active on ~24 cases; verified Part 135 operators want differentiation; platform trust = value prop
+- NBAA flagging concerns on Part 135/Part 380 rulemaking — watching for changes that could affect on-demand charter
+
+**Market Trends:**
+- Private jet charter: $17.67B in 2026 → $25.79B by 2031 (7.86% CAGR); jet-card/subscription fastest segment at 9.63% CAGR
+- **FIFA World Cup 2026: June 11–July 19** — 73,000+ private jet flights forecast on match days; $274M additional charter/fractional revenue; 9 days out; operators need listing/routing tools NOW — this window is closing
+- Jet-A fuel +30% since March; charter prices up 15–20% — operators under margin pressure; cost-efficiency messaging resonates
+- Jet OUT scaling to 17-aircraft CJ4 Gen2 fleet by EOY — single-type operator model; ACS posted 35,467 charter flights in 2025 (+17% YoY); demand floor is firm
+
+**Competitors:**
+- **JETBAY** — full OTA, fixed-price, live; direct competitor; validates the market, raises urgency
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; real-time quoting, tracking, analytics; institutional backing
+- Airline route planning software market: $9.04B in 2026 (8.1% CAGR) → $12.27B by 2030 — institutional capital active in space
+- No new Part 135-specific charter booking SaaS launched this week — window still open, narrowing
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) outside GitHub MCP scope; no local clone in this environment. Scan based on carried state from prior sessions.
+
+**Unresolved blockers (carried since 2026-05-15 — now 18 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (Stripe → Settings → Customer emails — 2-min toggle)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME, imports, package.json — repo not accessible in this environment. Add `pjroutes-` to GitHub MCP repo scope or clone locally for live health checks.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug TODAY — World Cup starts June 11; 9 days; operators must be able to list flights before the demand spike
+- Swap Stripe test → live keys in Vercel env vars — nothing ships until this is done
+- Enable Stripe bank transfer instruction emails (2-min toggle in Stripe dashboard)
+- Purge test data from Supabase; validate full booking flow end-to-end on clean DB
+- Draft cold outreach to 5 Part 135 operators targeting World Cup route demand — timing is now or wait 6 weeks
