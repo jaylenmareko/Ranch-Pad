@@ -1143,3 +1143,75 @@
 - Enable Stripe bank transfer instruction emails (2-min toggle in Stripe dashboard)
 - Purge test data from Supabase; validate full booking flow end-to-end on clean DB
 - Draft cold outreach to 5 Part 135 operators targeting World Cup route demand — timing is now or wait 6 weeks
+
+---
+
+## 2026-06-03 08:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 3, 2026):**
+- S&P 500: **7,609.78** (+0.13%) — first ever close above 7,600; futures pointing down ~8 pts at open
+- Dow Jones: **51,307.79** (+0.45%)
+- Nasdaq: **27,093.90** (+0.03%)
+- Bitcoin: **$67,088.85** (-36% YoY) — trading below $70K support; 24hr vol $29.52B; equities at records while BTC retreats
+- Driver: Chip boom driving S&P gains; Dow futures slide flagged this morning after record highs
+
+**Top 3 Aviation/Business Headlines:**
+1. **FIFA World Cup private aviation demand surge underway** — WingX forecasts 73,000+ private jet flights across 16 host cities June 11–July 19; +20–40% surge pricing on key routes; $274M projected additional charter revenue; FBO parking >$30K at peak match periods — **World Cup starts in 8 days**
+2. **JETBAY relaunched as private aviation OTA** (April 27, 2026) — first platform offering transparent, all-inclusive fixed-price charter on select high-demand US routes; no membership required; side-by-side comparison vs. jet cards — direct competitor in market
+3. **V2 Jets acquires Corporate Aviation** (June 1, 2026) — broker absorbs Bedford, MA + Fort Lauderdale, FL operation; consolidation accelerating; fewer independent brokers = more urgency for operator-direct platforms
+
+**New AI Dev Tools (last 7 days):**
+- **FAA SMART system** — AI-powered ATC routing (predicts flight conflicts 2 hrs out vs. current 15 min); vendor decision end of June 2026; competitors: Palantir, Thales, Air Space Intelligence (Flyways AI — already at Alaska Airlines); operational September 2026; part of $32.5B FAA modernization; will reshape routing intelligence pricing industry-wide
+- **AAR Airvoyant** — first agentic AI procurement platform for airlines/MROs; searches inventory, consolidates quotes, one-click purchasing; aviation-adjacent SaaS signal on agentic aviation tools
+- **CargoTech 2026** — 9 new AI products rolling out this year including AgentAI functionalities and Rotate Data Services
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- **SMS mandate: May 28, 2027 deadline** — applies to all ~1,850 Part 135 operators; 4 SMS components per 14 CFR Part 5 required; Declaration of Compliance due; single-pilot operators have partial exclusions; 359 days out
+- **FAA restored public Part 135 operator list** (May 2, 2026) — had been deactivated Feb 2026 due to data errors; now restored and updated weekly; reliable for outreach cross-reference
+- **Gray charter crackdown ongoing** — FAA + NBAA + Air Charter Association actively targeting unauthorized ops; enforcement pressure increasing; legitimate operators want verified platform exposure
+- **NBAA opposed DHS proposal** (May 29) to curtail CBP airport operations — affects international charter routing and customs processing; watch for rulemaking impact
+- **NBAA ATC modernization tracker launched** (May 29) — new public site tracks US ATC infrastructure progress; fiber-optic replacing copper; electronic flight strips replacing paper; directly relevant to routing data quality
+- **FAA SMART contract decision imminent** — winner announced end of June 2026; operational September 2026; will reshape how routing intelligence is priced and distributed
+
+**Market Trends:**
+- Private jet charter: **$27.38B in 2026 → $45.43B by 2030** (13.5% CAGR); on-demand charter cementing as default for short/mid-range private flying
+- Business jet activity: ~3% higher H1 2025 vs. H1 2024; 3.9M+ flights Jan–Aug 2025; North America +5% YoY; US fractional/charter +11% YoY
+- **Jet-A fuel up 30% since March 1** — operators under margin pressure; cost-efficiency messaging resonates in outreach
+- Broker M&A accelerating (V2 Jets + Corporate Aviation, Volato + FlyExclusive closing Q2); fewer indie brokers = operator-direct platforms gain strategic advantage
+- SAF mandate (EU 2% now, 6% by 2030) adding compliance overhead for international operators
+
+**Competitors / SaaS:**
+- **JETBAY** — live, fixed-price OTA, no membership; validates direct-booking model; raises urgency
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; real-time quoting, tracking, analytics — closest ongoing competitor
+- **Air Space Intelligence (Flyways AI)** — already deployed at Alaska Airlines for route optimization; now competing for FAA SMART contract; benchmark for AI routing intelligence
+- Flight route optimization market: **$7.55B in 2026 → $17B by 2034** (10.68% CAGR); aviation cloud SaaS $5.3B → $20.5B by 2033 (14.5% CAGR)
+- No new Part 135-specific charter routing SaaS launched this week — lane remains lightly competed at the charter operator level
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 19 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails — 2-min fix)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Add `pjroutes-` to GitHub MCP scope or clone locally for live code health checks.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 19 days unresolved; World Cup starts June 11 (8 days); operators must be listing flights before the demand spike hits
+- Swap Stripe test → live keys in Vercel env vars — nothing ships until this is done
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
+- Purge test data from Supabase; validate full booking flow on clean DB before any outreach lands
+- Launch Part 135 outreach NOW — 402 contacts ready; lead with World Cup timing (June 11 = 8 days) + SMS mandate (359 days) + FAA Safe Air Charter verifiability; JETBAY is live and moving
