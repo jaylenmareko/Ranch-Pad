@@ -1215,3 +1215,67 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
 - Purge test data from Supabase; validate full booking flow on clean DB before any outreach lands
 - Launch Part 135 outreach NOW — 402 contacts ready; lead with World Cup timing (June 11 = 8 days) + SMS mandate (359 days) + FAA Safe Air Charter verifiability; JETBAY is live and moving
+
+---
+
+## 2026-06-04 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 4, 2026)**
+- S&P 500: 7,553.68 — **-0.74%**
+- Dow Jones: 50,687.07 — **-1.21%**
+- Nasdaq: 26,853.98 — **-0.89%**
+- Bitcoin: ~$66,370 — **-6.13%**
+- Broad risk-off day; oil spike + geopolitical tension (US-Iran) weighing on equities
+
+**Top 3 Aviation / Business Headlines**
+- ParaFlight Aviation building 24/7 charter network specifically for FIFA World Cup 2026 demand (June 11–July 19; 16 host cities, 104 matches) — same-day private jet demand spike incoming in **7 days**
+- V2 Jets acquires Corporate Aviation broker (Bedford MA + Fort Lauderdale) — charter broker consolidation accelerating
+- Air Charter Service Q1 2026: charter flights **+19%**, revenue **+37% to $380M** — demand remains at record levels despite macro pressure
+
+**New AI Dev Tools (last 7 days, routing/maps/logistics/aviation)**
+- **NextBillion.ai** — AI-driven routing API with deep logistics customization (time windows, vehicle constraints, traffic); actively expanding; relevant for pjroutes route optimization layer
+- **Google Maps Platform** — launched Geospatial AI Agents capability for maps/routing; relevant for embedding into future pjroutes flight mapping features
+- **Airbus Skywise** (April 2026) — merged Navblue + Skywise into unified aviation digital ecosystem; enterprise-tier, not a direct threat but signals where the industry is heading
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**Part 135 / FAA Regulatory**
+- **FAA SMS mandate (14 CFR Part 5)** — all Part 135 charter operators must comply by **May 28, 2027** (358 days); Senate advancing FAA SMS Compliance Review Act 2026 post-DCA collision; operator compliance anxiety = pjroutes onboarding angle
+- **FAA Part 135 operator database restored** (deactivated Feb 2026, restored May 2, updated June 1, 2026) — pjroutes can now verify operators directly from the live FAA list; use this as a trust signal in outreach
+- **Anti-gray-charter enforcement ramping** — FAA pushing harder on illegal charter detection; verified-operator positioning is a live differentiator right now
+
+**Private Aviation Trends**
+- Global private jet activity **+5% YTD 2026** vs. same period last year
+- Charter market: **$27.38B (2026) → $45.43B (2030, 13.5% CAGR)**
+- World Cup 2026 (June 11–July 19) is the single biggest near-term demand catalyst in private aviation this year — 16 US/Canada/Mexico host cities, same-day routing demand is the exact pjroutes use case
+- Demand concentration around major events (Super Bowl, F1, World Cup) becoming standard thesis for charter operators
+
+**Competitor Moves**
+- **JETBAY** — live, fixed-price OTA, no membership; direct competitor; moved first
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI marketplace; real-time quoting + tracking; closest ongoing threat
+- **No new Part 135-specific routing SaaS** launched this week — lane still lightly competed at the charter operator level
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) outside GitHub MCP scope (scoped to `ranch-pad`). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs. Add repo to MCP scope for live code health scans.
+
+**Active Blockers (carried since 2026-05-15 — now 20 days unresolved)**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not toggled on (Stripe → Settings → Customer emails; 2-min fix)
+- Test data not purged from Supabase DB
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug TODAY — World Cup starts June 11 (7 days); operators must be live before demand hits
+- Swap Stripe test → live keys in Vercel env vars — platform cannot transact until done
+- Enable Stripe bank transfer instruction emails (2-min toggle — just do it)
+- Purge test data from Supabase; run full booking flow on clean DB before outreach
+- Launch Part 135 outreach — 402 contacts; lead with World Cup (June 11 = 7 days), FAA verified-operator positioning, SMS mandate (358 days); JETBAY is already live
