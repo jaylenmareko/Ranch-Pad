@@ -1279,3 +1279,74 @@
 - Enable Stripe bank transfer instruction emails (2-min toggle — just do it)
 - Purge test data from Supabase; run full booking flow on clean DB before outreach
 - Launch Part 135 outreach — 402 contacts; lead with World Cup (June 11 = 7 days), FAA verified-operator positioning, SMS mandate (358 days); JETBAY is already live
+
+---
+
+## 2026-06-05 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 5, 2026):**
+- S&P 500: ~7,584 (+0.41%) — pulled back slightly after first-ever close above 7,600 on June 2
+- Nasdaq: ~26,831 (-0.09%) — chipmaker rally sustaining broader tech run
+- Dow Jones: 51,561 (+1.73% June 3 close) — institutions rotating from tech into value
+- Bitcoin: ~$62,875 — down ~20% since mid-May; down ~50% from Oct 2025 ATH ($128K); 13-day spot ETF outflow streak ($4.4B total); institutional rotation into AI stocks/IPOs cited
+
+**Top 3 Aviation/Business Headlines:**
+1. **ParaFlight Aviation 24/7 charter network for World Cup** — activating on-demand charter network for June 11–July 19 across all 16 US/Canada/Mexico host cities; operators calling it "most complex same-day private travel environment North America has seen" — **World Cup starts in 6 days**
+2. **V2 Jets acquires Corporate Aviation** (June 1, 2026) — broker consolidation continues; Bedford MA + Fort Lauderdale FL absorbed; fewer indie brokers = more urgency for operator-direct platform
+3. **American Airlines AI gating at DFW** — Azure-based AI system analyzing real-time flight data + airport logistics; cuts taxi time 1+ min per flight; pattern directly applicable to charter FBO/ramp routing
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **NextBillion.ai** — enterprise AI routing APIs (time windows, vehicle constraints, traffic); logistics-grade; actively expanding aviation traction
+- **GIS + ML framework for airport route classification** (MDPI, April 18) — intelligent route-level classification for airport networks; usable for FBO/waypoint intelligence layer in pjroutes
+- Broader trend: autonomous AI routing agents chaining complex multi-stop decisions without human input — directly applicable to multi-leg charter routing roadmap
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- **FAA restored public Part 135 operator list** (updated April 27, 2026) — after Feb 2026 errors omitting NetJets, FlyExclusive; now downloadable via Safe Air Charter; reliable for outreach cross-reference
+- **SMS mandate deadline: May 28, 2027** — all Part 135 operators must comply with 14 CFR Part 5 SMS requirements; 357 days out; Senate SMS Compliance Review Act advancing post-DCA
+- **FAA crackdown on gray charter ongoing** — ~24 active enforcement cases; legitimate Part 135 operators want verified platform exposure; strong differentiator for pjroutes
+- **NBAA released new Ops Specs Guide** for Part 135 operators — plain-language breakdown of operations specifications; good for operator onboarding content
+- **NBAA/FAA charter oversight tension** — FAA pushing expanded oversight; NBAA pushing back; watch for rulemaking impact on Part 380/on-demand operations
+
+**Market Trends:**
+- Global private jet charter market: ~$48B in 2026 (some estimates); conservative: $17.67B → $25.79B by 2031 (7.86% CAGR); North America 81.93% revenue share
+- ~2.75M business-jet flights in 2025 (+4.7% YoY); 2026 on track to exceed
+- **FIFA World Cup 2026 demand surge: June 11–July 19** — 16 host cities; 73,000+ private jet flights forecast; same-day on-demand routing is the exact pjroutes use case; **6 days away**
+- New entrant: **Magnifica Air** — premium scheduled airline bridging first-class/private; launching 2027; family office-backed; validates demand for the space
+- Vista and Flexjet both raised oversubscribed institutional capital — private aviation now "bankable"
+
+**Competitors / SaaS:**
+- **Avinode** — dominant charter marketplace; 1,400+ operators; handles RFQs, quoting, trip execution — large incumbent
+- **Avi-Go** — AI analytics marketplace; NBAA/EBAA/AsBAA-backed; live flight tracking + sourcing — closest direct competitor
+- **AMRO Dispatch** — cloud CRM + dispatch + scheduling + compliance for Part 135; operator-side workflow
+- **ForeFlight Dispatch** (Boeing-owned) — dominant in Part 135 dispatch; crew tool, not booking marketplace
+- **JETBAY** — live, fixed-price OTA, no membership; validates direct-booking model; direct threat
+- No new Part 135-specific charter routing SaaS launched this week — lane remains lightly competed
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 21 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (Stripe → Settings → Customer emails — 2-min manual toggle)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment. Clone locally or add `pjroutes-` to GitHub MCP scope to enable live code health checks.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug TODAY — 21 days unresolved; World Cup starts June 11 (6 days); operators must be listing flights before demand spike; this is the only blocker
+- Swap Stripe test → live keys in Vercel env vars — platform cannot transact until done; outreach should not go out before this is live
+- Enable Stripe bank transfer instruction emails (2-minute manual toggle in Stripe dashboard — just do it)
+- Purge all test data from Supabase; run full booking flow end-to-end on clean DB before any outreach lands
+- Launch Part 135 outreach — 402 contacts ready; lead with World Cup timing (June 11 = 6 days) + SMS mandate (357 days out) + FAA Safe Air Charter verifiability; JETBAY is live and ParaFlight is spinning up a full World Cup charter network right now
