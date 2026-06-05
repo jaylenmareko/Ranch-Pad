@@ -29,14 +29,17 @@ const emails = [...new Set(
     .filter(e => EMAIL_REGEX.test(e) && !alreadySent.has(e))
 )].slice(0, BATCH_SIZE);
 
-const SUBJECT = "your audience will pay for this";
-const BODY = `Your followers already know what they want from you — they just have no way to fund it.
+const SUBJECT = "your fans will pay for this";
+const BODY = `How much would it cost to get you on topiclaunch.com?
 
-topiclaunch.com lets them request specific topics and back them before you hit record. You keep 90% of every transaction.
+TopicLaunch is a content marketplace where your audience funds the videos they want you to make.
 
-Worth a look? Let's hop on a quick 5 minute call?
+1. You set your topic request price
+2. Your audience submits topics
+3. You deliver and keep 90% of the funding
 
-— Jaylen, topiclaunch.com`;
+— Jaylen
+topiclaunch.com`;
 
 const timestamp = new Date().toISOString();
 

@@ -2,104 +2,124 @@
   "meta": {
     "project": "ranchpad",
     "last_scrape": null,
-    "last_send": "2026-05-21T15:39:17.611451+00:00"
+    "last_send": "2026-05-22T16:49:33.634124+00:00"
   },
-  "queue": [
+  "queue": [],
+  "in_flight": [],
+  "sent": [
     {
-      "email": "jasonk@nefb.org",
-      "name": "",
+      "id": "30ea46fc-f137-4fd4-b80c-0f0bf2c02903",
+      "email": "fail@example.com",
+      "name": "Test",
       "org": "",
-      "source": "nefb",
-      "state": "",
-      "id": "33dafac4-f38e-46e8-b306-040e5433047a"
+      "resend_id": "8e8751a7-1f31-4006-b72f-c10bd3386ce7",
+      "sent_at": "2026-05-22T16:49:17.057049+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
     },
     {
-      "email": "kellyd@nefb.org",
-      "name": "",
-      "org": "",
-      "source": "nefb",
-      "state": "",
-      "id": "da742eba-490b-4cfd-8b69-4d4a431a6886"
-    },
-    {
-      "email": "chases@nefb.org",
-      "name": "",
-      "org": "",
-      "source": "nefb",
-      "state": "",
-      "id": "0d788c9e-fc11-496a-9abb-629da0acb190"
-    },
-    {
-      "email": "heidip@nefb.org",
-      "name": "",
-      "org": "",
-      "source": "nefb",
-      "state": "",
-      "id": "883705ac-01e3-4f36-92e2-13beb7135cdd"
-    },
-    {
-      "email": "leanne@nefb.org",
-      "name": "",
-      "org": "",
-      "source": "nefb",
-      "state": "",
-      "id": "1f4c1e0e-3284-407c-8b8b-2f6abd3dc736"
-    },
-    {
-      "email": "info@oceanofgrassfilm.com",
-      "name": "Ocean of Grass Movie",
-      "org": "",
-      "source": "creators_csv",
-      "id": "2b1fa123-d947-4400-82f7-3efe4ff337cd"
-    },
-    {
-      "email": "info@americanimplement.com",
-      "name": "American Implement \ud83c\uddfa\ud83c\uddf8",
-      "org": "",
-      "source": "creators_csv",
-      "id": "a3b9d2ad-381c-42b3-a88c-533912dfe4fa"
-    },
-    {
-      "email": "lisa@legacybrokergroup.com",
-      "name": "Legacy Broker Group",
-      "org": "",
-      "source": "creators_csv",
-      "id": "00a0980a-15cd-4563-8897-470d908d6ad4"
-    },
-    {
-      "email": "j7beatss@gmail.com",
-      "name": "Jaylen",
-      "org": "Test Ranch",
-      "source": "test",
-      "state": "KS",
-      "id": "d2684434-1e7a-4406-9bd9-f5ec225c0f1e"
-    }
-  ],
-  "in_flight": [
-    {
+      "id": "88fb3949-06cf-4448-bdf1-d4a5b5391737",
       "email": "nickh@nefb.org",
       "name": "",
       "org": "",
-      "source": "nefb",
-      "state": "",
-      "id": "fc562c4e-d4cb-4c41-b4d4-16e507ce3d54"
-    }
-  ],
-  "sent": [
+      "resend_id": "5e57f7ab-23fc-4782-bcdc-a72d33ce6743",
+      "sent_at": "2026-05-22T16:49:18.838357+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
     {
-      "id": "161505c9-cbff-4a52-8a98-eb7223e36d6c",
-      "email": "test@example.com",
-      "name": "Test",
+      "id": "825ec834-1e90-4d4a-a3fa-b806527d1174",
+      "email": "jasonk@nefb.org",
+      "name": "",
       "org": "",
-      "resend_id": "test_resend_id_123",
-      "sent_at": "2026-05-21T15:39:17.611451+00:00",
+      "resend_id": "f4a3f978-40c7-40f8-a3eb-382824821eb8",
+      "sent_at": "2026-05-22T16:49:20.747108+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "0e535ab6-3abb-4b44-bbaa-46c5540e290b",
+      "email": "kellyd@nefb.org",
+      "name": "",
+      "org": "",
+      "resend_id": "95e3089d-2617-47dc-80fb-9c4415b19eb1",
+      "sent_at": "2026-05-22T16:49:22.762288+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "007ef986-a605-4d11-8657-4fd0c12817db",
+      "email": "chases@nefb.org",
+      "name": "",
+      "org": "",
+      "resend_id": "758489cf-1cfb-4de7-a8ac-fd7221049d4c",
+      "sent_at": "2026-05-22T16:49:24.491042+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "54ddac18-41ea-4533-bd0a-002eabc5bfba",
+      "email": "heidip@nefb.org",
+      "name": "",
+      "org": "",
+      "resend_id": "ee6d3c65-9a5b-4bcb-88eb-7c4037e6138e",
+      "sent_at": "2026-05-22T16:49:26.573046+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "38cfcef0-7d6f-40fb-b189-9fcb4f54cc1c",
+      "email": "leanne@nefb.org",
+      "name": "",
+      "org": "",
+      "resend_id": "4ce3e03f-0089-4517-9325-0f59ad6dbce7",
+      "sent_at": "2026-05-22T16:49:28.328420+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "9653bdd4-96b9-4ad0-b591-01cc6d5de911",
+      "email": "info@oceanofgrassfilm.com",
+      "name": "Ocean of Grass Movie",
+      "org": "",
+      "resend_id": "0bd01ed9-c31f-49d3-8a45-bee4f83ff607",
+      "sent_at": "2026-05-22T16:49:30.221070+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "e9c69073-0b3b-42f3-9b33-8e27011f7999",
+      "email": "info@americanimplement.com",
+      "name": "American Implement \ud83c\uddfa\ud83c\uddf8",
+      "org": "",
+      "resend_id": "80cc8837-470b-4b9a-9f19-0ffe6be72185",
+      "sent_at": "2026-05-22T16:49:31.925434+00:00",
+      "status": "sent",
+      "opened_at": null,
+      "replied_at": null
+    },
+    {
+      "id": "7e18611d-1cf1-4b89-a437-a5f444343c04",
+      "email": "lisa@legacybrokergroup.com",
+      "name": "Legacy Broker Group",
+      "org": "",
+      "resend_id": "bf9d46e0-bc17-4e47-8909-27a27d7e9a71",
+      "sent_at": "2026-05-22T16:49:33.634124+00:00",
       "status": "sent",
       "opened_at": null,
       "replied_at": null
     }
   ],
   "stats": {
-    "total_sent": 1,
+    "total_sent": 10,
     "opens": 0,
     "replies": 0,
     "open_rate": 0.0,
