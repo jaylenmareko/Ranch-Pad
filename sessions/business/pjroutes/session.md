@@ -1491,3 +1491,74 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard — just do it)
 - Purge test data from Supabase; validate full booking flow end-to-end on clean DB before outreach goes out
 - Monitor FAA Part 110 rulemaking — proposed definition changes to "on demand" operations could directly affect how pjroutes listings are classified; comment period opens soon
+
+---
+
+## 2026-06-08 08:00 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 8, 2026 — recovering from June 5 sell-off):**
+- S&P 500: ~7,418.00 (+0.24%) — bouncing off June 5 crash (-2.64%)
+- Nasdaq: futures +0.87% — recovering from worst day since April 2025 ($1T chip stock wipeout on June 5)
+- Dow Jones: ~50,843.00 (-0.18%) — muted; institutions rotating defensively
+- Bitcoin: ~$62,276.50 (+2.73% from $60,629.70) — recovering modestly; still down ~50% from Oct 2025 ATH; spot ETF outflows ongoing
+
+**Top 3 Aviation/Business Headlines:**
+1. **World Cup starts in 3 days (June 11)** — ParaFlight Aviation 24/7 charter network fully activated across all 16 US/Canada/Mexico host cities; same-day on-demand charter demand is live; this is pjroutes' window
+2. **AeroVanti CEO Patrick Britton-Harr convicted** (June 4) — 6 counts of wire fraud, $15M scam; faces up to 20 years per count; reinforces demand for verified, legitimate Part 135 platforms
+3. **V2 Jets acquires Corporate Aviation** (June 1) — Bedford MA + Fort Lauderdale FL absorbed; charter broker consolidation accelerating; fewer indie brokers = urgency for operator-direct platform
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **Floating Fleet AI** — launched aviation scheduling platform at Aviation Festival Americas (June 1, 2026); AI-driven scheduling, crew assignment, rostering; originally private aviation, now expanding to regional carriers + corporate flight departments; most relevant new launch this week
+- **FAA SMART system** — AI-powered ATC routing (predicts conflicts 2 hrs out vs. current 15 min); vendor decision end of June 2026; Palantir, Thales, Airspace Intelligence (Flyways AI) competing; operational September 2026; will reshape routing intelligence industry-wide
+- **Dassault Falcon Ways** — AI tool for fuel efficiency + optimized routing; enterprise-tier; signals where OEM-side aviation AI is heading
+- Flight route optimization market: $6.47B in 2026 (10.6% CAGR → $9.69B by 2030)
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- **SMS mandate: May 28, 2027** — 354 days out; all ~1,850 Part 135 operators must comply with 14 CFR Part 5; Senate SMS Compliance Review Act advancing post-DCA collision; sharpest urgency hook in outreach
+- **FAA Part 110 rulemaking** — proposed changes to definitions of "scheduled," "on demand," "supplemental"; public charter would face same safety rules as non-public charter; could structurally affect how pjroutes listings are classified; monitor closely
+- **TSA Twelve-Five Standard Security Program** — 45-day comment period ends June 27; affects operators flying 12,500–60,000 lb MTOW aircraft; potential new compliance burden on pjroutes operator base
+- **FAA Part 135 list** — updated daily for operators, weekly for aircraft (as of June 1); fully searchable on Safe Air Charter website; reliable for outreach cross-reference
+- **AeroVanti conviction** — strengthens demand for verified Part 135 platform exposure; legitimate operators want differentiation; strong trust signal for pjroutes outreach copy
+
+**Market Trends:**
+- **World Cup 2026 (June 11–July 19)** — 73,000+ private jet flights forecast across 16 host cities; $274M additional charter/fractional revenue; same-day on-demand routing is pjroutes' exact use case; **demand window is now**
+- Private jet charter market: $27.38B in 2026 → $45.43B by 2030 (13.5% CAGR); North America 81.93% revenue share
+- US fractional/charter +11% YoY; global private jet activity +4–5% YoY — demand floor firm
+- Charter broker consolidation accelerating (V2 Jets + Corporate Aviation June 1; Volato + FlyExclusive closing Q2) — independents need a platform
+- Jet-A fuel +30% since March 1; charter prices up 15–20% — operators under margin pressure; cost-efficiency messaging resonates
+
+**Competitors / SaaS:**
+- **JETBAY** — live OTA, fixed-price, all-inclusive charter on select US/international routes; no membership fee; first mover on World Cup routes; direct threat
+- **Avi-Go** — NBAA/EBAA/AsBAA-backed AI charter marketplace; real-time quoting, tracking, analytics — closest ongoing SaaS competitor
+- **Floating Fleet AI** — new AI scheduling platform targeting private aviation + corporate flight departments; watch closely
+- **Avinode** — dominant legacy marketplace; 1,400+ operators; entrenched; no new innovation signal this week
+- No new Part 135-specific charter booking SaaS launched this week — lane still lightly competed; window tightening
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** pjroutes repo (`jaylenmareko/pjroutes-`) is outside GitHub MCP scope for this environment (scoped to `ranch-pad` only). Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs. Add `pjroutes-` to GitHub MCP scope or clone locally for live code health checks.
+
+**Unresolved blockers (carried since 2026-05-15 — now 24 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails — 2-min fix)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug TODAY — 24 days unresolved; World Cup demand hits in 3 days (June 11); this is the absolute final window; nothing else matters
+- Swap Stripe test → live keys in Vercel env vars — platform cannot take real money until done; outreach must not land before this is live
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard — just do it)
+- Purge test data from Supabase; validate full booking flow end-to-end on clean DB before outreach goes out
+- Monitor FAA Part 110 rulemaking + TSA Twelve-Five comment period (ends June 27) — both could structurally affect how pjroutes operator listings are classified and what compliance operators face
