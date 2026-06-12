@@ -1764,3 +1764,69 @@
 - Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
 - Purge test data from Supabase before any live traffic during World Cup surge
 - Use FAA's $1.5M Part 135 enforcement wave (Planet Nine, StarFlite) as a fresh trust-signal hook in outreach copy — "verified, compliant operator" positioning is timely
+
+---
+
+## 2026-06-12 [AUTO]
+
+### Phase 1 — Market Snapshot
+
+**Markets (June 11–12, 2026):**
+- S&P 500: **7,436** (+0.56%)
+- Nasdaq: **25,809.66** (+2.54%)
+- Dow Jones: **50,841** (+1.85%)
+- Bitcoin: **$63,704.27** (+3.14%)
+- Sharp rebound from June 10's risk-off selloff — Trump signals an Iran peace deal could land this weekend, delaying planned strikes; markets and oil both relieved
+
+**Top 3 Aviation/Business Headlines:**
+1. **ParaFlight Aviation's 24/7 World Cup charter network** in full swing (FIFA World Cup runs June 11–July 19, 48 teams/104 matches/16 host cities across US/Canada/Mexico) — same-day private jet demand surge confirmed live
+2. **FlyXcite FBO opens at London, ON (CYXU)** — new European-style FBO model entering North America, fresh capacity online during World Cup ramp
+3. **Air Charter Service opens 5th German office (Stuttgart, 42nd worldwide)** — incumbent broker expansion continues despite operator-direct shift
+
+**New AI/Routing Dev Tools (last 7 days):**
+- **OpenCode** debuted at #1 in dev-tool rankings — 160K+ GitHub stars, model-agnostic (75+ providers), LSP-integrated, background subagents — general dev productivity tool, not routing-specific but worth a look for build velocity
+- **Project44 Autopilot** — AI logistics OS where agents react to real-time signals (delays, missing docs, port dwell time) with conditional branching and escalation — pattern directly applicable to pjroutes disruption/rebooking flows
+- No new aviation-specific routing SaaS launched this week; NextBillion.ai/Onfleet/Locus remain dominant in AI route optimization
+
+---
+
+### Phase 2 — pjroutes Market Intel
+
+**FAA / Regulatory:**
+- SMS mandate (Part 5): May 28, 2027 deadline, ~351 days out — unchanged, still the sharpest urgency hook
+- FAA's $1.5M Part 135 enforcement wave (11 actions since March 2024, incl. Planet Nine $336K fine for falsified flight plans, StarFlite cert revocation) — "verified operator" trust angle remains fresh and usable
+- FAA Part 110 rulemaking + TSA Twelve-Five comment period (ends June 27) still pending — could reshape pjroutes listing classifications; deadline approaching in ~2 weeks
+- No new Part 135-specific regulatory action this week beyond carried items
+
+**Market Trends:**
+- **World Cup 2026 demand window now fully live** (day 2 of tournament) — 73,000+ private jet flights forecast through July 19, $274M additional charter revenue; multi-leg/multi-city booking gap remains pjroutes' most urgent product issue
+- New FBO capacity (FlyXcite CYXU) and broker network expansion (Air Charter Service Stuttgart) signal infrastructure scaling ahead of sustained demand
+- Charter consolidation thesis unchanged — independents need a platform
+
+**Competitors / SaaS:**
+- JETBAY (live OTA) and ParaFlight (active World Cup network) remain first movers on World Cup routes
+- No new Part 135-specific charter booking SaaS launched this week
+- Avi-Go, Floating Fleet AI, Avinode remain background competitors
+
+---
+
+### Phase 3 — Code Health
+
+**Note:** `pjroutes-` repo remains outside GitHub MCP scope for this environment (scoped to `ranch-pad` only); no repo-management tools (list_repos/add_repo) available in this session either. Local directory `projects/business/pjroutes/` does not exist in this clone. Scan reflects carried state from prior session logs.
+
+**Unresolved blockers (carried since 2026-05-15 — now 28 days):**
+- `depart_start`/`depart_end` React state not updating via JS → operator form submits empty → Supabase insert silently fails — **BLOCKER: operators cannot list flights**
+- Stripe test keys still in Vercel env vars — **BLOCKER before real transactions**
+- Stripe bank transfer instruction emails not enabled (manual toggle: Stripe → Settings → Customer emails)
+- Test data not purged from Supabase DB
+
+**Unable to scan:** TODO/FIXME comments, imports, package.json — repo inaccessible in this environment for 28 consecutive days.
+
+---
+
+**Action Items**
+- Fix `depart_start`/`depart_end` React state bug — 28 days unresolved; World Cup is on day 2 and operators still cannot list flights; revenue is being left on the table every day this stays broken
+- Swap Stripe test → live keys in Vercel env vars — platform cannot take real money during the World Cup window until done
+- Enable Stripe bank transfer instruction emails (2-minute toggle in Stripe dashboard)
+- Purge test data from Supabase before any live traffic during World Cup surge
+- TSA Twelve-Five / FAA Part 110 comment period closes June 27 — flag for review in case it affects pjroutes operator listing categories
