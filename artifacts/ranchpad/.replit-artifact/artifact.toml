@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Ranch Pad"
+version = "1.0.0"
+id = "artifacts/ranchpad"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 24400
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/ranchpad run dev"
+
+[services.env]
+PORT = "24400"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/ranchpad", "run", "build"]
+publicDir = "artifacts/ranchpad/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

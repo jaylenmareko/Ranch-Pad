@@ -1,0 +1,19 @@
+packages:
+  "date-fns": "For calculating animal ages and formatting event dates"
+  "recharts": "For the FAMACHA score sparkline chart"
+  "react-hook-form": "For robust form state management"
+  "@hookform/resolvers": "For validating forms with Zod schemas"
+  "clsx": "For conditional class name joining"
+  "tailwind-merge": "For merging tailwind classes without conflicts"
+
+images:
+  - path: "artifacts/ranchpad/public/images/hero-bg.png"
+    description: "A beautiful, warm-toned, rugged landscape of a misty morning on a cattle ranch with rolling hills and wooden fences, soft golden hour light"
+    aspect_ratio: "16:9"
+  - path: "artifacts/ranchpad/public/images/logo-mark.png"
+    description: "A minimal, modern flat vector logo mark of a stylized animal hoof print or barn silhouette in deep forest green on a transparent background"
+    aspect_ratio: "1:1"
+
+notes:
+  - Global fetch interceptor added to inject JWT token into all requests since the generated hooks use a custom fetch wrapper.
+  - Native select elements used for mobile-friendliness and rugged usability.
